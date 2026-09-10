@@ -31,7 +31,7 @@ Nghi ngờ thì `[B]`. Không bao giờ tự nâng `[B]` lên `[A]`.
 ## Milestone 1 — Nền tảng, tiền, và kho theo lô
 
 ### T-001 [B] prio:1 — Khởi tạo dự án và CI
-Trạng thái: TODO · Phụ thuộc: —
+Trạng thái: CHỜ MERGE · Phụ thuộc: —
 Xong khi: bộ lệnh trong `ARCHITECTURE.md` §7 chạy được và xanh; `tsconfig` bật
 `strict` + `noUncheckedIndexedAccess`; ESLint + Prettier + dependency-cruiser cấu
 hình xong; CI chặn được một PR cố tình phá test.
