@@ -97,9 +97,21 @@ chưa vào được `main`.
 Chọn đúng một task. Làm xong. Mở PR. Dừng. Không làm task thứ hai kể cả khi
 còn thời gian.
 
-Nếu task ước lượng vượt quá một PR hợp lý (>300 dòng đổi hoặc >8 file), đừng
-làm. Chẻ thành task con trong BACKLOG.md, mở PR chỉ chứa việc chẻ task, dừng.
-Kiểm tra lại kích thước thật **trước khi mở PR**, không chỉ lúc ước lượng.
+**Ngưỡng cứng của một PR: 1000 dòng đổi hoặc 24 file** (không tính lockfile).
+
+Vượt ngưỡng thì **đừng làm**. Chẻ thành task con trong BACKLOG.md, mở PR chỉ
+chứa việc chẻ task, dừng. Kiểm tra kích thước thật **trước khi mở PR**, không chỉ
+lúc ước lượng.
+
+**Không có ngoại lệ, và bạn không được tự cấp ngoại lệ cho mình.** Nếu bạn thấy
+task này *phải* vượt ngưỡng mới làm được — ví dụ các mảnh phụ thuộc nhau đến mức
+chẻ ra thì CI đỏ ở bước trung gian — thì đó là dấu hiệu task bị định nghĩa sai.
+Ghi `BLOCKED.md` và dừng. Đừng mở PR vượt ngưỡng kèm lời giải thích, dù lời giải
+thích có hợp lý đến đâu.
+
+Lý do luật này cứng: một ngoại lệ hợp lý thì vô hại, nhưng qua hàng trăm run,
+"tôi có lý do chính đáng" là cách hàng rào mòn dần cho tới khi không còn hàng rào.
+Người quyết định ngoại lệ là chủ dự án, không phải bạn.
 
 Cập nhật BACKLOG.md và JOURNAL.md trong CÙNG commit với code.
 

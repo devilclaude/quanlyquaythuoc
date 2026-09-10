@@ -13,8 +13,9 @@ Khai báo tầng bằng dòng `Tầng: A` hoặc `Tầng: B` trong **mô tả PR
 bằng label — xem `CLAUDE.md`.
 
 Mỗi task là **một lát cắt dọc** — schema + logic + endpoint + test + nối giao diện —
-không phải một tầng kiến trúc. Nếu một task vượt quá một PR hợp lý (>300 dòng đổi
-hoặc >8 file), chẻ nó trong file này và mở PR chỉ chứa việc chẻ.
+không phải một tầng kiến trúc. Ngưỡng cứng một PR là **1000 dòng đổi hoặc 24 file**
+(không tính lockfile); vượt thì chẻ task trong file này và mở PR chỉ chứa việc chẻ,
+hoặc ghi `BLOCKED.md` nếu không chẻ được. Không tự cấp ngoại lệ — xem `CLAUDE.md`.
 
 ## Tiêu chí gắn tầng
 
@@ -31,7 +32,7 @@ Nghi ngờ thì `[B]`. Không bao giờ tự nâng `[B]` lên `[A]`.
 ## Milestone 1 — Nền tảng, tiền, và kho theo lô
 
 ### T-001 [B] prio:1 — Khởi tạo dự án và CI
-Trạng thái: CHỜ MERGE · Phụ thuộc: —
+Trạng thái: DONE · Phụ thuộc: —
 Xong khi: bộ lệnh trong `ARCHITECTURE.md` §7 chạy được và xanh; `tsconfig` bật
 `strict` + `noUncheckedIndexedAccess`; ESLint + Prettier + dependency-cruiser cấu
 hình xong; CI chặn được một PR cố tình phá test.
