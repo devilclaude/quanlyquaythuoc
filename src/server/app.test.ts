@@ -7,7 +7,7 @@ describe('GET /api/suc-khoe', () => {
 
     const res = await app.request('/api/suc-khoe');
 
-    expect(res.status).toBe(201);
+    expect(res.status).toBe(200);
     await expect(res.json()).resolves.toEqual({ trangThai: 'ok' });
   });
 });
