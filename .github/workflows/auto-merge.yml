@@ -80,24 +80,26 @@ jobs:
             echo "Đường dẫn sạch."
           fi
 
+      # Danh sách file đi qua BIẾN MÔI TRƯỜNG, không nội suy thẳng vào shell:
+      # tên file chứa dấu backtick sẽ bị bash chạy như lệnh, vừa hỏng comment
+      # vừa là lỗ hổng chèn lệnh.
       - name: Chặn lại và giao cho người
         if: steps.soi.outputs.nhay_cam == 'true'
+        env:
+          DANH_SACH: ${{ steps.soi.outputs.danh_sach }}
         run: |
           gh label create needs-human-review --repo "$REPO" \
             --color B60205 --description "Chạm đường dẫn nhạy cảm, phải có người duyệt" \
             2>/dev/null || true
           gh pr edit "$PR" --repo "$REPO" \
             --remove-label auto-merge --add-label needs-human-review
-          gh pr comment "$PR" --repo "$REPO" --body "$(cat <<EOF
-          **Auto-merge bị chặn.** PR này gắn label \`auto-merge\` nhưng chạm đường dẫn thuộc nhóm luôn-\`[B]\` trong \`CLAUDE.md\`:
-
-          ${{ steps.soi.outputs.danh_sach }}
-
-          Đã gỡ \`auto-merge\` và gắn \`needs-human-review\`. PR sẽ **không** tự merge.
-
-          Nếu task này thật sự là tầng \`[A]\`, nghĩa là nó đang chạm file không nên chạm — xem lại phạm vi task thay vì gắn lại label.
-          EOF
-          )"
+          {
+            printf '**Auto-merge bị chặn.** PR này gắn label `auto-merge` nhưng chạm đường dẫn thuộc nhóm luôn-`[B]` trong `CLAUDE.md`:\n\n'
+            printf '%s\n\n' "$DANH_SACH"
+            printf 'Đã gỡ `auto-merge` và gắn `needs-human-review`. PR sẽ **không** tự merge.\n\n'
+            printf 'Nếu task này thật sự là tầng `[A]`, nghĩa là nó đang chạm file không nên chạm — xem lại phạm vi task thay vì gắn lại label.\n'
+          } > /tmp/comment.md
+          gh pr comment "$PR" --repo "$REPO" --body-file /tmp/comment.md
           echo "::warning::Đã chặn auto-merge cho PR #$PR — chạm đường dẫn nhạy cảm"
 
       - name: Bật auto-merge
