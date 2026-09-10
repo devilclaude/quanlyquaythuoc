@@ -1,9 +1,16 @@
 # Backlog
 
-Trạng thái: `TODO` | `DOING` | `DONE` | `BLOCKED`
+Trạng thái: `TODO` → `DOING` → `CHỜ MERGE` → `DONE`, hoặc `BLOCKED`
 Tầng: `[A]` tự merge khi CI xanh · `[B]` chờ người duyệt
 
 Agent chỉ chọn task `TODO` có toàn bộ phụ thuộc `DONE`, prio nhỏ nhất trước.
+
+**`CHỜ MERGE` nghĩa là đã mở PR nhưng PR chưa vào `main`.** Task ở trạng thái này
+chưa xong: phụ thuộc vào nó chưa được mở khoá. Chỉ run sau, khi thấy PR đã merge,
+mới chuyển nó sang `DONE`. Không bao giờ ghi `DONE` cùng commit với code.
+
+Khai báo tầng bằng dòng `Tầng: A` hoặc `Tầng: B` trong **mô tả PR**, không phải
+bằng label — xem `CLAUDE.md`.
 
 Mỗi task là **một lát cắt dọc** — schema + logic + endpoint + test + nối giao diện —
 không phải một tầng kiến trúc. Nếu một task vượt quá một PR hợp lý (>300 dòng đổi

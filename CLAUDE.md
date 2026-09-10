@@ -78,6 +78,20 @@ huỷ có ghi nhận, không được xoá khỏi cơ sở dữ liệu.
 
 ---
 
+## Việc đầu tiên mỗi run: dọn PR cũ trước khi mở PR mới
+
+Mỗi run là một session mới và không biết run trước đã để lại gì. Trước khi chọn
+task, liệt kê PR đang mở của agent:
+
+1. **PR nào CI đỏ, có comment chưa xử lý, hoặc conflict với `main`** — sửa nó, và
+   **dừng run tại đó**. Không mở task mới.
+2. **PR nào đã merge** — chuyển task tương ứng trong BACKLOG.md từ `CHỜ MERGE`
+   sang `DONE`.
+3. Chỉ khi mọi PR đang mở đều xanh và đang chờ người duyệt, mới được chọn task mới.
+
+Sửa PR cũ gần như luôn có giá trị hơn mở task mới. Một PR treo là công đã bỏ ra mà
+chưa vào được `main`.
+
 ## Một run = một task = một PR
 
 Chọn đúng một task. Làm xong. Mở PR. Dừng. Không làm task thứ hai kể cả khi
@@ -85,15 +99,35 @@ còn thời gian.
 
 Nếu task ước lượng vượt quá một PR hợp lý (>300 dòng đổi hoặc >8 file), đừng
 làm. Chẻ thành task con trong BACKLOG.md, mở PR chỉ chứa việc chẻ task, dừng.
+Kiểm tra lại kích thước thật **trước khi mở PR**, không chỉ lúc ước lượng.
 
 Cập nhật BACKLOG.md và JOURNAL.md trong CÙNG commit với code.
+
+## Trạng thái task: mở PR chưa phải là xong
+
+`TODO` → `DOING` (bắt đầu làm) → `CHỜ MERGE` (đã mở PR) → `DONE` (PR đã merge).
+
+**Không bao giờ ghi `DONE` cùng commit với code.** Lúc đó PR chưa merge, và với
+task `[B]` nó có thể nằm chờ nhiều ngày hoặc bị từ chối. Ghi `DONE` sớm làm task
+biến mất khỏi hàng đợi: không `TODO`, không `DOING`, mà cũng chưa vào `main`.
+
+Việc chuyển `CHỜ MERGE` → `DONE` do **run kế tiếp** làm ở bước dọn PR cũ.
 
 ## Tầng merge
 
 Mỗi task có nhãn `[A]` hoặc `[B]`.
 
-- `[A]` — mở PR xong gắn label `auto-merge`. GitHub tự merge khi CI xanh.
-- `[B]` — mở PR, KHÔNG gắn label, ghi rõ vì sao cần người duyệt.
+Khai báo tầng bằng **đúng một dòng trong mô tả PR**, không phải bằng label:
+
+- `[A]` — mô tả PR có dòng `Tầng: A`. Workflow đọc dòng này, kiểm tra đường dẫn,
+  rồi tự gắn label và bật auto-merge. GitHub merge khi CI xanh.
+- `[B]` — mô tả PR có dòng `Tầng: B`, kèm lý do cần người duyệt.
+
+**Không tự gắn label.** Label do workflow quản, không phải bạn. Bạn chỉ khai báo ý
+định; máy chủ mới là nơi quyết. Nếu đường dẫn PR chạm nhóm luôn-`[B]` bên dưới,
+workflow sẽ chặn kể cả khi bạn ghi `Tầng: A`.
+
+Quên ghi dòng này thì không có gì tự merge — PR nằm chờ người. Đó là hành vi đúng.
 
 Không tự nâng `[B]` lên `[A]`. Mặc định khi nghi ngờ là `[B]`.
 

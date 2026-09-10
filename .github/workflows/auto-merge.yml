@@ -1,22 +1,27 @@
 name: Auto-merge tầng A
 
-# CLAUDE.md: task [A] mở PR xong gắn label `auto-merge`, GitHub tự merge khi CI
-# xanh. GitHub không tự làm việc đó theo label — auto-merge phải được bật cho
-# từng PR. Workflow này bật hộ, VÀ chặn lại nếu PR chạm đường dẫn nhạy cảm.
+# Agent KHÔNG gắn label. Agent chỉ khai báo ý định bằng đúng một dòng `Tầng: A`
+# trong mô tả PR; workflow này đọc dòng đó rồi tự quyết.
 #
-# Ba lớp bảo vệ, workflow này chỉ là lớp thứ hai:
-#   1. Branch protection: required check `ci` phải xanh. Không vượt được trừ khi
-#      gọi `gh pr merge --admin` một cách cố ý.
-#   2. Workflow này: chặn auto-merge với đường dẫn nhạy cảm, kể cả khi CI xanh.
+# Vì sao đặt quyết định ở đây thay vì ở agent:
+#   - Chạy trên runner GitHub với GITHUB_TOKEN do GitHub tự cấp mỗi lần chạy.
+#     Không phải khai báo credential, không phải xoay vòng, không bao giờ hết hạn.
+#   - Agent chạy trên hạ tầng cloud mà ta không kiểm soát phiên bản công cụ.
+#     Bề mặt của nó thu về đúng hai thao tác: `git push` và mở PR.
+#   - Agent không tự lên nòng auto-merge được nữa. Nó chỉ đề nghị.
+#
+# Ba lớp bảo vệ, workflow này là lớp thứ hai:
+#   1. Branch protection: required check `ci` phải xanh.
+#   2. Workflow này: chặn nếu chạm đường dẫn nhạy cảm, kể cả khi CI xanh.
 #   3. Con người: đọc PR gắn nhãn `needs-human-review`.
 #
-# Dùng `pull_request_target` để có quyền ghi. Repo là public nên người lạ mở PR
-# được — TUYỆT ĐỐI KHÔNG checkout code của PR trong workflow này. Nó chỉ gọi API,
-# không chạy một dòng code nào từ nhánh gửi tới.
+# Repo là public nên người lạ mở PR được. TUYỆT ĐỐI KHÔNG checkout code của PR ở
+# đây — workflow chỉ gọi API. Mọi dữ liệu do người gửi kiểm soát (mô tả PR, tên
+# file) đi qua BIẾN MÔI TRƯỜNG, không nội suy thẳng vào shell.
 
 on:
   pull_request_target:
-    types: [labeled, opened, synchronize, reopened]
+    types: [opened, edited, synchronize, reopened]
 
 permissions:
   contents: write
@@ -24,24 +29,43 @@ permissions:
 
 jobs:
   cong-tang-a:
-    if: contains(github.event.pull_request.labels.*.name, 'auto-merge')
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       PR: ${{ github.event.pull_request.number }}
       REPO: ${{ github.repository }}
     steps:
+      - name: Đọc khai báo tầng trong mô tả PR
+        id: tang
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          printf '%s' "$BODY" > /tmp/body.txt
+          # `T.{0,3}ng:` cố ý nới: chữ `ầ` có thể được ghi ở dạng tổ hợp (NFD)
+          # thay vì dựng sẵn (NFC) và khi đó so khớp chính xác sẽ trượt — tầng [A]
+          # sẽ im lặng không bao giờ chạy. Regex này nhận cả `Tầng: A` lẫn `Tang: A`.
+          if grep -qE '^[[:space:]]*T.{0,3}ng:[[:space:]]*A[[:space:]]*$' /tmp/body.txt; then
+            echo "la_tang_a=true" >> "$GITHUB_OUTPUT"
+            echo "PR #$PR khai báo Tầng: A"
+          else
+            echo "la_tang_a=false" >> "$GITHUB_OUTPUT"
+            echo "PR #$PR không khai báo Tầng: A — để nguyên cho người duyệt."
+          fi
+
       - name: Liệt kê file PR chạm vào
+        if: steps.tang.outputs.la_tang_a == 'true'
         run: |
           gh api "repos/$REPO/pulls/$PR/files" --paginate --jq '.[].filename' > /tmp/files.txt
           echo "PR #$PR chạm $(wc -l < /tmp/files.txt) file:"
           cat /tmp/files.txt
 
-      # Danh sách này bám đúng cấu trúc thư mục trong docs/agent/ARCHITECTURE.md §2
+      # Danh sách bám cấu trúc thư mục trong docs/agent/ARCHITECTURE.md §2
       # (tên miền viết tiếng Việt không dấu). THÊM MODULE MỚI THÌ THÊM VÀO ĐÂY —
-      # đây là danh sách chặn, nên thứ không có tên ở đây sẽ được cho qua.
+      # đây là danh sách chặn, thứ không có tên ở đây sẽ được cho qua.
       - name: Đối chiếu đường dẫn nhạy cảm
         id: soi
+        if: steps.tang.outputs.la_tang_a == 'true'
         run: |
           cat > /tmp/nhaycam.txt <<'PATTERNS'
           ^src/server/kho/
@@ -70,9 +94,9 @@ jobs:
           if grep -E -f /tmp/nhaycam.txt /tmp/files.txt > /tmp/dinh.txt; then
             echo "nhay_cam=true" >> "$GITHUB_OUTPUT"
             {
-              echo 'danh_sach<<EOF'
+              echo 'danh_sach<<GHI_HET'
               sed 's/^/- `/; s/$/`/' /tmp/dinh.txt
-              echo 'EOF'
+              echo 'GHI_HET'
             } >> "$GITHUB_OUTPUT"
             echo "CHẶN — PR chạm đường dẫn nhạy cảm:"; cat /tmp/dinh.txt
           else
@@ -80,9 +104,8 @@ jobs:
             echo "Đường dẫn sạch."
           fi
 
-      # Danh sách file đi qua BIẾN MÔI TRƯỜNG, không nội suy thẳng vào shell:
-      # tên file chứa dấu backtick sẽ bị bash chạy như lệnh, vừa hỏng comment
-      # vừa là lỗ hổng chèn lệnh.
+      # Danh sách file đi qua biến môi trường: tên file chứa dấu backtick sẽ bị
+      # bash chạy như lệnh nếu nội suy thẳng vào heredoc không đóng ngoặc.
       - name: Chặn lại và giao cho người
         if: steps.soi.outputs.nhay_cam == 'true'
         env:
@@ -91,13 +114,12 @@ jobs:
           gh label create needs-human-review --repo "$REPO" \
             --color B60205 --description "Chạm đường dẫn nhạy cảm, phải có người duyệt" \
             2>/dev/null || true
-          gh pr edit "$PR" --repo "$REPO" \
-            --remove-label auto-merge --add-label needs-human-review
+          gh pr edit "$PR" --repo "$REPO" --add-label needs-human-review
           {
-            printf '**Auto-merge bị chặn.** PR này gắn label `auto-merge` nhưng chạm đường dẫn thuộc nhóm luôn-`[B]` trong `CLAUDE.md`:\n\n'
+            printf '**Auto-merge bị chặn.** PR này khai báo `Tầng: A` nhưng chạm đường dẫn thuộc nhóm luôn-`[B]` trong `CLAUDE.md`:\n\n'
             printf '%s\n\n' "$DANH_SACH"
-            printf 'Đã gỡ `auto-merge` và gắn `needs-human-review`. PR sẽ **không** tự merge.\n\n'
-            printf 'Nếu task này thật sự là tầng `[A]`, nghĩa là nó đang chạm file không nên chạm — xem lại phạm vi task thay vì gắn lại label.\n'
+            printf 'PR sẽ **không** tự merge; cần người duyệt.\n\n'
+            printf 'Nếu task này thật sự là tầng `[A]`, nghĩa là nó đang chạm file không nên chạm — xem lại phạm vi task thay vì đổi khai báo.\n'
           } > /tmp/comment.md
           gh pr comment "$PR" --repo "$REPO" --body-file /tmp/comment.md
           echo "::warning::Đã chặn auto-merge cho PR #$PR — chạm đường dẫn nhạy cảm"
@@ -105,5 +127,9 @@ jobs:
       - name: Bật auto-merge
         if: steps.soi.outputs.nhay_cam == 'false'
         run: |
+          gh label create auto-merge --repo "$REPO" \
+            --color 0E8A16 --description "Tầng [A] — tự merge khi CI xanh" \
+            2>/dev/null || true
+          gh pr edit "$PR" --repo "$REPO" --add-label auto-merge
           gh pr merge "$PR" --repo "$REPO" --squash --auto
           echo "Đã bật auto-merge cho PR #$PR — sẽ merge khi check \`ci\` xanh."

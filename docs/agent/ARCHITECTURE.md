@@ -142,7 +142,13 @@ dài đi vào context và bị gửi lại ở mọi lượt sau trong cùng run
 | Chạy dev | `npm run dev` |
 | **Chạy tất cả như CI** | `npm run ci` |
 
-`npm run ci` = `typecheck && lint && test && build`. Chạy nó trước khi mở PR.
+`npm run ci` = `typecheck && lint && test && build && test:e2e` — **đúng bằng những
+gì CI trên GitHub chạy, không thiếu bước nào**. Chạy nó trước khi mở PR.
+
+Lý do phải gồm cả `test:e2e`: luồng bán hàng bằng bàn phím là ràng buộc không
+thương lượng trong `UI-FIDELITY.md`, và nó chỉ được kiểm ở tầng e2e. Nếu `npm run ci`
+bỏ qua e2e, agent sẽ mở PR rồi mới biết đỏ — tốn một vòng chạy CI cho một lỗi đáng
+lẽ thấy ngay tại chỗ.
 
 Cần một thao tác không có trong bảng này? Đó là dấu hiệu môi trường chưa sẵn sàng
 cho task — ghi `BLOCKED.md` và dừng.
