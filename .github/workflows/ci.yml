@@ -1,0 +1,69 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Agent chạy 4 lần/ngày. Huỷ run cũ khi có commit mới trên cùng nhánh,
+# đừng trả tiền cho kết quả không ai đọc.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Một job duy nhất, cố ý. Tách nhiều job nghe song song hơn nhưng mỗi job phải
+  # trả lại chi phí `npm ci` — với repo nhỏ, tổng thời gian tăng chứ không giảm.
+  # Ngân sách: cold install + toàn bộ test dưới ~5 phút (xem ARCHITECTURE.md §8).
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Cài phụ thuộc
+        run: npm ci
+
+      - name: Kiểm tra kiểu
+        run: npm run typecheck
+
+      - name: Lint và ranh giới module
+        run: npm run lint
+
+      - name: Test đơn vị và tích hợp
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # Browser là phần tốn thời gian nhất của cả pipeline. Cache theo đúng phiên
+      # bản Playwright trong lockfile; đổi phiên bản thì cache tự hỏng.
+      - name: Cache browser Playwright
+        id: cache-playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Cài browser Playwright
+        if: steps.cache-playwright.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      # Smoke, không phải bộ test đầy đủ. Bắt buộc phải có luồng bán hàng đi hết
+      # bằng bàn phím: quét mã → thêm giỏ → thanh toán → in.
+      - name: Test e2e (smoke)
+        run: npm run test:e2e
+
+      - name: Lưu báo cáo khi e2e đỏ
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

@@ -1,0 +1,28 @@
+name: Auto-merge tầng A
+
+# CLAUDE.md quy định: task [A] mở PR xong gắn label `auto-merge`, GitHub tự merge
+# khi CI xanh. GitHub không tự làm việc đó theo label — auto-merge phải được bật
+# cho từng PR. Workflow này bật hộ, để cơ chế trong CLAUDE.md chạy được thật.
+#
+# An toàn nằm ở chỗ khác, không nằm ở đây:
+#   - Branch protection phải bắt buộc job `ci` xanh trước khi merge.
+#   - Task [B] không bao giờ được gắn label này (xem tiêu chí trong BACKLOG.md).
+
+on:
+  pull_request_target:
+    types: [labeled, opened, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bat-auto-merge:
+    if: contains(github.event.pull_request.labels.*.name, 'auto-merge')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bật auto-merge cho PR
+        run: gh pr merge --squash --auto "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
