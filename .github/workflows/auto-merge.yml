@@ -1,28 +1,107 @@
 name: Auto-merge tầng A
 
-# CLAUDE.md quy định: task [A] mở PR xong gắn label `auto-merge`, GitHub tự merge
-# khi CI xanh. GitHub không tự làm việc đó theo label — auto-merge phải được bật
-# cho từng PR. Workflow này bật hộ, để cơ chế trong CLAUDE.md chạy được thật.
+# CLAUDE.md: task [A] mở PR xong gắn label `auto-merge`, GitHub tự merge khi CI
+# xanh. GitHub không tự làm việc đó theo label — auto-merge phải được bật cho
+# từng PR. Workflow này bật hộ, VÀ chặn lại nếu PR chạm đường dẫn nhạy cảm.
 #
-# An toàn nằm ở chỗ khác, không nằm ở đây:
-#   - Branch protection phải bắt buộc job `ci` xanh trước khi merge.
-#   - Task [B] không bao giờ được gắn label này (xem tiêu chí trong BACKLOG.md).
+# Ba lớp bảo vệ, workflow này chỉ là lớp thứ hai:
+#   1. Branch protection: required check `ci` phải xanh. Không vượt được trừ khi
+#      gọi `gh pr merge --admin` một cách cố ý.
+#   2. Workflow này: chặn auto-merge với đường dẫn nhạy cảm, kể cả khi CI xanh.
+#   3. Con người: đọc PR gắn nhãn `needs-human-review`.
+#
+# Dùng `pull_request_target` để có quyền ghi. Repo là public nên người lạ mở PR
+# được — TUYỆT ĐỐI KHÔNG checkout code của PR trong workflow này. Nó chỉ gọi API,
+# không chạy một dòng code nào từ nhánh gửi tới.
 
 on:
   pull_request_target:
-    types: [labeled, opened, synchronize]
+    types: [labeled, opened, synchronize, reopened]
 
 permissions:
   contents: write
   pull-requests: write
 
 jobs:
-  bat-auto-merge:
+  cong-tang-a:
     if: contains(github.event.pull_request.labels.*.name, 'auto-merge')
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PR: ${{ github.event.pull_request.number }}
+      REPO: ${{ github.repository }}
     steps:
-      - name: Bật auto-merge cho PR
-        run: gh pr merge --squash --auto "$PR_URL"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Liệt kê file PR chạm vào
+        run: |
+          gh api "repos/$REPO/pulls/$PR/files" --paginate --jq '.[].filename' > /tmp/files.txt
+          echo "PR #$PR chạm $(wc -l < /tmp/files.txt) file:"
+          cat /tmp/files.txt
+
+      # Danh sách này bám đúng cấu trúc thư mục trong docs/agent/ARCHITECTURE.md §2
+      # (tên miền viết tiếng Việt không dấu). THÊM MODULE MỚI THÌ THÊM VÀO ĐÂY —
+      # đây là danh sách chặn, nên thứ không có tên ở đây sẽ được cho qua.
+      - name: Đối chiếu đường dẫn nhạy cảm
+        id: soi
+        run: |
+          cat > /tmp/nhaycam.txt <<'PATTERNS'
+          ^src/server/kho/
+          ^src/server/ban-hang/
+          ^src/server/nhap-hang/
+          ^src/server/kiem-ke/
+          ^src/server/dong-bo/
+          ^src/server/db/
+          ^src/shared/tien/
+          ^src/shared/don-vi/
+          ^src/shared/kieu/
+          ^src/client/offline/
+          ^\.github/
+          ^\.claude/
+          ^scripts/
+          ^CLAUDE\.md$
+          ^package\.json$
+          ^package-lock\.json$
+          ^tsconfig.*\.json$
+          ^eslint\.config\.
+          ^\.dependency-cruiser
+          ^drizzle\.config\.
+          ^docs/agent/(SPEC|ARCHITECTURE|UI-FIDELITY|DOMAIN-NOTES)\.md$
+          PATTERNS
+
+          if grep -E -f /tmp/nhaycam.txt /tmp/files.txt > /tmp/dinh.txt; then
+            echo "nhay_cam=true" >> "$GITHUB_OUTPUT"
+            {
+              echo 'danh_sach<<EOF'
+              sed 's/^/- `/; s/$/`/' /tmp/dinh.txt
+              echo 'EOF'
+            } >> "$GITHUB_OUTPUT"
+            echo "CHẶN — PR chạm đường dẫn nhạy cảm:"; cat /tmp/dinh.txt
+          else
+            echo "nhay_cam=false" >> "$GITHUB_OUTPUT"
+            echo "Đường dẫn sạch."
+          fi
+
+      - name: Chặn lại và giao cho người
+        if: steps.soi.outputs.nhay_cam == 'true'
+        run: |
+          gh label create needs-human-review --repo "$REPO" \
+            --color B60205 --description "Chạm đường dẫn nhạy cảm, phải có người duyệt" \
+            2>/dev/null || true
+          gh pr edit "$PR" --repo "$REPO" \
+            --remove-label auto-merge --add-label needs-human-review
+          gh pr comment "$PR" --repo "$REPO" --body "$(cat <<EOF
+          **Auto-merge bị chặn.** PR này gắn label \`auto-merge\` nhưng chạm đường dẫn thuộc nhóm luôn-\`[B]\` trong \`CLAUDE.md\`:
+
+          ${{ steps.soi.outputs.danh_sach }}
+
+          Đã gỡ \`auto-merge\` và gắn \`needs-human-review\`. PR sẽ **không** tự merge.
+
+          Nếu task này thật sự là tầng \`[A]\`, nghĩa là nó đang chạm file không nên chạm — xem lại phạm vi task thay vì gắn lại label.
+          EOF
+          )"
+          echo "::warning::Đã chặn auto-merge cho PR #$PR — chạm đường dẫn nhạy cảm"
+
+      - name: Bật auto-merge
+        if: steps.soi.outputs.nhay_cam == 'false'
+        run: |
+          gh pr merge "$PR" --repo "$REPO" --squash --auto
+          echo "Đã bật auto-merge cho PR #$PR — sẽ merge khi check \`ci\` xanh."
