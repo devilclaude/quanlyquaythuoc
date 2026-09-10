@@ -36,3 +36,12 @@ Quyết định: stack Vite+React+Hono+Drizzle+SQLite; giá vốn bình quân gi
 theo cặp (tồn, giá trị tồn); FEFO `NULLS FIRST`; offline chỉ cho bán và trả hàng.
 Khác KiotViet: chưa có — phiên này không dựng giao diện nào.
 Kế tiếp: T-001
+
+## 2026-09-10 — T-001
+Làm: dựng khung dự án (Vite+React+TS, Hono, Drizzle+SQLite, Vitest, Playwright,
+ESLint flat+Prettier+dependency-cruiser); `npm run ci` xanh.
+PR: (xem mô tả PR)
+Tầng: B
+Quyết định: nâng drizzle-orm/vite/vitest lên bản mới nhất — bản ghim ban đầu
+dính CVE (SQL injection ở drizzle-orm, path traversal ở vitest).
+Kế tiếp: T-002 hoặc T-004 (không phụ thuộc nhau, chọn theo prio).

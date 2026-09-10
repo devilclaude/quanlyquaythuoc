@@ -1,0 +1,14 @@
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { App } from './App';
+
+const phanTu = document.getElementById('root');
+if (!phanTu) {
+  throw new Error('Không tìm thấy #root trong index.html');
+}
+
+createRoot(phanTu).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);
