@@ -46,6 +46,16 @@ Quyết định: nâng drizzle-orm/vite/vitest lên bản mới nhất — bản
 dính CVE (SQL injection ở drizzle-orm, path traversal ở vitest).
 Kế tiếp: T-002 hoặc T-004 (không phụ thuộc nhau, chọn theo prio).
 
+## 2026-09-11 — T-004 (chẻ task, không code)
+Làm: T-002 đã có PR#14 mở (xanh, chờ duyệt) nên chọn T-004. Dựng xong toàn bộ
+schema+migration+trigger+seed+test, `npm run ci` xanh — nhưng diff thật (kể cả
+`meta/*.json` do drizzle-kit tự sinh) là 1054 dòng, vượt ngưỡng 1000. CLAUDE.md chỉ
+trừ lockfile, không trừ snapshot tự sinh, và cấm tự cấp ngoại lệ. Bỏ toàn bộ code
+(không commit), chẻ T-004 thành T-004a/b/c trong BACKLOG.md, chỉ mở PR chứa việc
+chẻ này.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-004a.
 ## 2026-09-11 — T-008
 Làm: copy tokens.css skill vào src/client/design/, self-host font Fira Sans
 (TTF gốc mozilla/Fira → woff2, đủ dấu tiếng Việt), dựng 4 component dùng lại

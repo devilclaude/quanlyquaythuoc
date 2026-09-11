@@ -51,17 +51,36 @@ Xong khi: hệ số là số nguyên ≥ 1; quy đổi hai chiều có test; ví
 `SPEC.md` §3.3 (nhập 5 hộp, bán 3 vỉ, còn 864 viên) là một test; hiển thị phụ
 "≈ 4,8 hộp" không bao giờ quay lại tính toán.
 
-### T-004 [B] prio:4 — Schema: hàng hoá, đơn vị, lô, thẻ kho, tồn kho, chi nhánh
+### T-004a [B] prio:4.1 — Schema: chi nhánh, hàng hoá, đơn vị tính
 Trạng thái: TODO · Phụ thuộc: T-001
-Xong khi: migration tạo mô hình tồn theo `(sản phẩm, lô, HSD)`; mỗi sản phẩm được
-cấp **lô ngầm định** lúc tạo; `chi_nhanh_id` có mặt trên tồn kho/thẻ kho/chứng từ
-nhưng **không** trên `lo_hang`; trigger CSDL **chặn UPDATE và DELETE** trên
-`the_kho`; đủ ràng buộc unique theo `ARCHITECTURE.md` §6; seed có thuốc nhiều đơn
-vị, nhiều lô, và hàng không theo lô.
-Tầng B: đây là quyết định không sửa được về sau.
+Xong khi: migration tạo `chi_nhanh`, `san_pham` (`ma_hang` unique — nền cho việc
+"hai máy tạo trùng mã vạch" ở SPEC.md §5.4), `don_vi_tinh` (`he_so >= 1`, giá bán
+không âm, unique tên đơn vị/sản phẩm, **duy nhất một đơn vị cơ sở mỗi sản phẩm**);
+test tích hợp (SQLite in-memory) cho từng ràng buộc.
+Ghi chú: đây là T-004 cũ, chẻ vì migration + snapshot Drizzle tự sinh vượt ngưỡng
+1000 dòng/PR khi làm trọn gói. `lo_hang`/`the_kho`/`ton_kho_lo` chuyển sang
+T-004b/T-004c.
+
+### T-004b [B] prio:4.2 — Schema: lô hàng + trigger cấp lô ngầm định
+Trạng thái: TODO · Phụ thuộc: T-004a
+Xong khi: migration tạo `lo_hang` (đơn vị tồn là (sản phẩm, lô, HSD); **không có**
+`chi_nhanh_id` — một lô là một lô, SPEC.md §3.6); trigger CSDL **tự cấp lô ngầm
+định** (`so_lo = NULL`, `hsd = NULL`, `la_lo_mac_dinh = true`) ngay khi một dòng
+`san_pham` được insert, để bất biến này không phụ thuộc đường code tạo sản phẩm
+nào ra đời sau; đủ ràng buộc unique theo `ARCHITECTURE.md` §6 (duy nhất lô ngầm
+định/sản phẩm, unique `(san_pham_id, so_lo, hsd)` cho lô thật); test tích hợp.
+
+### T-004c [B] prio:4.3 — Schema: thẻ kho, tồn kho đệm, seed minh hoạ
+Trạng thái: TODO · Phụ thuộc: T-004b
+Xong khi: migration tạo `the_kho` (sổ cái chỉ-ghi-thêm, `chi_nhanh_id` có mặt từ
+đầu, cột `loai` giới hạn đúng tập giá trị ở SPEC.md, **trigger CSDL chặn UPDATE và
+DELETE**) và `ton_kho_lo` (bản đệm, unique `(lo_id, chi_nhanh_id)`, cũng có
+`chi_nhanh_id`); seed minh hoạ một thuốc nhiều đơn vị + nhiều lô thật và một mặt
+hàng chỉ có lô ngầm định (tồn phẳng); test tích hợp cho từng ràng buộc và cho seed.
+Tầng B: đây là quyết định không sửa được về sau (áp dụng cho cả T-004a/b/c).
 
 ### T-005 [B] prio:5 — Lớp kho: ghi sổ cái và bản đệm tồn
-Trạng thái: TODO · Phụ thuộc: T-004
+Trạng thái: TODO · Phụ thuộc: T-004c
 Xong khi: mọi thay đổi tồn đi qua **một đường code duy nhất** ghi thẻ kho; bản đệm
 `ton_kho_lo` cập nhật trong cùng transaction; test bất biến "tổng sổ cái == bản
 đệm" chạy trên dữ liệu ngẫu nhiên; dựng lại bản đệm từ sổ cái ra cùng kết quả.
@@ -88,7 +107,7 @@ gọi lại generator; component dùng lại được cho bảng, ô nhập, nú
 đối chiếu `UI-FIDELITY.md`.
 
 ### T-009 [B] prio:9 — Màn hàng hoá: danh sách, tạo, sửa
-Trạng thái: TODO · Phụ thuộc: T-004, T-008
+Trạng thái: TODO · Phụ thuộc: T-004c, T-008
 Xong khi: thứ tự cột khớp screenshot "Danh sách hàng hóa"; form tạo có đủ trường
 quan sát được trong "Tạo mới hàng hóa"; khai được nhiều đơn vị kèm hệ số và giá
 riêng; **thêm đơn vị mới thì form điền sẵn gợi ý giá = giá cơ sở × hệ số, sửa được**;
@@ -259,7 +278,7 @@ người dùng xác nhận từng nhóm**, mặc định không gộp khi không
 không nhân đôi tồn.
 
 ### T-061 [B] prio:61 — Sao lưu tự động
-Trạng thái: TODO · Phụ thuộc: T-004
+Trạng thái: TODO · Phụ thuộc: T-004c
 Xong khi: `VACUUM INTO` hằng đêm, nén, xoay vòng, **đẩy sang máy khác**; kiểm tra
 `PRAGMA integrity_check` định kỳ; báo động khi một đêm không có bản sao mới.
 
