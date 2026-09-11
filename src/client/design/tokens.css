@@ -1,0 +1,151 @@
+/* Design token — quầy thuốc. ĐÃ CHỐT, không sinh lại.
+ *
+ * Tầng 1 primitive → tầng 2 semantic. Component chỉ được dùng tầng 2.
+ * Viết mã màu thẳng vào component là lỗi review.
+ *
+ * Font: Fira Sans, SELF-HOST (xem SKILL.md luật 1). Không dùng CDN.
+ */
+
+/* ---------- @font-face: file nằm trong repo, không phải CDN ---------- */
+@font-face {
+  font-family: 'Fira Sans';
+  src: url('/fonts/FiraSans-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fira Sans';
+  src: url('/fonts/FiraSans-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fira Sans';
+  src: url('/fonts/FiraSans-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-display: swap;
+}
+
+:root {
+  /* ================= Tầng 1 — primitive ================= */
+
+  /* Trung tính — nền và chữ. Trung tính thật, không ám màu:
+     bảng dày đặc số dưới ánh sáng chói đọc tốt nhất trên nền trung tính. */
+  --xam-0:   #FFFFFF;
+  --xam-50:  #F8FAFC;
+  --xam-100: #F1F5F9;
+  --xam-200: #E2E8F0;
+  --xam-300: #CBD5E1;
+  --xam-500: #64748B;
+  --xam-600: #475569;
+  --xam-900: #0F172A;
+
+  /* Xanh dương — HÀNH ĐỘNG CHÍNH (giữ theo KiotViet) */
+  --duong-50:  #EFF6FF;
+  --duong-600: #2563EB;
+  --duong-700: #1D4ED8;
+  --duong-800: #1E40AF;
+
+  /* Xanh lá — TRẠNG THÁI TÍCH CỰC (còn hàng, đã đồng bộ, thành công) */
+  --la-50:  #F0FDF4;
+  --la-700: #15803D;
+  --la-800: #166534;
+
+  /* Đỏ — nguy hiểm, tồn âm, hết hạn */
+  --do-50:  #FEF2F2;
+  --do-700: #B91C1C;
+
+  /* Hổ phách — cảnh báo, cận date, chờ đồng bộ */
+  --hophach-50:  #FFFBEB;
+  --hophach-700: #B45309;
+
+  /* Khoảng cách — thang dày, đây là màn hình làm việc */
+  --kc-1: 4px;
+  --kc-2: 8px;
+  --kc-3: 12px;
+  --kc-4: 16px;
+  --kc-5: 24px;
+  --kc-6: 32px;
+
+  /* Cỡ chữ — 16px là chuẩn thân bài, không nhỏ hơn 13px ở bất kỳ đâu */
+  --chu-xs:  13px;   /* nhãn phụ, đơn vị tính */
+  --chu-sm:  14px;   /* ô trong bảng */
+  --chu-base:16px;   /* thân bài, ô nhập */
+  --chu-lg:  20px;   /* tiêu đề vùng */
+  --chu-xl:  28px;   /* tổng tiền trên màn bán hàng */
+  --chu-2xl: 36px;   /* số tiền khách cần trả */
+
+  --cao-dong-chat:  1.3;
+  --cao-dong-thuong:1.5;
+
+  --bo-goc: 6px;
+  --vien: 1px solid var(--mau-vien);
+
+  /* ================= Tầng 2 — semantic ================= */
+  --mau-nen:            var(--xam-50);
+  --mau-nen-the:        var(--xam-0);
+  --mau-chu:            var(--xam-900);
+  --mau-chu-phu:        var(--xam-600);
+  --mau-vien:           var(--xam-200);
+  --mau-vien-dam:       var(--xam-300);
+
+  --mau-chinh:          var(--duong-700);   /* nút thanh toán, lưu, xác nhận */
+  --mau-chinh-hover:    var(--duong-800);
+  --mau-tren-chinh:     var(--xam-0);
+  --mau-chinh-nhat:     var(--duong-50);
+  --mau-vong-focus:     var(--duong-600);
+
+  --mau-tot:            var(--la-700);      /* còn hàng, đã đồng bộ */
+  --mau-tot-nen:        var(--la-50);
+  --mau-nguy:           var(--do-700);      /* tồn âm, hết hạn, huỷ */
+  --mau-nguy-nen:       var(--do-50);
+  --mau-canh-bao:       var(--hophach-700); /* cận date, chờ đồng bộ */
+  --mau-canh-bao-nen:   var(--hophach-50);
+
+  --font-chinh: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* ---------- Nền tảng ---------- */
+body {
+  margin: 0;
+  background: var(--mau-nen);
+  color: var(--mau-chu);
+  font-family: var(--font-chinh);
+  font-size: var(--chu-base);
+  line-height: var(--cao-dong-thuong);
+}
+
+/* Luật 2: mọi con số phải thẳng cột. Áp cho tiền, số lượng, tồn kho. */
+.so,
+td.so,
+input[inputmode='numeric'] {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Luật 4 + bàn phím: vòng focus LUÔN nhìn thấy. Không bao giờ outline:none. */
+:focus-visible {
+  outline: 2px solid var(--mau-vong-focus);
+  outline-offset: 2px;
+}
+
+/* Vùng chạm tối thiểu 44×44 kể cả trên desktop */
+button,
+[role='button'],
+a.nut {
+  min-height: 44px;
+  min-width: 44px;
+  cursor: pointer;
+  border-radius: var(--bo-goc);
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+/* Chuyển động tối thiểu, và tắt hẳn khi người dùng yêu cầu */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
