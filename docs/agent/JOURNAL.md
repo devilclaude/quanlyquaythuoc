@@ -45,3 +45,14 @@ Tầng: B
 Quyết định: nâng drizzle-orm/vite/vitest lên bản mới nhất — bản ghim ban đầu
 dính CVE (SQL injection ở drizzle-orm, path traversal ở vitest).
 Kế tiếp: T-002 hoặc T-004 (không phụ thuộc nhau, chọn theo prio).
+
+## 2026-09-11 — T-002
+Làm: branded types `Dong`/`SoLuongCoSo`/`SoLuongHienThi`/`Ulid` trong
+`src/shared/kieu/`; số học tiền `chiaLayThuongVaDu`/`chiaLamTronNuaLen`/
+`phanBoSoDuLonNhat` trong `src/shared/tien/`; ví dụ SPEC §3.4 là một test.
+PR: (xem mô tả PR)
+Tầng: B
+Quyết định: chỉ một điểm chia `/` trần trong toàn tầng tiền (`chiaLayThuongVaDu`,
+có eslint-disable tại chỗ); làm tròn nửa lên qua công thức nguyên
+`floor((2a+b)/2b)` để tránh số thực.
+Kế tiếp: T-004 (schema kho theo lô).
