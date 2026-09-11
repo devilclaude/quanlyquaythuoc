@@ -66,3 +66,10 @@ Quyết định: chỉ một điểm chia `/` trần trong toàn tầng tiền (
 có eslint-disable tại chỗ); làm tròn nửa lên qua công thức nguyên
 `floor((2a+b)/2b)` để tránh số thực.
 Kế tiếp: T-004 (schema kho theo lô).
+
+## 2026-09-11 (run dọn PR) — không chọn task mới
+Làm: T-008 merge vào main khiến PR #14 và PR #15 đều conflict (cùng append
+JOURNAL.md). Sửa PR #14: merge main, giải xung đột (giữ cả hai entry), `npm
+run ci` xanh, push lại. PR #15 CHƯA sửa, vẫn conflict — dừng run tại đây theo
+luật "một PR chưa xanh thì không mở task mới".
+Kế tiếp: run sau sửa conflict PR #15 trước, rồi mới chọn task TODO mới.
