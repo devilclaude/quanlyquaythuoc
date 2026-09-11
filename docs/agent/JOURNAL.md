@@ -55,3 +55,21 @@ Tầng: A
 Quyết định: build font từ TTF gốc thay vì woff2 subset của Google Fonts vì bản
 subset "latin" thiếu glyph tiếng Việt (ư, ơ, ệ...); TTF gốc có sẵn full Unicode.
 Kế tiếp: T-002/T-004 đang chờ merge; T-009 hoặc T-020 sau khi T-004 xong.
+
+## 2026-09-11 — T-002
+Làm: branded types `Dong`/`SoLuongCoSo`/`SoLuongHienThi`/`Ulid` trong
+`src/shared/kieu/`; số học tiền `chiaLayThuongVaDu`/`chiaLamTronNuaLen`/
+`phanBoSoDuLonNhat` trong `src/shared/tien/`; ví dụ SPEC §3.4 là một test.
+PR: (xem mô tả PR)
+Tầng: B
+Quyết định: chỉ một điểm chia `/` trần trong toàn tầng tiền (`chiaLayThuongVaDu`,
+có eslint-disable tại chỗ); làm tròn nửa lên qua công thức nguyên
+`floor((2a+b)/2b)` để tránh số thực.
+Kế tiếp: T-004 (schema kho theo lô).
+
+## 2026-09-11 (run dọn PR) — không chọn task mới
+Làm: T-008 merge vào main khiến PR #14 và PR #15 đều conflict (cùng append
+JOURNAL.md). Sửa PR #14: merge main, giải xung đột (giữ cả hai entry), `npm
+run ci` xanh, push lại. PR #15 CHƯA sửa, vẫn conflict — dừng run tại đây theo
+luật "một PR chưa xanh thì không mở task mới".
+Kế tiếp: run sau sửa conflict PR #15 trước, rồi mới chọn task TODO mới.

@@ -39,7 +39,7 @@ hình xong; CI chặn được một PR cố tình phá test.
 Tầng B: quyết định nền, sửa về sau tốn cả repo.
 
 ### T-002 [B] prio:2 — Branded types và số học tiền
-Trạng thái: TODO · Phụ thuộc: T-001
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-001
 Xong khi: `Dong`, `SoLuongCoSo`, `Ulid` tồn tại và cộng nhầm nhau là **lỗi biên
 dịch**; hàm làm tròn nửa lên và **phân bổ số dư lớn nhất** có test; ví dụ trong
 `SPEC.md` §3.4 (10.000/20.000/30.000 giảm 7.000 → 1.167/2.333/3.500) là một test;
