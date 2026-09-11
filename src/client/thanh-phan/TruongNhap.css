@@ -1,0 +1,31 @@
+.truong-nhap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kc-1);
+}
+
+.truong-nhap__nhan {
+  font-size: var(--chu-xs);
+  color: var(--mau-chu-phu);
+}
+
+.truong-nhap__o {
+  min-height: 44px;
+  padding: 0 var(--kc-3);
+  font-family: var(--font-chinh);
+  font-size: var(--chu-base);
+  color: var(--mau-chu);
+  background: var(--mau-nen-the);
+  border: var(--vien);
+  border-radius: var(--bo-goc);
+}
+
+.truong-nhap__o--loi {
+  border-color: var(--mau-nguy);
+}
+
+.truong-nhap__loi {
+  margin: 0;
+  font-size: var(--chu-xs);
+  color: var(--mau-nguy);
+}

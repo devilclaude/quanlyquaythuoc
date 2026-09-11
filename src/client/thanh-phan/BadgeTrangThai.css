@@ -1,0 +1,30 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kc-1);
+  padding: 2px var(--kc-2);
+  border-radius: var(--bo-goc);
+  font-size: var(--chu-xs);
+  font-weight: 500;
+  line-height: var(--cao-dong-chat);
+}
+
+.badge--tot {
+  color: var(--mau-tot);
+  background: var(--mau-tot-nen);
+}
+
+.badge--nguy {
+  color: var(--mau-nguy);
+  background: var(--mau-nguy-nen);
+}
+
+.badge--canh-bao {
+  color: var(--mau-canh-bao);
+  background: var(--mau-canh-bao-nen);
+}
+
+.badge--trung-tinh {
+  color: var(--mau-chu-phu);
+  background: var(--xam-100);
+}

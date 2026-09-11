@@ -82,7 +82,7 @@ về đúng 0** — có test; hình chiếu gấp theo **thứ tự đến máy 
 sổ cái; client không cần biết giá vốn.
 
 ### T-008 [A] prio:8 — Design token và component cơ bản
-Trạng thái: TODO · Phụ thuộc: T-001
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-001
 Xong khi: token màu/chữ/khoảng cách lấy từ `.claude/skills/design-system/`, không
 gọi lại generator; component dùng lại được cho bảng, ô nhập, nút, badge trạng thái;
 đối chiếu `UI-FIDELITY.md`.
