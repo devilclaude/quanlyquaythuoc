@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import './design/tokens.css';
 
 const phanTu = document.getElementById('root');
 if (!phanTu) {

@@ -45,3 +45,13 @@ Tầng: B
 Quyết định: nâng drizzle-orm/vite/vitest lên bản mới nhất — bản ghim ban đầu
 dính CVE (SQL injection ở drizzle-orm, path traversal ở vitest).
 Kế tiếp: T-002 hoặc T-004 (không phụ thuộc nhau, chọn theo prio).
+
+## 2026-09-11 — T-008
+Làm: copy tokens.css skill vào src/client/design/, self-host font Fira Sans
+(TTF gốc mozilla/Fira → woff2, đủ dấu tiếng Việt), dựng 4 component dùng lại
+(Nut, TruongNhap, Bang/OSo, BadgeTrangThai) có test.
+PR: (xem mô tả PR)
+Tầng: A
+Quyết định: build font từ TTF gốc thay vì woff2 subset của Google Fonts vì bản
+subset "latin" thiếu glyph tiếng Việt (ư, ơ, ệ...); TTF gốc có sẵn full Unicode.
+Kế tiếp: T-002/T-004 đang chờ merge; T-009 hoặc T-020 sau khi T-004 xong.
