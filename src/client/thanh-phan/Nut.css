@@ -1,0 +1,41 @@
+/* Nut — dùng biến tầng 2 trong design/tokens.css. Kích thước/vùng chạm/focus
+ * ring/transition đã có ở luật chung cho mọi <button> trong tokens.css. */
+
+.nut {
+  border: none;
+  padding: 0 var(--kc-4);
+  font-family: var(--font-chinh);
+  font-size: var(--chu-base);
+  font-weight: 500;
+}
+
+.nut--chinh {
+  background: var(--mau-chinh);
+  color: var(--mau-tren-chinh);
+}
+.nut--chinh:hover:not(:disabled) {
+  background: var(--mau-chinh-hover);
+}
+
+.nut--phu {
+  background: var(--mau-nen-the);
+  color: var(--mau-chu);
+  border: var(--vien);
+}
+.nut--phu:hover:not(:disabled) {
+  background: var(--xam-100);
+}
+
+.nut--nguy {
+  background: var(--mau-nguy-nen);
+  color: var(--mau-nguy);
+  border: 1px solid var(--mau-nguy);
+}
+.nut--nguy:hover:not(:disabled) {
+  background: var(--do-50);
+}
+
+.nut:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

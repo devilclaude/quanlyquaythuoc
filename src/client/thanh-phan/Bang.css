@@ -1,0 +1,28 @@
+.bang__boc {
+  overflow-x: auto;
+}
+
+.bang {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--chu-sm);
+}
+
+.bang thead th {
+  text-align: left;
+  padding: var(--kc-2) var(--kc-3);
+  background: var(--xam-100);
+  color: var(--mau-chu-phu);
+  font-weight: 600;
+  border-bottom: var(--vien);
+  white-space: nowrap;
+}
+
+.bang tbody td {
+  padding: var(--kc-2) var(--kc-3);
+  border-bottom: var(--vien);
+}
+
+.bang tbody tr:hover {
+  background: var(--xam-50);
+}
