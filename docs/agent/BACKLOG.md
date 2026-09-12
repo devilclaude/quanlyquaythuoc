@@ -52,7 +52,7 @@ Xong khi: hệ số là số nguyên ≥ 1; quy đổi hai chiều có test; ví
 "≈ 4,8 hộp" không bao giờ quay lại tính toán.
 
 ### T-004a [B] prio:4.1 — Schema: chi nhánh, hàng hoá, đơn vị tính
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-001
+Trạng thái: DONE · Phụ thuộc: T-001
 Xong khi: migration tạo `chi_nhanh`, `san_pham` (`ma_hang` unique — nền cho việc
 "hai máy tạo trùng mã vạch" ở SPEC.md §5.4), `don_vi_tinh` (`he_so >= 1`, giá bán
 không âm, unique tên đơn vị/sản phẩm, **duy nhất một đơn vị cơ sở mỗi sản phẩm**);
@@ -62,7 +62,7 @@ Ghi chú: đây là T-004 cũ, chẻ vì migration + snapshot Drizzle tự sinh 
 T-004b/T-004c.
 
 ### T-004b [B] prio:4.2 — Schema: lô hàng + trigger cấp lô ngầm định
-Trạng thái: TODO · Phụ thuộc: T-004a
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-004a
 Xong khi: migration tạo `lo_hang` (đơn vị tồn là (sản phẩm, lô, HSD); **không có**
 `chi_nhanh_id` — một lô là một lô, SPEC.md §3.6); trigger CSDL **tự cấp lô ngầm
 định** (`so_lo = NULL`, `hsd = NULL`, `la_lo_mac_dinh = true`) ngay khi một dòng
