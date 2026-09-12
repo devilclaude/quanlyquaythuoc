@@ -1,0 +1,174 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "1633ddd1-99f2-4665-83ac-cc2705a0dd95",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "tables": {
+    "chi_nhanh": {
+      "name": "chi_nhanh",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ten": {
+          "name": "ten",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "don_vi_tinh": {
+      "name": "don_vi_tinh",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "san_pham_id": {
+          "name": "san_pham_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ten": {
+          "name": "ten",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "he_so": {
+          "name": "he_so",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "la_co_so": {
+          "name": "la_co_so",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "gia_ban": {
+          "name": "gia_ban",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "don_vi_tinh_mot_co_so_moi_san_pham": {
+          "name": "don_vi_tinh_mot_co_so_moi_san_pham",
+          "columns": [
+            "san_pham_id"
+          ],
+          "isUnique": true,
+          "where": "\"don_vi_tinh\".\"la_co_so\" = 1"
+        },
+        "don_vi_tinh_san_pham_ten_unique": {
+          "name": "don_vi_tinh_san_pham_ten_unique",
+          "columns": [
+            "san_pham_id",
+            "ten"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "don_vi_tinh_san_pham_id_san_pham_id_fk": {
+          "name": "don_vi_tinh_san_pham_id_san_pham_id_fk",
+          "tableFrom": "don_vi_tinh",
+          "tableTo": "san_pham",
+          "columnsFrom": [
+            "san_pham_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "don_vi_tinh_he_so_toi_thieu": {
+          "name": "don_vi_tinh_he_so_toi_thieu",
+          "value": "\"don_vi_tinh\".\"he_so\" >= 1"
+        },
+        "don_vi_tinh_gia_ban_khong_am": {
+          "name": "don_vi_tinh_gia_ban_khong_am",
+          "value": "\"don_vi_tinh\".\"gia_ban\" >= 0"
+        }
+      }
+    },
+    "san_pham": {
+      "name": "san_pham",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ma_hang": {
+          "name": "ma_hang",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ten": {
+          "name": "ten",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "san_pham_ma_hang_unique": {
+          "name": "san_pham_ma_hang_unique",
+          "columns": [
+            "ma_hang"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

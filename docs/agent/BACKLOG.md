@@ -46,13 +46,13 @@ dịch**; hàm làm tròn nửa lên và **phân bổ số dư lớn nhất** c�
 ESLint chặn được số thực trong `src/shared/tien/**`.
 
 ### T-003 [B] prio:3 — Quy đổi đơn vị
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-002
+Trạng thái: DONE · Phụ thuộc: T-002
 Xong khi: hệ số là số nguyên ≥ 1; quy đổi hai chiều có test; ví dụ chuẩn trong
 `SPEC.md` §3.3 (nhập 5 hộp, bán 3 vỉ, còn 864 viên) là một test; hiển thị phụ
 "≈ 4,8 hộp" không bao giờ quay lại tính toán.
 
 ### T-004a [B] prio:4.1 — Schema: chi nhánh, hàng hoá, đơn vị tính
-Trạng thái: TODO · Phụ thuộc: T-001
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-001
 Xong khi: migration tạo `chi_nhanh`, `san_pham` (`ma_hang` unique — nền cho việc
 "hai máy tạo trùng mã vạch" ở SPEC.md §5.4), `don_vi_tinh` (`he_so >= 1`, giá bán
 không âm, unique tên đơn vị/sản phẩm, **duy nhất một đơn vị cơ sở mỗi sản phẩm**);
