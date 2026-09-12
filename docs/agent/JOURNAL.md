@@ -114,3 +114,15 @@ thêm schema.
 PR: (xem mô tả PR)
 Tầng: B
 Kế tiếp: T-004b (lô hàng + trigger cấp lô ngầm định).
+
+## 2026-09-12 — dọn PR + T-004b
+Làm: PR#19 (T-004a) đã merge → chuyển DONE. Chọn T-004b: bảng `lo_hang` (không
+có `chi_nhanh_id` — một lô là một lô); trigger CSDL `AFTER INSERT ON san_pham`
+tự cấp lô ngầm định (`so_lo`/`hsd` = NULL, `la_lo_mac_dinh` = true) qua migration
+custom (`drizzle-kit generate --custom`, vì trigger không biểu diễn được trong
+schema.ts); unique partial index chặn lô ngầm định thứ hai; unique
+`(san_pham_id, so_lo, hsd)` chặn lô thật trùng. Test viết trước, xác nhận đỏ
+đúng lý do (thiếu bảng, rồi thiếu trigger) trước khi thêm từng phần.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-004c (thẻ kho + tồn kho đệm + seed minh hoạ).

@@ -1,8 +1,9 @@
 import Database from 'better-sqlite3';
+import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { chiNhanh, donViTinh, sanPham } from './schema';
+import { chiNhanh, donViTinh, loHang, sanPham } from './schema';
 
 type DbTest = ReturnType<typeof drizzle>;
 
@@ -129,5 +130,84 @@ describe('don_vi_tinh', () => {
         .values({ id: 'dvt-2', sanPhamId: 'sp-1', ten: 'vỉ', heSo: 12, laCoSo: true, giaBan: 6000 })
         .run(),
     ).toThrow();
+  });
+});
+
+describe('lo_hang', () => {
+  function taoSanPham(id: string, maHang: string) {
+    db.insert(sanPham).values({ id, maHang, ten: 'Paracetamol 500mg' }).run();
+  }
+
+  it('tạo san_pham thì trigger tự sinh đúng một lô ngầm định', () => {
+    taoSanPham('sp-1', 'SP001');
+
+    const rows = db.select().from(loHang).where(eq(loHang.sanPhamId, 'sp-1')).all();
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      sanPhamId: 'sp-1',
+      soLo: null,
+      hsd: null,
+      laLoMacDinh: true,
+    });
+  });
+
+  it('chèn tay một lô ngầm định thứ hai cho cùng sản phẩm bị chặn', () => {
+    taoSanPham('sp-1', 'SP001');
+
+    expect(() =>
+      db
+        .insert(loHang)
+        .values({ id: 'lo-them', sanPhamId: 'sp-1', soLo: null, hsd: null, laLoMacDinh: true })
+        .run(),
+    ).toThrow();
+  });
+
+  it('hai lô thật trùng (san_pham, so_lo, hsd) bị chặn', () => {
+    taoSanPham('sp-1', 'SP001');
+    db.insert(loHang)
+      .values({ id: 'lo-1', sanPhamId: 'sp-1', soLo: 'LOT1', hsd: '2026-12-31' })
+      .run();
+
+    expect(() =>
+      db
+        .insert(loHang)
+        .values({ id: 'lo-2', sanPhamId: 'sp-1', soLo: 'LOT1', hsd: '2026-12-31' })
+        .run(),
+    ).toThrow();
+  });
+
+  it('lô thật khác so_lo trên cùng sản phẩm không xung đột', () => {
+    taoSanPham('sp-1', 'SP001');
+    db.insert(loHang)
+      .values({ id: 'lo-1', sanPhamId: 'sp-1', soLo: 'LOT1', hsd: '2026-12-31' })
+      .run();
+
+    expect(() =>
+      db
+        .insert(loHang)
+        .values({ id: 'lo-2', sanPhamId: 'sp-1', soLo: 'LOT2', hsd: '2026-12-31' })
+        .run(),
+    ).not.toThrow();
+  });
+
+  it('cùng (so_lo, hsd) nhưng khác sản phẩm không xung đột', () => {
+    taoSanPham('sp-1', 'SP001');
+    taoSanPham('sp-2', 'SP002');
+    db.insert(loHang)
+      .values({ id: 'lo-1', sanPhamId: 'sp-1', soLo: 'LOT1', hsd: '2026-12-31' })
+      .run();
+
+    expect(() =>
+      db
+        .insert(loHang)
+        .values({ id: 'lo-2', sanPhamId: 'sp-2', soLo: 'LOT1', hsd: '2026-12-31' })
+        .run(),
+    ).not.toThrow();
+  });
+
+  it('lo_hang không có cột chi_nhanh_id — một lô là một lô (SPEC.md §3.6)', () => {
+    // @ts-expect-error — cột này không tồn tại, đây chính là điều test khẳng định
+    void loHang.chiNhanhId;
   });
 });

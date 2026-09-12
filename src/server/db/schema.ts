@@ -33,3 +33,28 @@ export const donViTinh = sqliteTable(
     check('don_vi_tinh_gia_ban_khong_am', sql`${t.giaBan} >= 0`),
   ],
 );
+
+// Không có `chi_nhanh_id`: một lô là một lô, không thuộc chi nhánh nào
+// (SPEC.md §3.6). Mỗi san_pham có đúng một lô ngầm định (`so_lo`/`hsd` = NULL)
+// do trigger CSDL tự cấp ngay lúc insert — xem migration 0002.
+export const loHang = sqliteTable(
+  'lo_hang',
+  {
+    id: text('id').primaryKey(),
+    sanPhamId: text('san_pham_id')
+      .notNull()
+      .references(() => sanPham.id),
+    soLo: text('so_lo'),
+    hsd: text('hsd'),
+    laLoMacDinh: integer('la_lo_mac_dinh', { mode: 'boolean' }).notNull().default(false),
+    ngayTao: text('ngay_tao')
+      .notNull()
+      .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+  },
+  (t) => [
+    uniqueIndex('lo_hang_mot_lo_mac_dinh_moi_san_pham')
+      .on(t.sanPhamId)
+      .where(sql`${t.laLoMacDinh} = 1`),
+    unique('lo_hang_san_pham_so_lo_hsd_unique').on(t.sanPhamId, t.soLo, t.hsd),
+  ],
+);
