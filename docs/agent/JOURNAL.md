@@ -83,3 +83,14 @@ JOURNAL.md). Sửa PR #14: merge main, giải xung đột (giữ cả hai entry)
 run ci` xanh, push lại. PR #15 CHƯA sửa, vẫn conflict — dừng run tại đây theo
 luật "một PR chưa xanh thì không mở task mới".
 Kế tiếp: run sau sửa conflict PR #15 trước, rồi mới chọn task TODO mới.
+
+## 2026-09-12 — dọn PR + chỉ đạo #quaythuoc-admin
+Làm: không còn PR agent nào mở; PR#14 (T-002), PR#15 (chẻ T-004), PR#16 (T-008)
+đều đã merge → chuyển T-002/T-008 sang DONE. Theo chỉ đạo Dương ở
+#quaythuoc-admin (2026-09-11 22:25): thêm ngoại lệ vào CLAUDE.md — file migration
+`drizzle-kit` tự sinh (`src/server/db/migrations/**`, cả `.sql` và `meta/*.json`)
+không tính vào ngưỡng 1000 dòng/24 file, để khỏi lặp lại việc chẻ như T-004.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-004a, giờ có thể không cần chẻ do file snapshot đã được loại khỏi
+ngưỡng đếm dòng.

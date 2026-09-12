@@ -39,7 +39,7 @@ hình xong; CI chặn được một PR cố tình phá test.
 Tầng B: quyết định nền, sửa về sau tốn cả repo.
 
 ### T-002 [B] prio:2 — Branded types và số học tiền
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-001
+Trạng thái: DONE · Phụ thuộc: T-001
 Xong khi: `Dong`, `SoLuongCoSo`, `Ulid` tồn tại và cộng nhầm nhau là **lỗi biên
 dịch**; hàm làm tròn nửa lên và **phân bổ số dư lớn nhất** có test; ví dụ trong
 `SPEC.md` §3.4 (10.000/20.000/30.000 giảm 7.000 → 1.167/2.333/3.500) là một test;
@@ -101,7 +101,7 @@ về đúng 0** — có test; hình chiếu gấp theo **thứ tự đến máy 
 sổ cái; client không cần biết giá vốn.
 
 ### T-008 [A] prio:8 — Design token và component cơ bản
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-001
+Trạng thái: DONE · Phụ thuộc: T-001
 Xong khi: token màu/chữ/khoảng cách lấy từ `.claude/skills/design-system/`, không
 gọi lại generator; component dùng lại được cho bảng, ô nhập, nút, badge trạng thái;
 đối chiếu `UI-FIDELITY.md`.

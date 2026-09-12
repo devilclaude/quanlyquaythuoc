@@ -97,7 +97,11 @@ chưa vào được `main`.
 Chọn đúng một task. Làm xong. Mở PR. Dừng. Không làm task thứ hai kể cả khi
 còn thời gian.
 
-**Ngưỡng cứng của một PR: 1000 dòng đổi hoặc 24 file** (không tính lockfile).
+**Ngưỡng cứng của một PR: 1000 dòng đổi hoặc 24 file** (không tính lockfile và
+không tính file migration do `drizzle-kit generate` tự sinh trong
+`src/server/db/migrations/**` — cả `.sql` lẫn `meta/*.json`). Ngoại lệ này chỉ
+áp cho phần tự sinh; schema tay viết ở `src/server/db/schema.ts` và code nghiệp
+vụ đọc/ghi dựa trên migration đó vẫn tính vào ngưỡng như bình thường.
 
 Vượt ngưỡng thì **đừng làm**. Chẻ thành task con trong BACKLOG.md, mở PR chỉ
 chứa việc chẻ task, dừng. Kiểm tra kích thước thật **trước khi mở PR**, không chỉ
