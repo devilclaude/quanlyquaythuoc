@@ -94,3 +94,12 @@ PR: (xem mô tả PR)
 Tầng: B
 Kế tiếp: T-004a, giờ có thể không cần chẻ do file snapshot đã được loại khỏi
 ngưỡng đếm dòng.
+
+## 2026-09-12 — T-003
+Làm: quy đổi đơn vị trong `src/shared/don-vi/quy-doi.ts` — `quyDoiSangCoSo`
+(nhân, hiển thị→cơ sở), `quyDoiTuCoSo` (chia lấy thương/dư, cơ sở→hiển thị),
+`hienThiGanDung` (chuỗi "≈ 4,8 hộp", trả về `string` nên không quay lại tính
+toán được); ví dụ SPEC.md §3.3 (5 hộp − 3 vỉ = 864 viên) là test.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-004a.
