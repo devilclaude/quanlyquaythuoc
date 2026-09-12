@@ -103,3 +103,14 @@ toán được); ví dụ SPEC.md §3.3 (5 hộp − 3 vỉ = 864 viên) là tes
 PR: (xem mô tả PR)
 Tầng: B
 Kế tiếp: T-004a.
+
+## 2026-09-12 — dọn PR + T-004a
+Làm: không còn PR agent nào mở; PR#18 (T-003) đã merge → chuyển DONE. Chọn
+T-004a: schema `chi_nhanh`, `san_pham` (`ma_hang` unique), `don_vi_tinh`
+(`he_so >= 1`, `gia_ban >= 0`, unique tên/sản phẩm, unique index một đơn vị cơ
+sở/sản phẩm qua partial index `WHERE la_co_so = 1`); test tích hợp SQLite
+in-memory cho từng ràng buộc, viết trước và xác nhận đỏ (thiếu bảng) trước khi
+thêm schema.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-004b (lô hàng + trigger cấp lô ngầm định).
