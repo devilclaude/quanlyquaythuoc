@@ -152,3 +152,13 @@ nhiều dòng khác lô, rollback nguyên tử khi một dòng lỗi, bất bi�
 PR: (xem mô tả PR)
 Tầng: B
 Kế tiếp: T-006 (FEFO và cấp phát nhiều lô).
+
+## 2026-09-13 (run dọn PR) — T-009 (chẻ task, không code)
+Làm: PR#23 (T-006) xanh, chờ duyệt — không chọn lại. Chọn T-009 nhưng nó là task
+đầu cần dựng cả tầng `api/`, `hop-dong/` lẫn toàn bộ màn hàng hoá — ước lượng chắc
+chắn vượt 1000 dòng/24 file trước khi viết. Chẻ ngay lúc chọn task (không build
+thử rồi bỏ): T-009a (đọc, tầng A) → T-009b (tạo) → T-009c (sửa/xoá); cập nhật phụ
+thuộc T-010/T-020/T-060 sang T-009c.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-009a.
