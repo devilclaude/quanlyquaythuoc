@@ -140,3 +140,15 @@ DOI_CHE_DO) suy ra từ mô tả nghiệp vụ SPEC §3.1/§5 vì SPEC chỉ nê
 giá trị — đặt tên kỹ thuật, không phải quyết định nghiệp vụ nên không BLOCKED.
 Chưa thêm `gia_tri_ton` vào `ton_kho_lo` — thuộc T-007, ngoài phạm vi task này.
 Kế tiếp: T-005 (lớp kho: ghi sổ cái và bản đệm tồn).
+
+## 2026-09-13 — dọn PR + T-005
+Làm: PR#21 (T-004c) đã merge → chuyển DONE. Chọn T-005: `src/server/kho/so-cai.ts`
+— hàm `ghiTheKho` là đường code duy nhất ghi `the_kho` + cập nhật `ton_kho_lo`
+trong cùng transaction (nhận mảng dòng để một sự kiện nghiệp vụ nhiều lô vẫn qua
+đúng một lệnh gọi); `dungLaiTonKhoDem` dựng lại bản đệm từ sổ cái bằng SUM nhóm
+theo `(lo_id, chi_nhanh_id)`. Test viết trước (đỏ vì thiếu module), gồm cộng dồn,
+nhiều dòng khác lô, rollback nguyên tử khi một dòng lỗi, bất biến sổ cái == bản
+đệm trên 200 lượt ghi ngẫu nhiên (seed cố định), và dựng lại cho cùng kết quả.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-006 (FEFO và cấp phát nhiều lô).

@@ -71,7 +71,7 @@ nào ra đời sau; đủ ràng buộc unique theo `ARCHITECTURE.md` §6 (duy nh
 định/sản phẩm, unique `(san_pham_id, so_lo, hsd)` cho lô thật); test tích hợp.
 
 ### T-004c [B] prio:4.3 — Schema: thẻ kho, tồn kho đệm, seed minh hoạ
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-004b
+Trạng thái: DONE · Phụ thuộc: T-004b
 Xong khi: migration tạo `the_kho` (sổ cái chỉ-ghi-thêm, `chi_nhanh_id` có mặt từ
 đầu, cột `loai` giới hạn đúng tập giá trị ở SPEC.md, **trigger CSDL chặn UPDATE và
 DELETE**) và `ton_kho_lo` (bản đệm, unique `(lo_id, chi_nhanh_id)`, cũng có
@@ -80,7 +80,7 @@ hàng chỉ có lô ngầm định (tồn phẳng); test tích hợp cho từng 
 Tầng B: đây là quyết định không sửa được về sau (áp dụng cho cả T-004a/b/c).
 
 ### T-005 [B] prio:5 — Lớp kho: ghi sổ cái và bản đệm tồn
-Trạng thái: TODO · Phụ thuộc: T-004c
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-004c
 Xong khi: mọi thay đổi tồn đi qua **một đường code duy nhất** ghi thẻ kho; bản đệm
 `ton_kho_lo` cập nhật trong cùng transaction; test bất biến "tổng sổ cái == bản
 đệm" chạy trên dữ liệu ngẫu nhiên; dựng lại bản đệm từ sổ cái ra cùng kết quả.
