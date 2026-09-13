@@ -1,5 +1,13 @@
 import { sql } from 'drizzle-orm';
-import { check, integer, sqliteTable, text, unique, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import {
+  check,
+  integer,
+  primaryKey,
+  sqliteTable,
+  text,
+  unique,
+  uniqueIndex,
+} from 'drizzle-orm/sqlite-core';
 
 export const chiNhanh = sqliteTable('chi_nhanh', {
   id: text('id').primaryKey(),
@@ -57,4 +65,51 @@ export const loHang = sqliteTable(
       .where(sql`${t.laLoMacDinh} = 1`),
     unique('lo_hang_san_pham_so_lo_hsd_unique').on(t.sanPhamId, t.soLo, t.hsd),
   ],
+);
+
+// Sổ cái chỉ-ghi-thêm (SPEC.md §3.1). UPDATE/DELETE bị chặn bằng trigger CSDL —
+// xem migration — vì đây là ràng buộc tầng dữ liệu, không phải quy ước ứng dụng.
+// `thoi_gian` là giờ thiết bị lúc thao tác xảy ra (có thể trễ so với lúc máy chủ
+// nhận, khi đồng bộ offline); `thoi_gian_may_chu` là lúc dòng này thực sự được
+// ghi (SPEC.md §3.6).
+export const theKho = sqliteTable(
+  'the_kho',
+  {
+    id: text('id').primaryKey(),
+    chiNhanhId: text('chi_nhanh_id')
+      .notNull()
+      .references(() => chiNhanh.id),
+    loId: text('lo_id')
+      .notNull()
+      .references(() => loHang.id),
+    loai: text('loai').notNull(),
+    soLuong: integer('so_luong').notNull(),
+    thoiGian: text('thoi_gian').notNull(),
+    thoiGianMayChu: text('thoi_gian_may_chu')
+      .notNull()
+      .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+  },
+  (t) => [
+    check(
+      'the_kho_loai_hop_le',
+      sql`${t.loai} IN ('BAN', 'NHAP', 'TRA_HANG', 'TRA_NCC', 'KIEM_KE', 'XUAT_HUY', 'DOI_CHE_DO')`,
+    ),
+  ],
+);
+
+// Bản đệm suy ra từ the_kho (SPEC.md §3.1) — cập nhật trong cùng transaction với
+// thẻ kho (ARCHITECTURE.md §6). Khoá tự nhiên (lo_id, chi_nhanh_id): mỗi lô có
+// đúng một số dư tồn cho mỗi chi nhánh, không cần id riêng.
+export const tonKhoLo = sqliteTable(
+  'ton_kho_lo',
+  {
+    loId: text('lo_id')
+      .notNull()
+      .references(() => loHang.id),
+    chiNhanhId: text('chi_nhanh_id')
+      .notNull()
+      .references(() => chiNhanh.id),
+    ton: integer('ton').notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.loId, t.chiNhanhId] })],
 );

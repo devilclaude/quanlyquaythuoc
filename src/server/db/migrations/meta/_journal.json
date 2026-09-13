@@ -22,6 +22,20 @@
       "when": 1789218752514,
       "tag": "0002_lo_hang_trigger_mac_dinh",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1789262082885,
+      "tag": "0003_omniscient_vampiro",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1789262091027,
+      "tag": "0004_the_kho_chan_update_delete",
+      "breakpoints": true
     }
   ]
 }
