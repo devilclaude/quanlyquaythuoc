@@ -62,7 +62,7 @@ Ghi chú: đây là T-004 cũ, chẻ vì migration + snapshot Drizzle tự sinh 
 T-004b/T-004c.
 
 ### T-004b [B] prio:4.2 — Schema: lô hàng + trigger cấp lô ngầm định
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-004a
+Trạng thái: DONE · Phụ thuộc: T-004a
 Xong khi: migration tạo `lo_hang` (đơn vị tồn là (sản phẩm, lô, HSD); **không có**
 `chi_nhanh_id` — một lô là một lô, SPEC.md §3.6); trigger CSDL **tự cấp lô ngầm
 định** (`so_lo = NULL`, `hsd = NULL`, `la_lo_mac_dinh = true`) ngay khi một dòng
@@ -71,7 +71,7 @@ nào ra đời sau; đủ ràng buộc unique theo `ARCHITECTURE.md` §6 (duy nh
 định/sản phẩm, unique `(san_pham_id, so_lo, hsd)` cho lô thật); test tích hợp.
 
 ### T-004c [B] prio:4.3 — Schema: thẻ kho, tồn kho đệm, seed minh hoạ
-Trạng thái: TODO · Phụ thuộc: T-004b
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-004b
 Xong khi: migration tạo `the_kho` (sổ cái chỉ-ghi-thêm, `chi_nhanh_id` có mặt từ
 đầu, cột `loai` giới hạn đúng tập giá trị ở SPEC.md, **trigger CSDL chặn UPDATE và
 DELETE**) và `ton_kho_lo` (bản đệm, unique `(lo_id, chi_nhanh_id)`, cũng có

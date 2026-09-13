@@ -126,3 +126,17 @@ schema.ts); unique partial index chặn lô ngầm định thứ hai; unique
 PR: (xem mô tả PR)
 Tầng: B
 Kế tiếp: T-004c (thẻ kho + tồn kho đệm + seed minh hoạ).
+
+## 2026-09-13 — dọn PR + T-004c
+Làm: PR#20 (T-004b) đã merge → chuyển DONE. Chọn T-004c: bảng `the_kho` (sổ cái
+chỉ-ghi-thêm, `chi_nhanh_id` + hai mốc thời gian theo SPEC §3.6, CHECK giới hạn
+`loai`, hai trigger CSDL chặn UPDATE/DELETE) và `ton_kho_lo` (bản đệm, khoá tự
+nhiên `(lo_id, chi_nhanh_id)`); seed một thuốc 3 đơn vị + 2 lô thật và một mặt
+hàng chỉ lô ngầm định. Test viết trước, xác nhận đỏ trước khi thêm từng phần.
+PR: (xem mô tả PR)
+Tầng: B
+Quyết định: tập giá trị `loai` (BAN/NHAP/TRA_HANG/TRA_NCC/KIEM_KE/XUAT_HUY/
+DOI_CHE_DO) suy ra từ mô tả nghiệp vụ SPEC §3.1/§5 vì SPEC chỉ nêu literal hai
+giá trị — đặt tên kỹ thuật, không phải quyết định nghiệp vụ nên không BLOCKED.
+Chưa thêm `gia_tri_ton` vào `ton_kho_lo` — thuộc T-007, ngoài phạm vi task này.
+Kế tiếp: T-005 (lớp kho: ghi sổ cái và bản đệm tồn).
