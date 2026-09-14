@@ -38,3 +38,22 @@ Cần trả lời: Vợ chủ dự án đang bấm phím nào để thêm hàng 
 toán trong KiotViet?
 Chặn: **không chặn task nào** — cứ dùng bảng nhóm 2 cho tới khi có xác nhận.
 
+## T-061 — Đích và xác thực để đẩy backup sang máy khác
+Ngày: 2026-09-14
+Loại: kỹ thuật
+Tình huống: ARCHITECTURE.md §10 yêu cầu backup hằng đêm "đẩy sang một máy khác"
+("Bản sao trên cùng một máy không phải bản sao"), nhưng không nơi nào (SPEC.md,
+ARCHITECTURE.md, DOMAIN-NOTES.md, `.env.example`) nêu máy/dịch vụ đích, giao
+thức, hay thông tin xác thực. Dự án đã chốt Kịch bản 2 (server đặt tại Proxmox,
+quầy truy cập qua Internet — xem BACKLOG.md Milestone 3), nên "máy khác" ở đây
+không thể ngầm hiểu là PVE như mô tả Kịch bản 1 trong DOMAIN-NOTES.md — server
+đã ở đó rồi.
+Phương án:
+  1. Đợi chủ dự án cấp máy/dịch vụ đích + khoá SSH hoặc access key — an toàn
+     nhưng chặn T-061/T-062 tới lúc có.
+  2. Agent tự chọn tạm một dịch vụ lưu trữ ngoài (vd. rsync.net, Backblaze B2) —
+     có chi phí thật và là quyết định hạ tầng, agent không nên tự quyết.
+Cần trả lời: Máy hoặc dịch vụ đích để đẩy bản sao lưu hằng đêm là gì, và xác thực
+bằng cách nào (SSH key, access key)?
+Chặn: T-061, T-062
+

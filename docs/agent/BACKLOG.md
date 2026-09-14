@@ -86,7 +86,7 @@ Xong khi: mọi thay đổi tồn đi qua **một đường code duy nhất** gh
 đệm" chạy trên dữ liệu ngẫu nhiên; dựng lại bản đệm từ sổ cái ra cùng kết quả.
 
 ### T-006 [B] prio:6 — FEFO và cấp phát nhiều lô
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-005
+Trạng thái: DONE · Phụ thuộc: T-005
 Xong khi: thứ tự chọn lô đúng `hsd ASC NULLS FIRST, ngay_tao ASC, lo_id ASC`; tồn
 không đủ ở một lô thì chia đúng sang lô kế tiếp; chọn lô thủ công ghi đè được FEFO;
 **không có nhánh `if` nào theo cài đặt quản lý lô**; toàn bộ ca test chạy lại được
@@ -285,10 +285,13 @@ Xong khi: khớp screenshot "Trả hàng nhập"; liên kết ngược tới phi
 đúng lô đã nhập; ghi thẻ kho.
 
 ### T-054 [A] prio:54 — Màn thẻ kho
-Trạng thái: TODO · Phụ thuộc: T-005
+Trạng thái: TODO · Phụ thuộc: T-005, T-007
 Xong khi: cột Thời gian · Chứng từ · Loại · Lô/HSD · Số lượng (±) · Tồn cuối · Giá
 vốn; **cột Lô/HSD ẩn khi sản phẩm ở chế độ phẳng**; "Tồn cuối" tính lại theo **thứ
 tự đến máy chủ**, không lưu; xem được trên điện thoại như bản KiotViet mobile.
+Ghi chú: thêm phụ thuộc T-007 — cột Giá vốn cần hình chiếu `gia_von_hien_hanh`
+mà T-007 tạo ra (SPEC.md §3.4); bản gốc chỉ ghi phụ thuộc T-005 là thiếu, task
+không dựng được đúng "Xong khi" nếu thiếu T-007.
 
 ### T-055 [A] prio:55 — Cảnh báo cận date
 Trạng thái: TODO · Phụ thuộc: T-010

@@ -172,6 +172,16 @@ giao dịch cùng trừ lô cuối" ở đây chỉ xác nhận giao dịch sau 
 tuần tự, chưa kiểm tra race điều kiện đồng thời thật.
 Kế tiếp: T-007 (giá vốn bình quân gia quyền).
 
+## 2026-09-14 — dọn PR, không chọn task mới
+Làm: PR#23 (T-006), PR#24 (chẻ T-009) xanh, không comment, không conflict, chờ
+duyệt — không sửa. PR#22 (T-005) đã merge → chuyển DONE. BACKLOG: T-054 thêm
+phụ thuộc T-007 (cột Giá vốn cần `gia_von_hien_hanh` chưa tồn tại). BLOCKED:
+thêm T-061 — thiếu đích/xác thực đẩy backup sang máy khác. Mọi TODO còn lại phụ
+thuộc T-006/T-007/T-009/T-010 (chưa DONE) — không còn task đủ điều kiện.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-007 sau khi T-006 merge; T-054 sau T-007; T-061 cần người quyết đích
+backup.
 ## 2026-09-13 (run dọn PR) — T-009 (chẻ task, không code)
 Làm: PR#23 (T-006) xanh, chờ duyệt — không chọn lại. Chọn T-009 nhưng nó là task
 đầu cần dựng cả tầng `api/`, `hop-dong/` lẫn toàn bộ màn hàng hoá — ước lượng chắc
