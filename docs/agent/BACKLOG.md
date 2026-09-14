@@ -311,16 +311,23 @@ người dùng xác nhận từng nhóm**, mặc định không gộp khi không
 đúng một phiếu `KIEM_KE` ngày chuyển đổi; toàn bộ vào lô ngầm định; chạy lại lần hai
 không nhân đôi tồn.
 
-### T-061 [B] prio:61 — Sao lưu tự động
+### T-061 [B] prio:90 — Sao lưu tự động
 Trạng thái: TODO · Phụ thuộc: T-004c
 Xong khi: `VACUUM INTO` hằng đêm, nén, xoay vòng, **đẩy sang máy khác**; kiểm tra
 `PRAGMA integrity_check` định kỳ; báo động khi một đêm không có bản sao mới.
+Ghi chú: prio đẩy từ 61 lên 90 theo chỉ đạo chủ dự án ngày 2026-09-14
+(#quaythuoc-admin) — "tạm thời bỏ qua T-061, chuyển thành việc cuối cùng". Vẫn
+đang `BLOCKED` (xem `BLOCKED.md` — thiếu đích/xác thực đẩy backup sang máy
+khác); đẩy prio không tự gỡ block, chỉ đảm bảo khi được gỡ block nó vẫn xếp
+sau mọi task khác trong backlog hiện có.
 
-### T-062 [B] prio:62 — Khôi phục và diễn tập khôi phục
+### T-062 [B] prio:91 — Khôi phục và diễn tập khôi phục
 Trạng thái: TODO · Phụ thuộc: T-061
 Xong khi: khôi phục từ bản sao lưu về môi trường trống **thành công thật**, có tài
 liệu các bước trong repo.
 **Quầy không được dùng thật trước khi task này DONE.**
+Ghi chú: prio đẩy từ 62 lên 91 cùng lý do với T-061 — nó vốn đã phụ thuộc
+T-061 nên tự nhiên xếp sau, đổi số chỉ để nhất quán khi đọc file.
 
 ---
 

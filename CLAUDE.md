@@ -145,14 +145,26 @@ workflow sẽ chặn kể cả khi bạn ghi `Tầng: A`.
 
 Quên ghi dòng này thì không có gì tự merge — PR nằm chờ người. Đó là hành vi đúng.
 
-Không tự nâng `[B]` lên `[A]`. Mặc định khi nghi ngờ là `[B]`.
+**Theo chỉ đạo chủ dự án ngày 2026-09-14 (#quaythuoc-admin):** không còn nhóm
+"luôn `[B]` theo miền nghiệp vụ" nữa. Mặc định khi nghi ngờ giờ là `[A]`. Việc
+chạm tồn kho/lô/hạn dùng/quy đổi đơn vị/tiền/hoá đơn/đồng bộ offline/migration/
+phân quyền/backup **không còn tự động bắt buộc `[B]`** — agent tự đánh giá theo
+từng task, và vẫn được tự chọn `[B]` khi thấy có lý do cụ thể cần người duyệt
+trước khi merge (ví dụ: quyết định nền khó đảo ngược, không chắc chắn về nghiệp
+vụ). Không tự nâng `[B]` lên `[A]` một khi đã tự thấy cần `[B]`.
 
-Luôn là `[B]`: mọi thứ chạm tồn kho, lô, hạn dùng, quy đổi đơn vị, tiền, hoá
-đơn, đồng bộ offline, migration, phân quyền, backup.
-
-Nhóm này **chỉ áp cho task GHI dữ liệu**. Task chỉ đọc — báo cáo, cảnh báo, in ấn,
-màn hình hiển thị — được `[A]`, kể cả khi nó đọc tồn kho hay tiền. Nếu một task
-trông như chỉ đọc nhưng lỗi của nó có thể sinh ra chứng từ sai, nó là task ghi.
+**Cơ chế thật không đổi theo chỉ đạo này — đọc kỹ trước khi khai `Tầng: A`.**
+`.github/workflows/auto-merge.yml` (lớp bảo vệ thứ hai, độc lập với dòng khai
+báo) vẫn tự chặn và gắn nhãn `needs-human-review` — bất kể PR khai `Tầng: A` —
+cho PR chạm các đường dẫn nhạy cảm: `src/server/{kho,ban-hang,nhap-hang,
+kiem-ke,dong-bo,db}/`, `src/shared/{tien,don-vi,kieu}/`, `src/client/offline/`,
+`.github/`, `.claude/`, `scripts/`, `CLAUDE.md`, các file config gốc
+(`package.json`, `tsconfig*.json`, eslint, dependency-cruiser, drizzle config),
+và bốn file chỉ-đọc trong `docs/agent/`. Chỉ đạo lần này chỉ nói "sửa
+claude.md" — KHÔNG nói sửa workflow, nên workflow giữ nguyên. Nghĩa là: phần
+lớn task chạm nghiệp vụ kho/tiền trong thực tế **vẫn nằm chờ người duyệt** dù
+khai `Tầng: A` đúng theo mặc định mới — đừng ngạc nhiên, và đừng tự sửa lại
+`auto-merge.yml` để né việc đó nếu chưa có chỉ đạo riêng nói rõ điều đó.
 
 ## Định nghĩa "xong"
 
