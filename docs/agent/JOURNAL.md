@@ -191,3 +191,14 @@ thuộc T-010/T-020/T-060 sang T-009c.
 PR: (xem mô tả PR)
 Tầng: B
 Kế tiếp: T-009a.
+
+## 2026-09-14 (run dọn PR + chỉ đạo #quaythuoc-admin) — không chọn task TODO
+Làm: không còn PR agent nào mở; T-006 đã DONE từ trước (xác nhận qua BACKLOG).
+Theo chỉ đạo Dương (18:24): đẩy prio T-061/T-062 lên cuối (90/91, vẫn BLOCKED);
+sửa CLAUDE.md — bỏ nhóm "luôn [B] theo miền", mặc định giờ là [A], nhưng ghi rõ
+`auto-merge.yml` (lớp chặn đường dẫn nhạy cảm) CHƯA đổi nên kho/tiền/migration
+vẫn tự bị gắn `needs-human-review` dù khai `Tầng: A` — chỉ đạo chỉ nói sửa
+claude.md, không nói sửa workflow.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-007, hoặc T-009a — cả hai đều đủ điều kiện, chọn theo prio (T-007).
