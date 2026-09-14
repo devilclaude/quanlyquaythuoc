@@ -80,13 +80,13 @@ hàng chỉ có lô ngầm định (tồn phẳng); test tích hợp cho từng 
 Tầng B: đây là quyết định không sửa được về sau (áp dụng cho cả T-004a/b/c).
 
 ### T-005 [B] prio:5 — Lớp kho: ghi sổ cái và bản đệm tồn
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-004c
+Trạng thái: DONE · Phụ thuộc: T-004c
 Xong khi: mọi thay đổi tồn đi qua **một đường code duy nhất** ghi thẻ kho; bản đệm
 `ton_kho_lo` cập nhật trong cùng transaction; test bất biến "tổng sổ cái == bản
 đệm" chạy trên dữ liệu ngẫu nhiên; dựng lại bản đệm từ sổ cái ra cùng kết quả.
 
 ### T-006 [B] prio:6 — FEFO và cấp phát nhiều lô
-Trạng thái: TODO · Phụ thuộc: T-005
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-005
 Xong khi: thứ tự chọn lô đúng `hsd ASC NULLS FIRST, ngay_tao ASC, lo_id ASC`; tồn
 không đủ ở một lô thì chia đúng sang lô kế tiếp; chọn lô thủ công ghi đè được FEFO;
 **không có nhánh `if` nào theo cài đặt quản lý lô**; toàn bộ ca test chạy lại được
