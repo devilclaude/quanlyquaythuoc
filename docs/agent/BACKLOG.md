@@ -106,16 +106,47 @@ Xong khi: token màu/chữ/khoảng cách lấy từ `.claude/skills/design-syst
 gọi lại generator; component dùng lại được cho bảng, ô nhập, nút, badge trạng thái;
 đối chiếu `UI-FIDELITY.md`.
 
-### T-009 [B] prio:9 — Màn hàng hoá: danh sách, tạo, sửa
+### T-009a [A] prio:9.1 — Màn hàng hoá: danh sách + chi tiết (chỉ đọc)
 Trạng thái: TODO · Phụ thuộc: T-004c, T-008
-Xong khi: thứ tự cột khớp screenshot "Danh sách hàng hóa"; form tạo có đủ trường
-quan sát được trong "Tạo mới hàng hóa"; khai được nhiều đơn vị kèm hệ số và giá
-riêng; **thêm đơn vị mới thì form điền sẵn gợi ý giá = giá cơ sở × hệ số, sửa được**;
-cấm đổi đơn vị cơ sở khi sản phẩm đã có thẻ kho; xoá cứng chỉ khi chưa phát sinh,
-đã phát sinh thì chỉ "Ngừng hoạt động".
+Xong khi: dựng lần đầu tầng `src/server/api/` (route Hono) và `src/shared/hop-dong/`
+(Zod contract dùng chung client/server, `ARCHITECTURE.md` §1); `GET /api/hang-hoa`
+(danh sách, tìm theo mã/tên) và `GET /api/hang-hoa/:id` (chi tiết + đơn vị tính);
+màn danh sách khớp thứ tự cột screenshot "Danh sách hàng hóa" cho các cột nằm
+trong phạm vi v1 (Mã hàng, Tên hàng, Giá bán, Giá vốn, Tồn kho, Thời gian tạo);
+bấm một dòng mở panel chi tiết ngay dưới dòng đó, khớp screenshot "xem chi tiết 1
+sản phẩm", tối thiểu tab "Thông tin". Giá vốn hiển thị tạm 0 (T-007 tính giá vốn
+thật chưa xong) — ghi rõ trong PR.
+Ghi chú: đây là T-009 cũ, chẻ vì ước lượng vượt ngưỡng 1000 dòng/24 file — task
+đầu tiên phải dựng đồng thời tầng `api/`, `hop-dong/`, và toàn bộ màn hàng hoá,
+quy mô lớn hơn hẳn các task schema từng chẻ (T-004). Cột "Khách đặt" trong
+screenshot gắn với Bán online (NGOÀI v1, `SPEC.md` §2) — bỏ, ghi `JOURNAL.md`
+phần "Khác KiotViet". Tầng A vì chỉ đọc.
+
+### T-009b [B] prio:9.2 — Tạo mới hàng hoá (nhiều đơn vị)
+Trạng thái: TODO · Phụ thuộc: T-009a, T-003
+Xong khi: form "Tạo mới hàng hóa" có Mã hàng (tự động/nhập), Tên hàng (bắt buộc),
+Giá bán đơn vị cơ sở, và khai được nhiều đơn vị tính kèm hệ số nguyên ≥1 + giá
+riêng từng đơn vị; **thêm đơn vị mới thì form điền sẵn gợi ý giá = giá đơn vị cơ
+sở × hệ số, sửa được** (SPEC.md §3.3); `POST /api/hang-hoa` tạo sản phẩm + đơn vị
+tính trong một transaction (trigger DB đã tự cấp lô ngầm định từ T-004b, không
+cần code thêm); test: tạo 1 đơn vị, tạo nhiều đơn vị với hệ số/giá riêng, hệ số
+< 1 bị từ chối, tên hàng bắt buộc.
+Ghi chú: trường trong screenshot ngoài phạm vi v1 (nhóm hàng, ảnh, thuộc tính, vị
+trí, trọng lượng, hãng/nước sản xuất, định mức tồn) — KHÔNG làm, ghi trong "Cố
+tình không làm" của PR (`SPEC.md` §2 đã chốt các nhóm này ngoài v1).
+
+### T-009c [B] prio:9.3 — Sửa, xoá/ngừng hoạt động hàng hoá
+Trạng thái: TODO · Phụ thuộc: T-009b
+Xong khi: `PUT /api/hang-hoa/:id` sửa tên/giá/đơn vị; **cấm đổi đơn vị cơ sở khi
+sản phẩm đã phát sinh dòng `the_kho`** — có test; `DELETE /api/hang-hoa/:id` xoá
+cứng **chỉ khi chưa phát sinh thẻ kho**, đã phát sinh thì trả lỗi rõ và client gọi
+API "Ngừng hoạt động" thay thế (thêm cột trạng thái vào `san_pham` qua migration);
+form sửa tái dùng form tạo (T-009b); nút Xoá/Ngừng hoạt động khớp vị trí trong
+ảnh chi tiết sản phẩm; test: xoá cứng khi chưa có thẻ kho, xoá bị chặn + chuyển
+ngừng hoạt động khi đã có thẻ kho.
 
 ### T-010 [B] prio:10 — Cài đặt quản lý theo lô
-Trạng thái: TODO · Phụ thuộc: T-006, T-009
+Trạng thái: TODO · Phụ thuộc: T-006, T-009c
 Xong khi: cài đặt toàn cục + ghi đè theo sản phẩm (ba trạng thái), **mặc định TẮT**;
 giao diện nhập/bán/thẻ kho phản ứng đúng bảng trong `DOMAIN-NOTES.md`; tắt→bật luôn
 cho phép; bật→tắt bị chặn khi sản phẩm còn hơn một lô có tồn > 0; cả hai chiều ghi
@@ -127,7 +158,7 @@ không xuất hiện trong `src/server/kho/**`**.
 ## Milestone 2 — Bán hàng (ưu tiên cao nhất)
 
 ### T-020 [B] prio:20 — Màn bán hàng: tìm và thêm hàng
-Trạng thái: TODO · Phụ thuộc: T-006, T-009
+Trạng thái: TODO · Phụ thuộc: T-006, T-009c
 Xong khi: bố cục khớp screenshot "Giao diện bán hàng chưa có sản phẩm" và "Tìm sản
 phẩm để bán"; tìm **theo tên và mã hàng** (tìm theo hoạt chất là v1.1, không làm);
 gợi ý hiện tồn và giá như trong ảnh; **chọn và thêm hoàn toàn bằng bàn phím**.
@@ -273,7 +304,7 @@ nằm ở lô ngầm định nên báo cáo sẽ rỗng — đó là đúng, kh�
 ## Milestone 6 — Chuyển dữ liệu và không mất dữ liệu
 
 ### T-060 [B] prio:60 — Nhập tồn đầu kỳ từ KiotViet
-Trạng thái: TODO · Phụ thuộc: T-009, T-005
+Trạng thái: TODO · Phụ thuộc: T-009c, T-005
 Xong khi: đọc bản xuất KiotViet; **gộp các mã hàng cùng thuốc khác đơn vị thành một
 sản phẩm nhiều đơn vị**; nếu bản xuất không mang hệ số thì suy từ tên hàng và **bắt
 người dùng xác nhận từng nhóm**, mặc định không gộp khi không chắc; tồn vào bằng
