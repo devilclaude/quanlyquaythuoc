@@ -152,3 +152,14 @@ nhiều dòng khác lô, rollback nguyên tử khi một dòng lỗi, bất bi�
 PR: (xem mô tả PR)
 Tầng: B
 Kế tiếp: T-006 (FEFO và cấp phát nhiều lô).
+
+## 2026-09-14 — dọn PR, không chọn task mới
+Làm: PR#23 (T-006), PR#24 (chẻ T-009) xanh, không comment, không conflict, chờ
+duyệt — không sửa. PR#22 (T-005) đã merge → chuyển DONE. BACKLOG: T-054 thêm
+phụ thuộc T-007 (cột Giá vốn cần `gia_von_hien_hanh` chưa tồn tại). BLOCKED:
+thêm T-061 — thiếu đích/xác thực đẩy backup sang máy khác. Mọi TODO còn lại phụ
+thuộc T-006/T-007/T-009/T-010 (chưa DONE) — không còn task đủ điều kiện.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-007 sau khi T-006 merge; T-054 sau T-007; T-061 cần người quyết đích
+backup.

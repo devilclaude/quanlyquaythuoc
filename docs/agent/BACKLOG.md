@@ -80,7 +80,7 @@ hàng chỉ có lô ngầm định (tồn phẳng); test tích hợp cho từng 
 Tầng B: đây là quyết định không sửa được về sau (áp dụng cho cả T-004a/b/c).
 
 ### T-005 [B] prio:5 — Lớp kho: ghi sổ cái và bản đệm tồn
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-004c
+Trạng thái: DONE · Phụ thuộc: T-004c
 Xong khi: mọi thay đổi tồn đi qua **một đường code duy nhất** ghi thẻ kho; bản đệm
 `ton_kho_lo` cập nhật trong cùng transaction; test bất biến "tổng sổ cái == bản
 đệm" chạy trên dữ liệu ngẫu nhiên; dựng lại bản đệm từ sổ cái ra cùng kết quả.
@@ -254,10 +254,13 @@ Xong khi: khớp screenshot "Trả hàng nhập"; liên kết ngược tới phi
 đúng lô đã nhập; ghi thẻ kho.
 
 ### T-054 [A] prio:54 — Màn thẻ kho
-Trạng thái: TODO · Phụ thuộc: T-005
+Trạng thái: TODO · Phụ thuộc: T-005, T-007
 Xong khi: cột Thời gian · Chứng từ · Loại · Lô/HSD · Số lượng (±) · Tồn cuối · Giá
 vốn; **cột Lô/HSD ẩn khi sản phẩm ở chế độ phẳng**; "Tồn cuối" tính lại theo **thứ
 tự đến máy chủ**, không lưu; xem được trên điện thoại như bản KiotViet mobile.
+Ghi chú: thêm phụ thuộc T-007 — cột Giá vốn cần hình chiếu `gia_von_hien_hanh`
+mà T-007 tạo ra (SPEC.md §3.4); bản gốc chỉ ghi phụ thuộc T-005 là thiếu, task
+không dựng được đúng "Xong khi" nếu thiếu T-007.
 
 ### T-055 [A] prio:55 — Cảnh báo cận date
 Trạng thái: TODO · Phụ thuộc: T-010
