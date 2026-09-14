@@ -86,7 +86,7 @@ Xong khi: mọi thay đổi tồn đi qua **một đường code duy nhất** gh
 đệm" chạy trên dữ liệu ngẫu nhiên; dựng lại bản đệm từ sổ cái ra cùng kết quả.
 
 ### T-006 [B] prio:6 — FEFO và cấp phát nhiều lô
-Trạng thái: TODO · Phụ thuộc: T-005
+Trạng thái: DONE · Phụ thuộc: T-005
 Xong khi: thứ tự chọn lô đúng `hsd ASC NULLS FIRST, ngay_tao ASC, lo_id ASC`; tồn
 không đủ ở một lô thì chia đúng sang lô kế tiếp; chọn lô thủ công ghi đè được FEFO;
 **không có nhánh `if` nào theo cài đặt quản lý lô**; toàn bộ ca test chạy lại được

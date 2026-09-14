@@ -153,6 +153,25 @@ PR: (xem mô tả PR)
 Tầng: B
 Kế tiếp: T-006 (FEFO và cấp phát nhiều lô).
 
+## 2026-09-13 — dọn PR + T-006
+Làm: PR#22 (T-005) đã merge → chuyển DONE. Chọn T-006: `src/server/kho/fefo.ts`
+— `phanBoTheoThuTu` (hàm thuần) chia số lượng cần xuất qua danh sách lô theo
+đúng thứ tự truyền vào, tràn sang lô kế tiếp khi lô trước không đủ, ném
+`KhongDuTonKhoError` khi tổng tồn không đủ; `sapXepFefo` (hsd ASC NULLS FIRST,
+ngay_tao ASC, lo_id ASC) và `sapXepUuTienThuCong` (lô chọn tay xếp trước, phần
+còn lại vẫn FEFO — cùng một hàm phân bổ, không nhánh riêng) quyết định thứ tự
+đưa vào; `chonLoXuatKho` ghép truy vấn DB + hai hàm trên. Test viết trước (đỏ vì
+thiếu module), gồm chia nhiều lô, NULLS FIRST, chọn lô thủ công ghi đè FEFO, số
+lượng 0, bán vượt tồn bị từ chối, và hai giao dịch liên tiếp cùng trừ lô cuối.
+PR: (xem mô tả PR)
+Tầng: B
+Quyết định: T-006 chỉ làm phần "chọn lô xuất bao nhiêu" (đọc, thuần); việc thật
+sự ghi trừ kho (gọi `ghiTheKho` với kết quả phân bổ) và khoá giao dịch chống hai
+đơn cùng bán hộp cuối *thật sự đồng thời* thuộc T-022 (thanh toán) — test "hai
+giao dịch cùng trừ lô cuối" ở đây chỉ xác nhận giao dịch sau bị từ chối khi gọi
+tuần tự, chưa kiểm tra race điều kiện đồng thời thật.
+Kế tiếp: T-007 (giá vốn bình quân gia quyền).
+
 ## 2026-09-14 — dọn PR, không chọn task mới
 Làm: PR#23 (T-006), PR#24 (chẻ T-009) xanh, không comment, không conflict, chờ
 duyệt — không sửa. PR#22 (T-005) đã merge → chuyển DONE. BACKLOG: T-054 thêm
