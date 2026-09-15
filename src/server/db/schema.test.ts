@@ -39,6 +39,24 @@ describe('san_pham', () => {
       db.insert(sanPham).values({ id: 'sp-2', maHang: 'SP001', ten: 'Hàng khác' }).run(),
     ).toThrow();
   });
+
+  it('ngay_tao tự điền khi không khai (dùng để sắp xếp "Thời gian tạo" ở T-009a)', () => {
+    db.insert(sanPham).values({ id: 'sp-1', maHang: 'SP001', ten: 'Paracetamol 500mg' }).run();
+
+    const [row] = db.select().from(sanPham).where(eq(sanPham.id, 'sp-1')).all();
+
+    expect(row?.ngayTao).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+  });
+
+  it('ngay_tao nhận giá trị khai tường minh, không bị ép về mặc định', () => {
+    db.insert(sanPham)
+      .values({ id: 'sp-1', maHang: 'SP001', ten: 'Paracetamol 500mg', ngayTao: '2026-01-01T00:00:00.000Z' })
+      .run();
+
+    const [row] = db.select().from(sanPham).where(eq(sanPham.id, 'sp-1')).all();
+
+    expect(row?.ngayTao).toBe('2026-01-01T00:00:00.000Z');
+  });
 });
 
 describe('don_vi_tinh', () => {

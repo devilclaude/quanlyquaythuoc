@@ -1,0 +1,30 @@
+.danh-sach-hang-hoa {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kc-4);
+  padding: var(--kc-5);
+}
+
+.danh-sach-hang-hoa__tieu-de {
+  font-size: var(--chu-lg);
+  margin: 0;
+}
+
+.danh-sach-hang-hoa__thong-bao {
+  text-align: center;
+  padding: var(--kc-5);
+  color: var(--mau-chu-phu);
+}
+
+.danh-sach-hang-hoa__thong-bao--loi {
+  color: var(--mau-nguy);
+}
+
+.danh-sach-hang-hoa__dong--dang-chon {
+  background: var(--mau-chinh-nhat);
+}
+
+.danh-sach-hang-hoa__chi-tiet {
+  background: var(--mau-nen);
+  padding: var(--kc-4);
+}

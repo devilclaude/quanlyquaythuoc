@@ -18,6 +18,10 @@ export const sanPham = sqliteTable('san_pham', {
   id: text('id').primaryKey(),
   maHang: text('ma_hang').notNull().unique(),
   ten: text('ten').notNull(),
+  // Dùng để sắp xếp cột "Thời gian tạo" ở màn danh sách hàng hoá (T-009a).
+  ngayTao: text('ngay_tao')
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
 });
 
 export const donViTinh = sqliteTable(

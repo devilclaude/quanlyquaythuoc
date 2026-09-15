@@ -107,7 +107,7 @@ gọi lại generator; component dùng lại được cho bảng, ô nhập, nú
 đối chiếu `UI-FIDELITY.md`.
 
 ### T-009a [A] prio:9.1 — Màn hàng hoá: danh sách + chi tiết (chỉ đọc)
-Trạng thái: TODO · Phụ thuộc: T-004c, T-008
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-004c, T-008
 Xong khi: dựng lần đầu tầng `src/server/api/` (route Hono) và `src/shared/hop-dong/`
 (Zod contract dùng chung client/server, `ARCHITECTURE.md` §1); `GET /api/hang-hoa`
 (danh sách, tìm theo mã/tên) và `GET /api/hang-hoa/:id` (chi tiết + đơn vị tính);
