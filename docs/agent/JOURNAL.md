@@ -216,6 +216,27 @@ PR: (xem mô tả PR)
 Tầng: B
 Kế tiếp: T-007 hoặc T-009a, chọn theo prio (T-007), ở run sau.
 
+## 2026-09-15 — dọn PR + T-007
+Làm: PR#27 (auto-merge workflow) đang xanh, không comment, không conflict, chờ
+Dương xác nhận câu hỏi trong mô tả PR — không đụng vào, không chặn task nào.
+Chọn T-007: bình quân gia quyền (SPEC.md §3.4). Thêm cột `gia_tri` vào
+`the_kho` (tổng tiền tường minh của dòng NHAP) và `gia_tri_ton` vào
+`ton_kho_lo`; `src/server/kho/gia-von.ts` — hàm thuần `apDungGiaVon` là bước
+gấp DUY NHẤT (dòng vào cộng thẳng giá trị, dòng ra tính COGS làm tròn nửa lên,
+bán hết/vượt tồn về đúng 0, không chia khi tồn ≤ 0); tích hợp vào `ghiTheKho`
+(cập nhật cùng transaction) và viết lại `dungLaiTonKhoDem` để gấp tuần tự theo
+`thoi_gian_may_chu, id` thay vì SUM (giá trị tồn phụ thuộc thứ tự, không giao
+hoán như tổng số lượng) — vẫn một đường tính duy nhất dùng chung hai nơi. Test
+trước: pure function + tích hợp DB, gồm ca bắt buộc "bán hết → gia_tri_ton = 0"
+và cùng kịch bản trên lô ngầm định lẫn lô thật ra cùng số dư.
+Ghi chú: PR#27 đã merge (main bỏ chặn nhóm nghiệp vụ khỏi auto-merge.yml)
+trong lúc PR này đang mở — chạm `src/server/kho/**`/`src/server/db/**` giờ
+không còn tự động bị gắn `needs-human-review`, nhưng vẫn tự chọn Tầng B (task
+ghi dữ liệu tiền/kho theo tiêu chí BACKLOG.md).
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-009a (đủ điều kiện, phụ thuộc T-004c/T-008 đã DONE).
+
 ## 2026-09-15 (run kế) — dọn PR + T-009a
 Làm: PR#28 xanh chờ duyệt, không sửa. Chọn T-009a: dựng `api/`+`hop-dong/` lần
 đầu, `GET /api/hang-hoa` (+tìm)/`:id`, màn danh sách+chi tiết (tab Thông tin),

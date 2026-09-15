@@ -94,7 +94,7 @@ với sản phẩm chỉ có lô ngầm định và cho cùng số dư cuối; c
 không đủ, bán vượt tồn bị từ chối khi online.
 
 ### T-007 [B] prio:7 — Giá vốn bình quân gia quyền
-Trạng thái: TODO · Phụ thuộc: T-006
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-006
 Xong khi: hình chiếu giữ cặp `(ton, gia_tri_ton)` đều là số nguyên; nhập không sinh
 phép chia; COGS = `làm_tròn(gia_tri_ton × sl / ton)`; **bán hết thì `gia_tri_ton`
 về đúng 0** — có test; hình chiếu gấp theo **thứ tự đến máy chủ**, dựng lại được từ
@@ -107,7 +107,7 @@ gọi lại generator; component dùng lại được cho bảng, ô nhập, nú
 đối chiếu `UI-FIDELITY.md`.
 
 ### T-009a [A] prio:9.1 — Màn hàng hoá: danh sách + chi tiết (chỉ đọc)
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-004c, T-008
+Trạng thái: DONE · Phụ thuộc: T-004c, T-008
 Xong khi: dựng lần đầu tầng `src/server/api/` (route Hono) và `src/shared/hop-dong/`
 (Zod contract dùng chung client/server, `ARCHITECTURE.md` §1); `GET /api/hang-hoa`
 (danh sách, tìm theo mã/tên) và `GET /api/hang-hoa/:id` (chi tiết + đơn vị tính);
