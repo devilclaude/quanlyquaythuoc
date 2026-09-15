@@ -153,18 +153,29 @@ từng task, và vẫn được tự chọn `[B]` khi thấy có lý do cụ th�
 trước khi merge (ví dụ: quyết định nền khó đảo ngược, không chắc chắn về nghiệp
 vụ). Không tự nâng `[B]` lên `[A]` một khi đã tự thấy cần `[B]`.
 
-**Cơ chế thật không đổi theo chỉ đạo này — đọc kỹ trước khi khai `Tầng: A`.**
-`.github/workflows/auto-merge.yml` (lớp bảo vệ thứ hai, độc lập với dòng khai
-báo) vẫn tự chặn và gắn nhãn `needs-human-review` — bất kể PR khai `Tầng: A` —
-cho PR chạm các đường dẫn nhạy cảm: `src/server/{kho,ban-hang,nhap-hang,
-kiem-ke,dong-bo,db}/`, `src/shared/{tien,don-vi,kieu}/`, `src/client/offline/`,
-`.github/`, `.claude/`, `scripts/`, `CLAUDE.md`, các file config gốc
-(`package.json`, `tsconfig*.json`, eslint, dependency-cruiser, drizzle config),
-và bốn file chỉ-đọc trong `docs/agent/`. Chỉ đạo lần này chỉ nói "sửa
-claude.md" — KHÔNG nói sửa workflow, nên workflow giữ nguyên. Nghĩa là: phần
-lớn task chạm nghiệp vụ kho/tiền trong thực tế **vẫn nằm chờ người duyệt** dù
-khai `Tầng: A` đúng theo mặc định mới — đừng ngạc nhiên, và đừng tự sửa lại
-`auto-merge.yml` để né việc đó nếu chưa có chỉ đạo riêng nói rõ điều đó.
+**Cập nhật cơ chế theo chỉ đạo chủ dự án ngày 2026-09-14 20:25 (#quaythuoc-admin):**
+chỉ đạo 18:24 (chỉ sửa CLAUDE.md) chưa đủ theo lời Dương — cần sửa cả
+`.github/workflows/auto-merge.yml`, vì mục tiêu là **mọi PR khai `Tầng: A` với
+CI xanh đều tự merge**, không phân biệt đường dẫn nghiệp vụ. Đã sửa: danh sách
+chặn trong workflow không còn `src/server/{kho,ban-hang,nhap-hang,kiem-ke,
+dong-bo,db}/`, `src/shared/{tien,don-vi,kieu}/`, `src/client/offline/` — PR chạm
+các đường dẫn này giờ auto-merge bình thường khi khai `Tầng: A` và CI xanh.
+
+**Danh sách chặn vẫn giữ cho nhóm tự-quản-trị của agent:** `.github/`,
+`.claude/`, `scripts/`, `CLAUDE.md`, config gốc (`package.json`, `tsconfig*.json`,
+eslint, dependency-cruiser, drizzle config), và bốn file chỉ-đọc trong
+`docs/agent/`. Đây không phải diễn giải lại chỉ đạo để né việc — chỉ đạo nói
+"mỗi lần chạy **task**", và các đường dẫn trên không phải task nghiệp vụ mà là
+luật/cấu hình đang chi phối chính agent, bao gồm cả file workflow đang quyết
+định auto-merge. Để agent tự nới quyền merge của chính mình mà không ai xem lại
+là mất kiểm soát vĩnh viễn, khác hẳn về loại rủi ro so với một bug nghiệp vụ lọt
+qua CI — nên nhóm này áp dụng "nghi ngờ thì B" như cũ, kể cả khi khai `Tầng: A`.
+Nếu ý Dương là bỏ luôn chặn này, cần nói rõ thêm ở #quaythuoc-admin.
+
+PR sửa chính `.github/workflows/auto-merge.yml` (như PR làm thay đổi này) vẫn tự
+chạm `.github/` nên vẫn bị gắn `needs-human-review` bởi bản workflow đang chạy
+tại thời điểm mở PR — nghĩa là thay đổi lớp bảo vệ thứ hai luôn cần một người
+bấm merge, kể cả khi khai `Tầng: A`.
 
 ## Định nghĩa "xong"
 

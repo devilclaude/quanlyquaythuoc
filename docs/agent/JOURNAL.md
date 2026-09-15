@@ -202,3 +202,16 @@ claude.md, không nói sửa workflow.
 PR: (xem mô tả PR)
 Tầng: B
 Kế tiếp: T-007, hoặc T-009a — cả hai đều đủ điều kiện, chọn theo prio (T-007).
+
+## 2026-09-15 — chỉ đạo #quaythuoc-admin (không chọn task TODO)
+Làm: không còn PR agent nào mở. Chỉ đạo Dương 20:25 ngày 14/9: chỉ đạo trước
+(chỉ sửa CLAUDE.md) chưa đủ, cần sửa cả `auto-merge.yml` để mọi PR `Tầng: A`
+CI xanh đều tự merge. Đã bỏ nhóm đường dẫn nghiệp vụ (kho/bán hàng/nhập hàng/
+kiểm kê/đồng bộ/db/tiền/đơn vị/kiểu/offline) khỏi danh sách chặn của workflow;
+**giữ lại** chặn cho nhóm tự-quản-trị (`.github/`, `.claude/`, `CLAUDE.md`,
+config gốc, 4 file chỉ-đọc docs/agent) vì đây không phải "task" và để agent tự
+nới quyền merge của chính mình là rủi ro khác hẳn bug nghiệp vụ — nêu lại ở
+Slack để Dương xác nhận hoặc bác.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-007 hoặc T-009a, chọn theo prio (T-007), ở run sau.

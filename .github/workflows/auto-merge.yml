@@ -12,7 +12,10 @@ name: Auto-merge tầng A
 #
 # Ba lớp bảo vệ, workflow này là lớp thứ hai:
 #   1. Branch protection: required check `ci` phải xanh.
-#   2. Workflow này: chặn nếu chạm đường dẫn nhạy cảm, kể cả khi CI xanh.
+#   2. Workflow này: chặn nếu chạm đường dẫn TỰ-QUẢN-TRỊ của agent (workflow,
+#      `.claude/`, `CLAUDE.md`, config gốc...), kể cả khi CI xanh. Từ
+#      2026-09-14 20:25 không còn chặn đường dẫn nghiệp vụ (kho/tiền/...) —
+#      xem chi tiết ở bước "Đối chiếu đường dẫn tự-quản-trị" bên dưới.
 #   3. Con người: đọc PR gắn nhãn `needs-human-review`.
 #
 # Repo là public nên người lạ mở PR được. TUYỆT ĐỐI KHÔNG checkout code của PR ở
@@ -60,24 +63,23 @@ jobs:
           echo "PR #$PR chạm $(wc -l < /tmp/files.txt) file:"
           cat /tmp/files.txt
 
-      # Danh sách bám cấu trúc thư mục trong docs/agent/ARCHITECTURE.md §2
-      # (tên miền viết tiếng Việt không dấu). THÊM MODULE MỚI THÌ THÊM VÀO ĐÂY —
-      # đây là danh sách chặn, thứ không có tên ở đây sẽ được cho qua.
-      - name: Đối chiếu đường dẫn nhạy cảm
+      # Theo chỉ đạo chủ dự án 2026-09-14 20:25 (#quaythuoc-admin): PR chạm
+      # đường dẫn NGHIỆP VỤ (kho/bán hàng/nhập hàng/kiểm kê/đồng bộ/db/tiền/
+      # đơn vị/kiểu/offline) không còn tự động bị chặn ở đây — khai `Tầng: A`
+      # + CI xanh là auto-merge, không phân biệt đường dẫn nghiệp vụ nào.
+      #
+      # Danh sách dưới đây giờ CHỈ còn nhóm agent tự-quản-trị: workflow này,
+      # cấu hình `.claude/`, script vận hành, `CLAUDE.md`, config gốc, và bốn
+      # file chỉ-đọc trong docs/agent/. Lý do giữ riêng nhóm này dù chỉ đạo nói
+      # "mọi task": đây không phải task nghiệp vụ, mà là luật/cấu hình đang chi
+      # phối chính agent — bao gồm cả file đang đọc bạn ngay lúc này. Để agent tự
+      # nới quyền merge của chính mình mà không ai xem lại là mất kiểm soát vĩnh
+      # viễn, khác hẳn một bug nghiệp vụ lọt CI. Xem CLAUDE.md mục "Tầng merge".
+      - name: Đối chiếu đường dẫn tự-quản-trị
         id: soi
         if: steps.tang.outputs.la_tang_a == 'true'
         run: |
           cat > /tmp/nhaycam.txt <<'PATTERNS'
-          ^src/server/kho/
-          ^src/server/ban-hang/
-          ^src/server/nhap-hang/
-          ^src/server/kiem-ke/
-          ^src/server/dong-bo/
-          ^src/server/db/
-          ^src/shared/tien/
-          ^src/shared/don-vi/
-          ^src/shared/kieu/
-          ^src/client/offline/
           ^\.github/
           ^\.claude/
           ^scripts/
@@ -98,7 +100,7 @@ jobs:
               sed 's/^/- `/; s/$/`/' /tmp/dinh.txt
               echo 'GHI_HET'
             } >> "$GITHUB_OUTPUT"
-            echo "CHẶN — PR chạm đường dẫn nhạy cảm:"; cat /tmp/dinh.txt
+            echo "CHẶN — PR chạm đường dẫn tự-quản-trị:"; cat /tmp/dinh.txt
           else
             echo "nhay_cam=false" >> "$GITHUB_OUTPUT"
             echo "Đường dẫn sạch."
@@ -112,17 +114,17 @@ jobs:
           DANH_SACH: ${{ steps.soi.outputs.danh_sach }}
         run: |
           gh label create needs-human-review --repo "$REPO" \
-            --color B60205 --description "Chạm đường dẫn nhạy cảm, phải có người duyệt" \
+            --color B60205 --description "Chạm đường dẫn tự-quản-trị của agent, phải có người duyệt" \
             2>/dev/null || true
           gh pr edit "$PR" --repo "$REPO" --add-label needs-human-review
           {
-            printf '**Auto-merge bị chặn.** PR này khai báo `Tầng: A` nhưng chạm đường dẫn thuộc nhóm luôn-`[B]` trong `CLAUDE.md`:\n\n'
+            printf '**Auto-merge bị chặn.** PR này khai báo `Tầng: A` nhưng chạm đường dẫn tự-quản-trị (luật/cấu hình chi phối agent, không phải task nghiệp vụ):\n\n'
             printf '%s\n\n' "$DANH_SACH"
             printf 'PR sẽ **không** tự merge; cần người duyệt.\n\n'
             printf 'Nếu task này thật sự là tầng `[A]`, nghĩa là nó đang chạm file không nên chạm — xem lại phạm vi task thay vì đổi khai báo.\n'
           } > /tmp/comment.md
           gh pr comment "$PR" --repo "$REPO" --body-file /tmp/comment.md
-          echo "::warning::Đã chặn auto-merge cho PR #$PR — chạm đường dẫn nhạy cảm"
+          echo "::warning::Đã chặn auto-merge cho PR #$PR — chạm đường dẫn tự-quản-trị"
 
       - name: Bật auto-merge
         if: steps.soi.outputs.nhay_cam == 'false'
