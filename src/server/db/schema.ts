@@ -84,6 +84,10 @@ export const theKho = sqliteTable(
       .references(() => loHang.id),
     loai: text('loai').notNull(),
     soLuong: integer('so_luong').notNull(),
+    // Tổng tiền tường minh của dòng khi là dòng VÀO có giá vốn biết trước (vd.
+    // NHAP với tổng tiền T, SPEC.md §3.4) — 0 với dòng RA, COGS của dòng ra
+    // luôn suy ra từ bình quân gia quyền hiện có, không lưu tường minh.
+    giaTri: integer('gia_tri').notNull().default(0),
     thoiGian: text('thoi_gian').notNull(),
     thoiGianMayChu: text('thoi_gian_may_chu')
       .notNull()
@@ -110,6 +114,12 @@ export const tonKhoLo = sqliteTable(
       .notNull()
       .references(() => chiNhanh.id),
     ton: integer('ton').notNull(),
+    // Vế còn lại của cặp bình quân gia quyền (SPEC.md §3.4) — hình chiếu suy ra
+    // từ the_kho, gấp theo thứ tự đến máy chủ (src/server/kho/gia-von.ts).
+    giaTriTon: integer('gia_tri_ton').notNull().default(0),
   },
-  (t) => [primaryKey({ columns: [t.loId, t.chiNhanhId] })],
+  (t) => [
+    primaryKey({ columns: [t.loId, t.chiNhanhId] }),
+    check('ton_kho_lo_gia_tri_ton_khong_am', sql`${t.giaTriTon} >= 0`),
+  ],
 );

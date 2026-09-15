@@ -361,7 +361,7 @@ describe('ton_kho_lo', () => {
 
     const rows = db.select().from(tonKhoLo).where(eq(tonKhoLo.loId, loId)).all();
 
-    expect(rows).toEqual([{ loId, chiNhanhId: 'cn-1', ton: 864 }]);
+    expect(rows).toEqual([{ loId, chiNhanhId: 'cn-1', ton: 864, giaTriTon: 0 }]);
   });
 
   it('trùng (lo_id, chi_nhanh_id) bị chặn', () => {
@@ -381,5 +381,14 @@ describe('ton_kho_lo', () => {
     expect(() =>
       db.insert(tonKhoLo).values({ loId, chiNhanhId: 'cn-2', ton: 100 }).run(),
     ).not.toThrow();
+  });
+
+  it('giá trị tồn âm bị chặn ở tầng CSDL', () => {
+    taoChiNhanh('cn-1');
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+
+    expect(() =>
+      db.insert(tonKhoLo).values({ loId, chiNhanhId: 'cn-1', ton: 10, giaTriTon: -1 }).run(),
+    ).toThrow();
   });
 });

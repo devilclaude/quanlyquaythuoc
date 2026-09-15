@@ -42,6 +42,15 @@ function tonDem(loId: string, chiNhanhId: string): number | undefined {
   return row?.ton;
 }
 
+function tonVaGiaTriDem(loId: string, chiNhanhId: string): { ton: number; giaTriTon: number } | undefined {
+  const [row] = db
+    .select()
+    .from(tonKhoLo)
+    .where(and(eq(tonKhoLo.loId, loId), eq(tonKhoLo.chiNhanhId, chiNhanhId)))
+    .all();
+  return row ? { ton: row.ton, giaTriTon: row.giaTriTon } : undefined;
+}
+
 describe('ghiTheKho', () => {
   it('ghi một dòng vào lô chưa có tồn đệm thì tạo mới bản đệm đúng bằng số lượng ghi', () => {
     taoChiNhanh('cn-1');
@@ -169,6 +178,98 @@ describe('bất biến sổ cái == bản đệm', () => {
   });
 });
 
+describe('ghiTheKho — giá vốn bình quân gia quyền (T-007)', () => {
+  it('nhập có khai tổng tiền thì giá trị tồn tăng đúng bằng tổng tiền, không qua phép chia', () => {
+    taoChiNhanh('cn-1');
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+
+    ghiTheKho(db, [
+      {
+        id: 'tk-1',
+        chiNhanhId: 'cn-1',
+        loId,
+        loai: 'NHAP',
+        soLuong: 900,
+        giaTri: 4_500_000,
+        thoiGian: '2026-09-15T08:00:00.000Z',
+      },
+    ]);
+
+    expect(tonVaGiaTriDem(loId, 'cn-1')).toEqual({ ton: 900, giaTriTon: 4_500_000 });
+  });
+
+  it('bán một phần trừ đúng COGS bình quân gia quyền làm tròn nửa lên khỏi giá trị tồn', () => {
+    taoChiNhanh('cn-1');
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+
+    ghiTheKho(db, [
+      {
+        id: 'tk-1',
+        chiNhanhId: 'cn-1',
+        loId,
+        loai: 'NHAP',
+        soLuong: 1000,
+        giaTri: 5_100_000,
+        thoiGian: '2026-09-15T08:00:00.000Z',
+      },
+    ]);
+    ghiTheKho(db, [
+      { id: 'tk-2', chiNhanhId: 'cn-1', loId, loai: 'BAN', soLuong: -3, thoiGian: '2026-09-15T09:00:00.000Z' },
+    ]);
+
+    expect(tonVaGiaTriDem(loId, 'cn-1')).toEqual({ ton: 997, giaTriTon: 5_084_700 });
+  });
+
+  it('bán hết sạch một lô thì giá trị tồn về đúng 0 — không tích luỹ sai số làm tròn', () => {
+    taoChiNhanh('cn-1');
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+
+    ghiTheKho(db, [
+      {
+        id: 'tk-1',
+        chiNhanhId: 'cn-1',
+        loId,
+        loai: 'NHAP',
+        soLuong: 7,
+        giaTri: 100_000,
+        thoiGian: '2026-09-15T08:00:00.000Z',
+      },
+    ]);
+    ghiTheKho(db, [
+      { id: 'tk-2', chiNhanhId: 'cn-1', loId, loai: 'BAN', soLuong: -7, thoiGian: '2026-09-15T09:00:00.000Z' },
+    ]);
+
+    expect(tonVaGiaTriDem(loId, 'cn-1')).toEqual({ ton: 0, giaTriTon: 0 });
+  });
+
+  it('cùng kịch bản nhập rồi bán một phần cho ra cùng giá trị tồn cuối trên lô ngầm định và lô thật', () => {
+    taoChiNhanh('cn-1');
+    const loPhang = taoSanPhamCoLo('sp-phang', 'SPPHANG');
+    db.insert(sanPham).values({ id: 'sp-lo', maHang: 'SPLO', ten: 'Paracetamol 500mg' }).run();
+    const loThat = 'lo-that-1';
+    db.insert(loHang).values({ id: loThat, sanPhamId: 'sp-lo', soLo: 'L1', hsd: '2027-01-01' }).run();
+
+    for (const loId of [loPhang, loThat]) {
+      ghiTheKho(db, [
+        {
+          id: `tk-nhap-${loId}`,
+          chiNhanhId: 'cn-1',
+          loId,
+          loai: 'NHAP',
+          soLuong: 180,
+          giaTri: 900_000,
+          thoiGian: '2026-09-15T08:00:00.000Z',
+        },
+      ]);
+      ghiTheKho(db, [
+        { id: `tk-ban-${loId}`, chiNhanhId: 'cn-1', loId, loai: 'BAN', soLuong: -36, thoiGian: '2026-09-15T09:00:00.000Z' },
+      ]);
+    }
+
+    expect(tonVaGiaTriDem(loPhang, 'cn-1')).toEqual(tonVaGiaTriDem(loThat, 'cn-1'));
+  });
+});
+
 describe('dungLaiTonKhoDem', () => {
   it('dựng lại bản đệm từ sổ cái ra đúng bằng bản đệm đã có (không cần ghi tăng dần)', () => {
     taoChiNhanh('cn-1');
@@ -204,5 +305,33 @@ describe('dungLaiTonKhoDem', () => {
     dungLaiTonKhoDem(db);
 
     expect(tonDem(loId, 'cn-1')).toBe(900);
+  });
+
+  it('dựng lại đúng cả giá trị tồn (giá vốn) từ sổ cái sau nhập rồi bán một phần', () => {
+    taoChiNhanh('cn-1');
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+
+    ghiTheKho(db, [
+      {
+        id: 'tk-1',
+        chiNhanhId: 'cn-1',
+        loId,
+        loai: 'NHAP',
+        soLuong: 1000,
+        giaTri: 5_100_000,
+        thoiGian: '2026-09-15T08:00:00.000Z',
+      },
+    ]);
+    ghiTheKho(db, [
+      { id: 'tk-2', chiNhanhId: 'cn-1', loId, loai: 'BAN', soLuong: -3, thoiGian: '2026-09-15T09:00:00.000Z' },
+    ]);
+
+    const truocKhiDungLai = tonVaGiaTriDem(loId, 'cn-1');
+    db.delete(tonKhoLo).run();
+
+    dungLaiTonKhoDem(db);
+
+    expect(tonVaGiaTriDem(loId, 'cn-1')).toEqual(truocKhiDungLai);
+    expect(truocKhiDungLai).toEqual({ ton: 997, giaTriTon: 5_084_700 });
   });
 });

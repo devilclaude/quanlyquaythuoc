@@ -202,3 +202,20 @@ claude.md, không nói sửa workflow.
 PR: (xem mô tả PR)
 Tầng: B
 Kế tiếp: T-007, hoặc T-009a — cả hai đều đủ điều kiện, chọn theo prio (T-007).
+
+## 2026-09-15 — dọn PR + T-007
+Làm: PR#27 (auto-merge workflow) đang xanh, không comment, không conflict, chờ
+Dương xác nhận câu hỏi trong mô tả PR — không đụng vào, không chặn task nào.
+Chọn T-007: bình quân gia quyền (SPEC.md §3.4). Thêm cột `gia_tri` vào
+`the_kho` (tổng tiền tường minh của dòng NHAP) và `gia_tri_ton` vào
+`ton_kho_lo`; `src/server/kho/gia-von.ts` — hàm thuần `apDungGiaVon` là bước
+gấp DUY NHẤT (dòng vào cộng thẳng giá trị, dòng ra tính COGS làm tròn nửa lên,
+bán hết/vượt tồn về đúng 0, không chia khi tồn ≤ 0); tích hợp vào `ghiTheKho`
+(cập nhật cùng transaction) và viết lại `dungLaiTonKhoDem` để gấp tuần tự theo
+`thoi_gian_may_chu, id` thay vì SUM (giá trị tồn phụ thuộc thứ tự, không giao
+hoán như tổng số lượng) — vẫn một đường tính duy nhất dùng chung hai nơi. Test
+trước: pure function + tích hợp DB, gồm ca bắt buộc "bán hết → gia_tri_ton = 0"
+và cùng kịch bản trên lô ngầm định lẫn lô thật ra cùng số dư.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-009a (đủ điều kiện, phụ thuộc T-004c/T-008 đã DONE).

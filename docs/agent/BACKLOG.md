@@ -94,7 +94,7 @@ với sản phẩm chỉ có lô ngầm định và cho cùng số dư cuối; c
 không đủ, bán vượt tồn bị từ chối khi online.
 
 ### T-007 [B] prio:7 — Giá vốn bình quân gia quyền
-Trạng thái: TODO · Phụ thuộc: T-006
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-006
 Xong khi: hình chiếu giữ cặp `(ton, gia_tri_ton)` đều là số nguyên; nhập không sinh
 phép chia; COGS = `làm_tròn(gia_tri_ton × sl / ton)`; **bán hết thì `gia_tri_ton`
 về đúng 0** — có test; hình chiếu gấp theo **thứ tự đến máy chủ**, dựng lại được từ
