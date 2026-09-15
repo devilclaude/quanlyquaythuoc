@@ -1,0 +1,1 @@
+ALTER TABLE `san_pham` ADD `ngay_tao` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')) NOT NULL;

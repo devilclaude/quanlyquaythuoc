@@ -36,6 +36,13 @@
       "when": 1789262091027,
       "tag": "0004_the_kho_chan_update_delete",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1789463865995,
+      "tag": "0005_sticky_silver_centurion",
+      "breakpoints": true
     }
   ]
 }
