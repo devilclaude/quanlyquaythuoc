@@ -236,3 +236,13 @@ ghi dữ liệu tiền/kho theo tiêu chí BACKLOG.md).
 PR: (xem mô tả PR)
 Tầng: B
 Kế tiếp: T-009a (đủ điều kiện, phụ thuộc T-004c/T-008 đã DONE).
+
+## 2026-09-15 (run kế) — dọn PR + T-009a
+Làm: PR#28 xanh chờ duyệt, không sửa. Chọn T-009a: dựng `api/`+`hop-dong/` lần
+đầu, `GET /api/hang-hoa` (+tìm)/`:id`, màn danh sách+chi tiết (tab Thông tin),
+thêm `ngay_tao` vào `san_pham`. doi-chieu-ui bắt lỗi thứ tự Giá vốn/Giá bán
+trong panel chi tiết — đã sửa, thêm test khoá thứ tự.
+PR: (xem mô tả PR)
+Tầng: A
+Khác KiotViet: bỏ hàng tổng cộng dưới header bảng — ngoài phạm vi "Xong khi".
+Kế tiếp: T-009b (tạo mới hàng hoá) sau khi PR này merge.

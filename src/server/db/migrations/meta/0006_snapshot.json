@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "b18d760b-9440-4261-8a74-07f83f53d998",
-  "prevId": "2352cc1b-ecc5-4cb9-a0e1-2720dd1ec10f",
+  "id": "d444dfca-ba67-48e7-93f0-b9f641c40858",
+  "prevId": "b18d760b-9440-4261-8a74-07f83f53d998",
   "tables": {
     "chi_nhanh": {
       "name": "chi_nhanh",
@@ -292,6 +292,14 @@
           "notNull": true,
           "autoincrement": false
         },
+        "gia_tri": {
+          "name": "gia_tri",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
         "thoi_gian": {
           "name": "thoi_gian",
           "type": "text",
@@ -369,6 +377,14 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
+        },
+        "gia_tri_ton": {
+          "name": "gia_tri_ton",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
         }
       },
       "indexes": {},
@@ -410,7 +426,12 @@
         }
       },
       "uniqueConstraints": {},
-      "checkConstraints": {}
+      "checkConstraints": {
+        "ton_kho_lo_gia_tri_ton_khong_am": {
+          "name": "ton_kho_lo_gia_tri_ton_khong_am",
+          "value": "\"ton_kho_lo\".\"gia_tri_ton\" >= 0"
+        }
+      }
     }
   },
   "views": {},
