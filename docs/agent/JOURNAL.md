@@ -203,6 +203,19 @@ PR: (xem mô tả PR)
 Tầng: B
 Kế tiếp: T-007, hoặc T-009a — cả hai đều đủ điều kiện, chọn theo prio (T-007).
 
+## 2026-09-15 — chỉ đạo #quaythuoc-admin (không chọn task TODO)
+Làm: không còn PR agent nào mở. Chỉ đạo Dương 20:25 ngày 14/9: chỉ đạo trước
+(chỉ sửa CLAUDE.md) chưa đủ, cần sửa cả `auto-merge.yml` để mọi PR `Tầng: A`
+CI xanh đều tự merge. Đã bỏ nhóm đường dẫn nghiệp vụ (kho/bán hàng/nhập hàng/
+kiểm kê/đồng bộ/db/tiền/đơn vị/kiểu/offline) khỏi danh sách chặn của workflow;
+**giữ lại** chặn cho nhóm tự-quản-trị (`.github/`, `.claude/`, `CLAUDE.md`,
+config gốc, 4 file chỉ-đọc docs/agent) vì đây không phải "task" và để agent tự
+nới quyền merge của chính mình là rủi ro khác hẳn bug nghiệp vụ — nêu lại ở
+Slack để Dương xác nhận hoặc bác.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-007 hoặc T-009a, chọn theo prio (T-007), ở run sau.
+
 ## 2026-09-15 — dọn PR + T-007
 Làm: PR#27 (auto-merge workflow) đang xanh, không comment, không conflict, chờ
 Dương xác nhận câu hỏi trong mô tả PR — không đụng vào, không chặn task nào.
@@ -216,6 +229,10 @@ bán hết/vượt tồn về đúng 0, không chia khi tồn ≤ 0); tích hợ
 hoán như tổng số lượng) — vẫn một đường tính duy nhất dùng chung hai nơi. Test
 trước: pure function + tích hợp DB, gồm ca bắt buộc "bán hết → gia_tri_ton = 0"
 và cùng kịch bản trên lô ngầm định lẫn lô thật ra cùng số dư.
+Ghi chú: PR#27 đã merge (main bỏ chặn nhóm nghiệp vụ khỏi auto-merge.yml)
+trong lúc PR này đang mở — chạm `src/server/kho/**`/`src/server/db/**` giờ
+không còn tự động bị gắn `needs-human-review`, nhưng vẫn tự chọn Tầng B (task
+ghi dữ liệu tiền/kho theo tiêu chí BACKLOG.md).
 PR: (xem mô tả PR)
 Tầng: B
 Kế tiếp: T-009a (đủ điều kiện, phụ thuộc T-004c/T-008 đã DONE).
