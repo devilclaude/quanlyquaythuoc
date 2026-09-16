@@ -1,0 +1,598 @@
+{
+  "version": "6",
+  "dialect": "sqlite",
+  "id": "cf540115-193a-40eb-9fae-d99502f261b9",
+  "prevId": "d444dfca-ba67-48e7-93f0-b9f641c40858",
+  "tables": {
+    "chi_nhanh": {
+      "name": "chi_nhanh",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ten": {
+          "name": "ten",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "don_vi_tinh": {
+      "name": "don_vi_tinh",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "san_pham_id": {
+          "name": "san_pham_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ten": {
+          "name": "ten",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "he_so": {
+          "name": "he_so",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "la_co_so": {
+          "name": "la_co_so",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "gia_ban": {
+          "name": "gia_ban",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "don_vi_tinh_mot_co_so_moi_san_pham": {
+          "name": "don_vi_tinh_mot_co_so_moi_san_pham",
+          "columns": [
+            "san_pham_id"
+          ],
+          "isUnique": true,
+          "where": "\"don_vi_tinh\".\"la_co_so\" = 1"
+        },
+        "don_vi_tinh_san_pham_ten_unique": {
+          "name": "don_vi_tinh_san_pham_ten_unique",
+          "columns": [
+            "san_pham_id",
+            "ten"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "don_vi_tinh_san_pham_id_san_pham_id_fk": {
+          "name": "don_vi_tinh_san_pham_id_san_pham_id_fk",
+          "tableFrom": "don_vi_tinh",
+          "tableTo": "san_pham",
+          "columnsFrom": [
+            "san_pham_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "don_vi_tinh_he_so_toi_thieu": {
+          "name": "don_vi_tinh_he_so_toi_thieu",
+          "value": "\"don_vi_tinh\".\"he_so\" >= 1"
+        },
+        "don_vi_tinh_gia_ban_khong_am": {
+          "name": "don_vi_tinh_gia_ban_khong_am",
+          "value": "\"don_vi_tinh\".\"gia_ban\" >= 0"
+        }
+      }
+    },
+    "lo_hang": {
+      "name": "lo_hang",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "san_pham_id": {
+          "name": "san_pham_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "so_lo": {
+          "name": "so_lo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "hsd": {
+          "name": "hsd",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "la_lo_mac_dinh": {
+          "name": "la_lo_mac_dinh",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "ngay_tao": {
+          "name": "ngay_tao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {
+        "lo_hang_mot_lo_mac_dinh_moi_san_pham": {
+          "name": "lo_hang_mot_lo_mac_dinh_moi_san_pham",
+          "columns": [
+            "san_pham_id"
+          ],
+          "isUnique": true,
+          "where": "\"lo_hang\".\"la_lo_mac_dinh\" = 1"
+        },
+        "lo_hang_san_pham_so_lo_hsd_unique": {
+          "name": "lo_hang_san_pham_so_lo_hsd_unique",
+          "columns": [
+            "san_pham_id",
+            "so_lo",
+            "hsd"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "lo_hang_san_pham_id_san_pham_id_fk": {
+          "name": "lo_hang_san_pham_id_san_pham_id_fk",
+          "tableFrom": "lo_hang",
+          "tableTo": "san_pham",
+          "columnsFrom": [
+            "san_pham_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "phieu_kiem_ke": {
+      "name": "phieu_kiem_ke",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chi_nhanh_id": {
+          "name": "chi_nhanh_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ly_do": {
+          "name": "ly_do",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "thoi_gian": {
+          "name": "thoi_gian",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "thoi_gian_may_chu": {
+          "name": "thoi_gian_may_chu",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "phieu_kiem_ke_chi_nhanh_id_chi_nhanh_id_fk": {
+          "name": "phieu_kiem_ke_chi_nhanh_id_chi_nhanh_id_fk",
+          "tableFrom": "phieu_kiem_ke",
+          "tableTo": "chi_nhanh",
+          "columnsFrom": [
+            "chi_nhanh_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "phieu_kiem_ke_ly_do_khong_rong": {
+          "name": "phieu_kiem_ke_ly_do_khong_rong",
+          "value": "length(trim(\"phieu_kiem_ke\".\"ly_do\")) > 0"
+        }
+      }
+    },
+    "phieu_kiem_ke_dong": {
+      "name": "phieu_kiem_ke_dong",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "phieu_id": {
+          "name": "phieu_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lo_id": {
+          "name": "lo_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "so_luong_so_sach": {
+          "name": "so_luong_so_sach",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "so_luong_thuc_te": {
+          "name": "so_luong_thuc_te",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "phieu_kiem_ke_dong_phieu_lo_unique": {
+          "name": "phieu_kiem_ke_dong_phieu_lo_unique",
+          "columns": [
+            "phieu_id",
+            "lo_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "phieu_kiem_ke_dong_phieu_id_phieu_kiem_ke_id_fk": {
+          "name": "phieu_kiem_ke_dong_phieu_id_phieu_kiem_ke_id_fk",
+          "tableFrom": "phieu_kiem_ke_dong",
+          "tableTo": "phieu_kiem_ke",
+          "columnsFrom": [
+            "phieu_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "phieu_kiem_ke_dong_lo_id_lo_hang_id_fk": {
+          "name": "phieu_kiem_ke_dong_lo_id_lo_hang_id_fk",
+          "tableFrom": "phieu_kiem_ke_dong",
+          "tableTo": "lo_hang",
+          "columnsFrom": [
+            "lo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "phieu_kiem_ke_dong_so_luong_thuc_te_khong_am": {
+          "name": "phieu_kiem_ke_dong_so_luong_thuc_te_khong_am",
+          "value": "\"phieu_kiem_ke_dong\".\"so_luong_thuc_te\" >= 0"
+        }
+      }
+    },
+    "san_pham": {
+      "name": "san_pham",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ma_hang": {
+          "name": "ma_hang",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ten": {
+          "name": "ten",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ngay_tao": {
+          "name": "ngay_tao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {
+        "san_pham_ma_hang_unique": {
+          "name": "san_pham_ma_hang_unique",
+          "columns": [
+            "ma_hang"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "the_kho": {
+      "name": "the_kho",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chi_nhanh_id": {
+          "name": "chi_nhanh_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lo_id": {
+          "name": "lo_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "loai": {
+          "name": "loai",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "so_luong": {
+          "name": "so_luong",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "gia_tri": {
+          "name": "gia_tri",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "thoi_gian": {
+          "name": "thoi_gian",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "thoi_gian_may_chu": {
+          "name": "thoi_gian_may_chu",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "the_kho_chi_nhanh_id_chi_nhanh_id_fk": {
+          "name": "the_kho_chi_nhanh_id_chi_nhanh_id_fk",
+          "tableFrom": "the_kho",
+          "tableTo": "chi_nhanh",
+          "columnsFrom": [
+            "chi_nhanh_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "the_kho_lo_id_lo_hang_id_fk": {
+          "name": "the_kho_lo_id_lo_hang_id_fk",
+          "tableFrom": "the_kho",
+          "tableTo": "lo_hang",
+          "columnsFrom": [
+            "lo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "the_kho_loai_hop_le": {
+          "name": "the_kho_loai_hop_le",
+          "value": "\"the_kho\".\"loai\" IN ('BAN', 'NHAP', 'TRA_HANG', 'TRA_NCC', 'KIEM_KE', 'XUAT_HUY', 'DOI_CHE_DO')"
+        }
+      }
+    },
+    "ton_kho_lo": {
+      "name": "ton_kho_lo",
+      "columns": {
+        "lo_id": {
+          "name": "lo_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chi_nhanh_id": {
+          "name": "chi_nhanh_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ton": {
+          "name": "ton",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "gia_tri_ton": {
+          "name": "gia_tri_ton",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ton_kho_lo_lo_id_lo_hang_id_fk": {
+          "name": "ton_kho_lo_lo_id_lo_hang_id_fk",
+          "tableFrom": "ton_kho_lo",
+          "tableTo": "lo_hang",
+          "columnsFrom": [
+            "lo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "ton_kho_lo_chi_nhanh_id_chi_nhanh_id_fk": {
+          "name": "ton_kho_lo_chi_nhanh_id_chi_nhanh_id_fk",
+          "tableFrom": "ton_kho_lo",
+          "tableTo": "chi_nhanh",
+          "columnsFrom": [
+            "chi_nhanh_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "ton_kho_lo_lo_id_chi_nhanh_id_pk": {
+          "columns": [
+            "lo_id",
+            "chi_nhanh_id"
+          ],
+          "name": "ton_kho_lo_lo_id_chi_nhanh_id_pk"
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "ton_kho_lo_gia_tri_ton_khong_am": {
+          "name": "ton_kho_lo_gia_tri_ton_khong_am",
+          "value": "\"ton_kho_lo\".\"gia_tri_ton\" >= 0"
+        }
+      }
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "indexes": {}
+  }
+}

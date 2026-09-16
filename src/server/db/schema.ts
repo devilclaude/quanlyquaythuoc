@@ -127,3 +127,45 @@ export const tonKhoLo = sqliteTable(
     check('ton_kho_lo_gia_tri_ton_khong_am', sql`${t.giaTriTon} >= 0`),
   ],
 );
+
+// Chứng từ kiểm kê (T-050, SPEC.md §6.3) — chứng từ giao dịch, không xoá cứng
+// (SPEC.md §3.5). `ly_do` bắt buộc: kiểm kê luôn phải giải thích vì sao chênh.
+export const phieuKiemKe = sqliteTable(
+  'phieu_kiem_ke',
+  {
+    id: text('id').primaryKey(),
+    chiNhanhId: text('chi_nhanh_id')
+      .notNull()
+      .references(() => chiNhanh.id),
+    lyDo: text('ly_do').notNull(),
+    thoiGian: text('thoi_gian').notNull(),
+    thoiGianMayChu: text('thoi_gian_may_chu')
+      .notNull()
+      .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+  },
+  (t) => [check('phieu_kiem_ke_ly_do_khong_rong', sql`length(trim(${t.lyDo})) > 0`)],
+);
+
+// Từng dòng đếm theo lô của một phiếu kiểm kê. `so_luong_so_sach` là tồn đệm
+// TẠI THỜI ĐIỂM đếm — snapshot cho mục đích đối chiếu, được phép âm (tồn có thể
+// đang lệch âm do bán khi offline, SPEC.md §4.4, và kiểm kê chính là cách sửa nó).
+// `so_luong_thuc_te` là số đếm ngoài đời, không thể âm. Một lô chỉ đếm một lần
+// trong cùng một phiếu.
+export const phieuKiemKeDong = sqliteTable(
+  'phieu_kiem_ke_dong',
+  {
+    id: text('id').primaryKey(),
+    phieuId: text('phieu_id')
+      .notNull()
+      .references(() => phieuKiemKe.id),
+    loId: text('lo_id')
+      .notNull()
+      .references(() => loHang.id),
+    soLuongSoSach: integer('so_luong_so_sach').notNull(),
+    soLuongThucTe: integer('so_luong_thuc_te').notNull(),
+  },
+  (t) => [
+    unique('phieu_kiem_ke_dong_phieu_lo_unique').on(t.phieuId, t.loId),
+    check('phieu_kiem_ke_dong_so_luong_thuc_te_khong_am', sql`${t.soLuongThucTe} >= 0`),
+  ],
+);
