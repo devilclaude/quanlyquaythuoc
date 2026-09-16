@@ -50,6 +50,13 @@
       "when": 1789477942583,
       "tag": "0006_smiling_tarot",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1789550032086,
+      "tag": "0007_groovy_korath",
+      "breakpoints": true
     }
   ]
 }

@@ -269,7 +269,7 @@ thẻ kho; dùng được để xử lý cảnh báo lệch kho từ T-034; dùn
 cho tồn cũ đang nằm ở lô ngầm định.
 
 ### T-051 [B] prio:51 — Xuất huỷ
-Trạng thái: TODO · Phụ thuộc: T-006
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-006
 Xong khi: xuất khỏi kho có lý do và người thực hiện, ghi thẻ kho, chọn đúng lô.
 
 ### T-052 [B] prio:52 — Trả hàng (khách trả)

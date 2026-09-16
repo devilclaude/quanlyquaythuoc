@@ -246,3 +246,13 @@ PR: (xem mô tả PR)
 Tầng: A
 Khác KiotViet: bỏ hàng tổng cộng dưới header bảng — ngoài phạm vi "Xong khi".
 Kế tiếp: T-009b (tạo mới hàng hoá) sau khi PR này merge.
+
+## 2026-09-16 — dọn PR + T-051
+Làm: PR#30, PR#31 xanh chờ duyệt, không sửa/chọn lại. Chọn T-051 (Xuất huỷ):
+bảng `phieu_xuat_huy`/`_dong` (lý do + người thực hiện bắt buộc); `taoPhieuXuatHuy`
+trừ đúng lô, ghi `XUAT_HUY` âm; tách `ghiMotDongTheKho`/`TxTheKho` khỏi
+`ghiTheKho` (như PR#31 đã làm cho kiểm kê — chưa có trên `main`, có thể xung
+đột nhỏ khi cả hai merge). Khác kiểm kê: huỷ vượt tồn bị từ chối, không cho âm.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-009c sau PR#30 merge, hoặc T-052/T-053 khi T-022/T-040 xong.
