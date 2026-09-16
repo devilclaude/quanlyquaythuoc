@@ -246,3 +246,17 @@ PR: (xem mô tả PR)
 Tầng: A
 Khác KiotViet: bỏ hàng tổng cộng dưới header bảng — ngoài phạm vi "Xong khi".
 Kế tiếp: T-009b (tạo mới hàng hoá) sau khi PR này merge.
+
+## 2026-09-16 — dọn PR + T-009b
+Làm: PR#28 (T-007), PR#29 (T-009a) đã merge → chuyển DONE. Chọn T-009b: thêm
+`taoUlid` (sinh id lần đầu server-side), `TaoHangHoaReqSchema`, `POST
+/api/hang-hoa` (mã hàng tự sinh "HH000001.." nếu bỏ trống, thử lại khi đụng
+UNIQUE do đua; nhập tay trùng thì 409), form "Tạo hàng hóa" (đơn vị cơ sở +
+nhiều đơn vị khác, mỗi dòng mới điền sẵn giá = giá cơ sở × hệ số, sửa giá sau
+không tự đổi lại — SPEC.md §3.3). Đối chiếu screenshot bằng Playwright thật
+(dev server + API), luồng tạo→hiện trong danh sách→mở chi tiết chạy đúng.
+PR: (xem mô tả PR)
+Tầng: B
+Khác KiotViet: bỏ nhóm hàng/ảnh/thuộc tính/vị trí/trọng lượng/hãng-nước sản
+xuất/định mức tồn/tồn kho ban đầu/giá vốn/mã vạch — ngoài phạm vi "Xong khi".
+Kế tiếp: T-009c (sửa, xoá/ngừng hoạt động hàng hoá).

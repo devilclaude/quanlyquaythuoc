@@ -10,6 +10,13 @@
   margin: 0;
 }
 
+.danh-sach-hang-hoa__thanh-cong-cu {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kc-3);
+}
+
 .danh-sach-hang-hoa__thong-bao {
   text-align: center;
   padding: var(--kc-5);

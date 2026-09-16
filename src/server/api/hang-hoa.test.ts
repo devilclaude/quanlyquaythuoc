@@ -5,7 +5,13 @@ import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { Hono } from 'hono';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { chiNhanh, donViTinh, loHang, sanPham, theKho, tonKhoLo } from '../db/schema';
-import { dangKyHangHoaRoutes, layChiTietHangHoa, layDanhSachHangHoa } from './hang-hoa';
+import {
+  MaHangDaTonTaiError,
+  dangKyHangHoaRoutes,
+  layChiTietHangHoa,
+  layDanhSachHangHoa,
+  taoHangHoa,
+} from './hang-hoa';
 
 type DbTest = ReturnType<typeof drizzle>;
 
@@ -131,6 +137,59 @@ describe('layChiTietHangHoa', () => {
   });
 });
 
+describe('taoHangHoa', () => {
+  it('tạo hàng hoá chỉ một đơn vị cơ sở, mã hàng tự sinh khi bỏ trống', () => {
+    const chiTiet = taoHangHoa(db, { ten: 'Paracetamol 500mg', donViCoSoTen: 'viên', giaBan: 500, donViKhac: [] });
+
+    expect(chiTiet.ten).toBe('Paracetamol 500mg');
+    expect(chiTiet.maHang).toMatch(/^HH\d{6}$/);
+    expect(chiTiet.giaBan).toBe(500);
+    expect(chiTiet.donViTinh).toEqual([
+      expect.objectContaining({ ten: 'viên', heSo: 1, laCoSo: true, giaBan: 500 }),
+    ]);
+  });
+
+  it('trigger lô ngầm định vẫn tự chạy cho sản phẩm mới tạo qua API', () => {
+    const chiTiet = taoHangHoa(db, { ten: 'Vitamin C', donViCoSoTen: 'viên', giaBan: 1000, donViKhac: [] });
+
+    const [lo] = db.select().from(loHang).where(eq(loHang.sanPhamId, chiTiet.id)).all();
+    expect(lo?.laLoMacDinh).toBe(true);
+  });
+
+  it('tạo nhiều đơn vị với hệ số và giá riêng từng đơn vị', () => {
+    const chiTiet = taoHangHoa(db, {
+      ten: 'Paracetamol 500mg',
+      donViCoSoTen: 'viên',
+      giaBan: 500,
+      donViKhac: [
+        { ten: 'vỉ', heSo: 12, giaBan: 6000 },
+        { ten: 'hộp', heSo: 180, giaBan: 90000 },
+      ],
+    });
+
+    expect(chiTiet.donViTinh).toEqual([
+      expect.objectContaining({ ten: 'viên', heSo: 1, laCoSo: true, giaBan: 500 }),
+      expect.objectContaining({ ten: 'vỉ', heSo: 12, laCoSo: false, giaBan: 6000 }),
+      expect.objectContaining({ ten: 'hộp', heSo: 180, laCoSo: false, giaBan: 90000 }),
+    ]);
+  });
+
+  it('mã hàng tự sinh hai lần liên tiếp không trùng nhau', () => {
+    const a = taoHangHoa(db, { ten: 'Hàng A', donViCoSoTen: 'cái', giaBan: 100, donViKhac: [] });
+    const b = taoHangHoa(db, { ten: 'Hàng B', donViCoSoTen: 'cái', giaBan: 100, donViKhac: [] });
+
+    expect(a.maHang).not.toBe(b.maHang);
+  });
+
+  it('ném MaHangDaTonTaiError khi mã hàng truyền vào đã tồn tại', () => {
+    taoSanPham('sp-1', 'SP001', 'Hàng cũ', '2026-09-01T00:00:00.000Z');
+
+    expect(() =>
+      taoHangHoa(db, { maHang: 'SP001', ten: 'Hàng mới', donViCoSoTen: 'cái', giaBan: 100, donViKhac: [] }),
+    ).toThrow(MaHangDaTonTaiError);
+  });
+});
+
 describe('dangKyHangHoaRoutes', () => {
   function taoRouter() {
     const app = new Hono();
@@ -156,5 +215,47 @@ describe('dangKyHangHoaRoutes', () => {
     const res = await taoRouter().request('/khong-ton-tai');
 
     expect(res.status).toBe(404);
+  });
+
+  function guiTao(body: unknown) {
+    return taoRouter().request('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  }
+
+  it('POST / tạo hàng hoá mới, trả về 201 kèm chi tiết', async () => {
+    const res = await guiTao({ ten: 'Paracetamol 500mg', donViCoSoTen: 'viên', giaBan: 500, donViKhac: [] });
+
+    expect(res.status).toBe(201);
+    const json = (await res.json()) as { ten: string; donViTinh: unknown[] };
+    expect(json.ten).toBe('Paracetamol 500mg');
+    expect(json.donViTinh).toHaveLength(1);
+  });
+
+  it('POST / từ chối khi tên hàng bắt buộc bị bỏ trống', async () => {
+    const res = await guiTao({ ten: '', donViCoSoTen: 'viên', giaBan: 500, donViKhac: [] });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('POST / từ chối khi hệ số đơn vị khác nhỏ hơn 1', async () => {
+    const res = await guiTao({
+      ten: 'Paracetamol 500mg',
+      donViCoSoTen: 'viên',
+      giaBan: 500,
+      donViKhac: [{ ten: 'vỉ', heSo: 0, giaBan: 6000 }],
+    });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('POST / trả về 409 khi mã hàng nhập tay đã tồn tại', async () => {
+    taoSanPham('sp-1', 'SP001', 'Hàng cũ', '2026-09-01T00:00:00.000Z');
+
+    const res = await guiTao({ maHang: 'SP001', ten: 'Hàng mới', donViCoSoTen: 'cái', giaBan: 100, donViKhac: [] });
+
+    expect(res.status).toBe(409);
   });
 });
