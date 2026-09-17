@@ -57,3 +57,38 @@ Cần trả lời: Máy hoặc dịch vụ đích để đẩy bản sao lưu h�
 bằng cách nào (SSH key, access key)?
 Chặn: T-061, T-062
 
+## T-054 — Thẻ kho cần cột "Chứng từ" nhưng `the_kho` không lưu tham chiếu nào
+Ngày: 2026-09-17
+Loại: kỹ thuật
+Tình huống: BACKLOG.md yêu cầu màn thẻ kho có cột "Chứng từ" (khớp ảnh
+`docs/reference/kiotviet/.../thông tin thẻ kho của 1 sản phẩm...jpeg`, cột
+"GIAO DỊCH" hiện mã như `HD047093`/`PN002215`). Nhưng bảng `the_kho`
+(SPEC.md §3.1, `schema.ts`) không có cột nào tham chiếu chứng từ sinh ra dòng
+đó — chỉ có `id` nội bộ, `loai`, `so_luong`, hai mốc thời gian. Kiểm tra cả hai
+module đã ghi sổ cái thật ngoài seed (`T-050` kiểm kê, `T-051` xuất huỷ, đang
+mở PR #31/#32) xác nhận cùng lỗ hổng: cả hai gọi `ghiMotDongTheKho` không
+truyền chứng từ nào, `the_kho.id` chỉ là `${dongId}-tk` — không tra ngược được
+ra số phiếu. SPEC.md chỉ định nghĩa số hoá đơn `HD<máy>-<số>` (§5.3, cho bán
+hàng, chưa build); không nơi nào định nghĩa cách `the_kho` liên kết tới BẤT KỲ
+loại chứng từ nào.
+Phương án:
+  1. Thêm cột tham chiếu (vd. `chung_tu_loai` + `chung_tu_id`, hoặc một chuỗi
+     hiển thị được lưu tường minh lúc ghi dòng) vào `the_kho` ngay bây giờ —
+     migration cộng thêm, không phá dữ liệu cũ. Nhưng đây là quyết định kiến
+     trúc ảnh hưởng MỌI module ghi sổ cái sau này (bán hàng T-022, nhập hàng
+     T-040, trả hàng T-052/T-053), và hai PR đang mở (T-050/T-051) sẽ cần sửa
+     lại để điền đúng field — nếu không, "Chứng từ" của các dòng đó mãi mãi
+     trống dù cột đã có.
+  2. Dựng cột "Chứng từ" nhưng để trống mọi dòng hiện có (không ai ghi được
+     giá trị) — vi phạm "Định nghĩa xong" (CLAUDE.md): một cột luôn trống trên
+     đường chính chẳng khác gì mock không bao giờ có dữ liệu thật.
+  3. Bỏ cột "Chứng từ" khỏi T-054 lần này, chỉ làm 6 cột còn lại (Thời gian,
+     Loại, Lô/HSD, Số lượng, Tồn cuối, Giá vốn) — sai vì đây đúng là cột người
+     dùng cần nhất để truy khi số liệu lệch (CLAUDE.md: "Thẻ kho là thứ dùng để
+     truy khi số liệu lệch").
+Cần trả lời: `the_kho` nên tham chiếu chứng từ bằng cặp đa hình
+`(chung_tu_loai, chung_tu_id)` tra ngược qua bảng chứng từ tương ứng, hay bằng
+một chuỗi số chứng từ hiển thị được (kiểu `PN002215`) lưu tường minh ngay lúc
+ghi dòng? Chọn một khuôn để mọi module ghi sổ cái sau này theo cùng.
+Chặn: T-054
+
