@@ -268,3 +268,15 @@ T-054 sang BLOCKED, không mở task khác.
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: cần người quyết khuôn tham chiếu chứng từ cho `the_kho` (BLOCKED.md).
+
+## 2026-09-17 (run kế) — dọn PR, không chọn task mới
+Làm: PR#30/#31/#32 vẫn xanh, không comment, không conflict, chờ duyệt — không
+sửa. Không có PR nào merge từ run trước. Slack #quaythuoc-admin không có chỉ
+đạo mới từ 2026-09-15. Rà lại toàn bộ lịch sử CI (không chỉ view lọc theo
+nhánh main, view đó bị cắt bớt) — mọi run gần nhất đều xanh, main không đỏ.
+Mọi TODO còn lại vẫn phụ thuộc T-009c/T-050/T-051 (đều CHỜ MERGE, chưa DONE)
+— không có task đủ điều kiện, giống hệt kết luận run trước cùng ngày.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: chọn theo prio khi có PR merge (T-009c sau T-009b, hoặc T-050/T-051
+tự nó); BLOCKED T-054/T-061 vẫn cần người quyết.
