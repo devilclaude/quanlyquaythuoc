@@ -256,3 +256,15 @@ PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: chọn theo prio khi có PR merge — T-009c sau T-009b, hoặc T-050/T-051
 tiếp tục chờ duyệt.
+
+## 2026-09-17 — dọn PR, BLOCKED T-054, không chọn task mới
+Làm: PR#30/#31/#32 vẫn xanh, không comment, không conflict, chờ duyệt — không
+sửa. T-054 là TODO duy nhất còn đủ điều kiện phụ thuộc (còn lại đều chờ
+T-009c/T-050/T-051 merge), nhưng phát hiện `the_kho` không có cột nào tham
+chiếu chứng từ sinh ra dòng đó — kể cả T-050/T-051 (đang mở PR) cũng không
+truyền. Cột "Chứng từ" của T-054 không dựng được mà không bịa một quyết định
+kiến trúc ảnh hưởng mọi module ghi sổ cái sau này. Ghi BLOCKED.md, chuyển
+T-054 sang BLOCKED, không mở task khác.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: cần người quyết khuôn tham chiếu chứng từ cho `the_kho` (BLOCKED.md).

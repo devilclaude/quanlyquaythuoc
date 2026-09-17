@@ -285,7 +285,7 @@ Xong khi: khớp screenshot "Trả hàng nhập"; liên kết ngược tới phi
 đúng lô đã nhập; ghi thẻ kho.
 
 ### T-054 [A] prio:54 — Màn thẻ kho
-Trạng thái: TODO · Phụ thuộc: T-005, T-007
+Trạng thái: BLOCKED · Phụ thuộc: T-005, T-007
 Xong khi: cột Thời gian · Chứng từ · Loại · Lô/HSD · Số lượng (±) · Tồn cuối · Giá
 vốn; **cột Lô/HSD ẩn khi sản phẩm ở chế độ phẳng**; "Tồn cuối" tính lại theo **thứ
 tự đến máy chủ**, không lưu; xem được trên điện thoại như bản KiotViet mobile.
