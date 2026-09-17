@@ -280,3 +280,15 @@ PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: chọn theo prio khi có PR merge (T-009c sau T-009b, hoặc T-050/T-051
 tự nó); BLOCKED T-054/T-061 vẫn cần người quyết.
+
+## 2026-09-17 (run kế, lần 3) — dọn PR, không chọn task mới
+Làm: PR#30/#31/#32 vẫn xanh, không comment, không conflict (xác nhận bằng
+merge thật vào một worktree tạm, không chỉ đọc cờ `mergeable_state`) — không
+sửa. Không có PR nào merge kể từ run trước cùng ngày (16:13). Slack
+#quaythuoc-admin không có chỉ đạo mới từ 2026-09-15. Tình huống giống hệt run
+trước: mọi TODO còn lại vẫn phụ thuộc T-009c/T-050/T-051 (CHỜ MERGE) hoặc đã
+BLOCKED (T-054, T-061/T-062) — không có task đủ điều kiện.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: không đổi so với run trước — chọn theo prio khi một trong ba PR
+merge.
