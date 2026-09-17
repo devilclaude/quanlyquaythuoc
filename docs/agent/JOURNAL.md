@@ -260,3 +260,13 @@ Tầng: B
 Khác KiotViet: bỏ nhóm hàng/ảnh/thuộc tính/vị trí/trọng lượng/hãng-nước sản
 xuất/định mức tồn/tồn kho ban đầu/giá vốn/mã vạch — ngoài phạm vi "Xong khi".
 Kế tiếp: T-009c (sửa, xoá/ngừng hoạt động hàng hoá).
+
+## 2026-09-16 — dọn PR, không chọn task mới
+Làm: PR#30 (T-009b), #31 (T-050), #32 (T-051) đều xanh, không comment, không
+conflict, chờ người duyệt (cả ba khai Tầng B) — không sửa. Phát hiện BACKLOG
+lệch: PR#28 (T-007) đã merge từ trước nhưng chưa chuyển DONE — sửa ở đây.
+Không còn TODO nào đủ điều kiện ngoài T-009b/T-050/T-051 (đã có PR mở).
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: chọn theo prio khi có PR merge — T-009c sau T-009b, hoặc T-050/T-051
+tiếp tục chờ duyệt.
