@@ -292,3 +292,13 @@ PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: không đổi so với run trước — chọn theo prio khi một trong ba PR
 merge.
+
+## 2026-09-18 — dọn PR, không chọn task mới
+Làm: PR#30/#31/#32 vẫn xanh, không comment, không review, không conflict (xác
+nhận bằng `git merge-tree` cục bộ với `main` mới nhất) — không sửa. Không có
+PR nào merge kể từ run trước. Slack #quaythuoc-admin không có chỉ đạo mới từ
+2026-09-15. Tình huống giống hệt ba run trước: mọi TODO còn lại vẫn phụ thuộc
+T-009c/T-050/T-051 (CHỜ MERGE) hoặc đã BLOCKED (T-054, T-061/T-062).
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: không đổi — chọn theo prio khi một trong ba PR merge.
