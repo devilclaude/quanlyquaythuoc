@@ -312,3 +312,13 @@ Không PR nào merge từ run trước (5 run liên tiếp cùng kết luận). 
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: không đổi — chọn theo prio khi một trong ba PR merge.
+
+## 2026-09-18 (run kế, lần 3) — dọn PR, không chọn task mới
+Làm: PR#30/#31/#32 vẫn xanh, không comment/review, không conflict thật (xác
+nhận `git merge-tree` với `origin/main` mới nhất, không chỉ đọc
+`mergeable_state`). Không PR nào merge từ run trước (6 run liên tiếp cùng kết
+luận). Slack #quaythuoc-admin không có chỉ đạo mới từ 2026-09-15; đề nghị
+duyệt/merge gửi #quaythuoc-build ở run trước vẫn chưa có phản hồi.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: không đổi — chọn theo prio khi một trong ba PR merge.
