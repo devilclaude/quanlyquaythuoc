@@ -302,3 +302,13 @@ T-009c/T-050/T-051 (CHỜ MERGE) hoặc đã BLOCKED (T-054, T-061/T-062).
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: không đổi — chọn theo prio khi một trong ba PR merge.
+
+## 2026-09-18 (run kế) — dọn PR, không chọn task mới
+Làm: PR#30/#31/#32 vẫn xanh, không comment/review, không conflict thật (xác
+nhận `git merge-tree` với `main` mới nhất, không chỉ đọc `mergeable_state`).
+Không PR nào merge từ run trước (5 run liên tiếp cùng kết luận). Slack
+#quaythuoc-admin không có chỉ đạo mới từ 2026-09-15. Báo Slack #quaythuoc-build
+đề nghị Dương duyệt/merge — 3 PR đã chờ hơn 2 ngày, chặn toàn bộ backlog.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: không đổi — chọn theo prio khi một trong ba PR merge.
