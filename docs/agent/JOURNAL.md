@@ -322,3 +322,15 @@ duyệt/merge gửi #quaythuoc-build ở run trước vẫn chưa có phản h�
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: không đổi — chọn theo prio khi một trong ba PR merge.
+
+## 2026-09-18 (run kế, lần 4) — dọn PR, không chọn task mới
+Làm: PR#30/#31/#32 vẫn xanh, không comment/review, không conflict thật (xác
+nhận `git merge-tree` với `origin/main` mới nhất). Không PR nào merge từ run
+trước (7 run liên tiếp cùng kết luận, từ 2026-09-16). Slack #quaythuoc-admin
+không có chỉ đạo mới từ 2026-09-15; đề nghị duyệt/merge gửi #quaythuoc-build
+hai run trước vẫn chưa có phản hồi. Cả ba PR khai Tầng B nhưng không nêu lý do
+cụ thể cần người duyệt trong mô tả — không tự nâng lên A (CLAUDE.md cấm), chỉ
+ghi nhận để người quyết cân nhắc. Báo Slack (đợt 2, nhấn mạnh thời lượng chờ).
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: không đổi — chọn theo prio khi một trong ba PR merge hoặc có chỉ đạo mới.
