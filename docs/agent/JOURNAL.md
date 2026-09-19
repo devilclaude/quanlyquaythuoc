@@ -334,3 +334,15 @@ ghi nhận để người quyết cân nhắc. Báo Slack (đợt 2, nhấn mạ
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: không đổi — chọn theo prio khi một trong ba PR merge hoặc có chỉ đạo mới.
+
+## 2026-09-19 — dọn PR: giải thích #30/#31/#32 vẫn chờ duyệt tay
+Làm: Dương hỏi (#quaythuoc-admin) sao còn PR cần duyệt tay dù CLAUDE.md đã đổi
+mặc định sang A. Xác nhận bằng `git diff --name-only`: cả ba không chạm đường
+dẫn tự-quản-trị trong `auto-merge.yml` — workflow chỉ đọc dòng `Tầng:` ghi
+cứng trong mô tả PR lúc mở (16-17/9), không tính lại theo tiêu chí hiện tại.
+Không tự nâng B lên A (CLAUDE.md cấm) — sửa BACKLOG.md "Tiêu chí gắn tầng"
+(còn mô tả chính sách cũ, gây hiểu lầm) thay vì sửa PR. Không chọn task mới —
+mọi TODO còn lại vẫn phụ thuộc ba PR trên.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: Dương duyệt/merge #30/#31/#32 tay, hoặc chỉ rõ muốn đổi tầng PR nào.
