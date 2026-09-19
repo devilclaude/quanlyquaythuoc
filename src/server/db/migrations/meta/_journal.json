@@ -57,6 +57,13 @@
       "when": 1789535779664,
       "tag": "0007_easy_johnny_blaze",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1789794616010,
+      "tag": "0008_white_aqueduct",
+      "breakpoints": true
     }
   ]
 }

@@ -134,7 +134,7 @@ screenshot gắn với Bán online (NGOÀI v1, `SPEC.md` §2) — bỏ, ghi `JOU
 phần "Khác KiotViet". Tầng A vì chỉ đọc.
 
 ### T-009b [B] prio:9.2 — Tạo mới hàng hoá (nhiều đơn vị)
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-009a, T-003
+Trạng thái: DONE · Phụ thuộc: T-009a, T-003
 Xong khi: form "Tạo mới hàng hóa" có Mã hàng (tự động/nhập), Tên hàng (bắt buộc),
 Giá bán đơn vị cơ sở, và khai được nhiều đơn vị tính kèm hệ số nguyên ≥1 + giá
 riêng từng đơn vị; **thêm đơn vị mới thì form điền sẵn gợi ý giá = giá đơn vị cơ
@@ -274,13 +274,13 @@ kho** — hoặc vào hết hoặc không vào gì.
 ## Milestone 5 — Tồn kho đúng
 
 ### T-050 [B] prio:50 — Kiểm kê
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-006
+Trạng thái: DONE · Phụ thuộc: T-006
 Xong khi: đếm thực tế theo lô, so sổ sách, tạo phiếu điều chỉnh **có lý do**, ghi
 thẻ kho; dùng được để xử lý cảnh báo lệch kho từ T-034; dùng được để gán lô thật
 cho tồn cũ đang nằm ở lô ngầm định.
 
 ### T-051 [B] prio:51 — Xuất huỷ
-Trạng thái: TODO · Phụ thuộc: T-006
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-006
 Xong khi: xuất khỏi kho có lý do và người thực hiện, ghi thẻ kho, chọn đúng lô.
 
 ### T-052 [B] prio:52 — Trả hàng (khách trả)

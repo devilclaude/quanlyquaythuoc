@@ -169,3 +169,47 @@ export const phieuKiemKeDong = sqliteTable(
     check('phieu_kiem_ke_dong_so_luong_thuc_te_khong_am', sql`${t.soLuongThucTe} >= 0`),
   ],
 );
+
+// Chứng từ xuất huỷ (T-051, DOMAIN-NOTES.md B2) — chứng từ giao dịch, không xoá
+// cứng (SPEC.md §3.5). `ly_do` và `nguoi_thuc_hien` bắt buộc: xuất huỷ luôn phải
+// giải thích được vì sao và ai làm.
+export const phieuXuatHuy = sqliteTable(
+  'phieu_xuat_huy',
+  {
+    id: text('id').primaryKey(),
+    chiNhanhId: text('chi_nhanh_id')
+      .notNull()
+      .references(() => chiNhanh.id),
+    lyDo: text('ly_do').notNull(),
+    nguoiThucHien: text('nguoi_thuc_hien').notNull(),
+    thoiGian: text('thoi_gian').notNull(),
+    thoiGianMayChu: text('thoi_gian_may_chu')
+      .notNull()
+      .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+  },
+  (t) => [
+    check('phieu_xuat_huy_ly_do_khong_rong', sql`length(trim(${t.lyDo})) > 0`),
+    check('phieu_xuat_huy_nguoi_thuc_hien_khong_rong', sql`length(trim(${t.nguoiThucHien})) > 0`),
+  ],
+);
+
+// Từng dòng xuất huỷ theo lô của một phiếu. `so_luong` là số lượng xuất huỷ,
+// đơn vị cơ sở, luôn dương (chiều trừ kho do lớp ghi thẻ kho tự áp — không lưu
+// dấu ở đây). Một lô chỉ xuất huỷ một lần trong cùng một phiếu.
+export const phieuXuatHuyDong = sqliteTable(
+  'phieu_xuat_huy_dong',
+  {
+    id: text('id').primaryKey(),
+    phieuId: text('phieu_id')
+      .notNull()
+      .references(() => phieuXuatHuy.id),
+    loId: text('lo_id')
+      .notNull()
+      .references(() => loHang.id),
+    soLuong: integer('so_luong').notNull(),
+  },
+  (t) => [
+    unique('phieu_xuat_huy_dong_phieu_lo_unique').on(t.phieuId, t.loId),
+    check('phieu_xuat_huy_dong_so_luong_duong', sql`${t.soLuong} > 0`),
+  ],
+);

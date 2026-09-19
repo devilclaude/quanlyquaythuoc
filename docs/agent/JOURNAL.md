@@ -272,6 +272,16 @@ Khác KiotViet: bỏ nhóm hàng/ảnh/thuộc tính/vị trí/trọng lượng/
 xuất/định mức tồn/tồn kho ban đầu/giá vốn/mã vạch — ngoài phạm vi "Xong khi".
 Kế tiếp: T-009c (sửa, xoá/ngừng hoạt động hàng hoá).
 
+## 2026-09-16 — dọn PR + T-051
+Làm: PR#30, PR#31 xanh chờ duyệt, không sửa/chọn lại. Chọn T-051 (Xuất huỷ):
+bảng `phieu_xuat_huy`/`_dong` (lý do + người thực hiện bắt buộc); `taoPhieuXuatHuy`
+trừ đúng lô, ghi `XUAT_HUY` âm; tách `ghiMotDongTheKho`/`TxTheKho` khỏi
+`ghiTheKho` (như PR#31 đã làm cho kiểm kê — chưa có trên `main`, có thể xung
+đột nhỏ khi cả hai merge). Khác kiểm kê: huỷ vượt tồn bị từ chối, không cho âm.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-009c sau PR#30 merge, hoặc T-052/T-053 khi T-022/T-040 xong.
+
 ## 2026-09-16 — dọn PR, không chọn task mới
 Làm: PR#30 (T-009b), #31 (T-050), #32 (T-051) đều xanh, không comment, không
 conflict, chờ người duyệt (cả ba khai Tầng B) — không sửa. Phát hiện BACKLOG
@@ -371,3 +381,18 @@ mọi TODO còn lại vẫn phụ thuộc ba PR trên.
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: Dương duyệt/merge #30/#31/#32 tay, hoặc chỉ rõ muốn đổi tầng PR nào.
+
+## 2026-09-19 (run kế) — sửa PR#32 conflict, không chọn task mới
+Làm: #30 (T-009b), #31 (T-050) đã merge → chuyển DONE. #32 (T-051) báo
+`mergeable_state: dirty` — đúng xung đột đã dự báo trong mô tả PR (cùng tách
+`ghiMotDongTheKho`/`TxTheKho` với #31). Merge `main` vào nhánh: gộp comment
+`so-cai.ts`, giữ cả hai bảng `phieu_kiem_ke*`/`phieu_xuat_huy*` trong
+`schema.ts`+test, và **regenerate** migration bằng `npm run db:generate` (bỏ
+`0007_groovy_korath.sql` trùng idx với `0007_easy_johnny_blaze.sql` đã merge,
+sinh lại thành `0008_white_aqueduct.sql` — nội dung SQL giữ nguyên, chỉ đổi số
+thứ tự) thay vì tự sửa tay file do drizzle-kit sinh. `npm run ci` xanh (226
+test, e2e qua). Theo luật "sửa PR cũ và dừng run tại đó" — không chọn task mới.
+PR: https://github.com/devilclaude/quanlyquaythuoc/pull/32
+Tầng: B
+Kế tiếp: chờ người duyệt #32 (đã khai Tầng B từ đầu, lý do trong mô tả PR);
+sau khi merge, chọn theo prio (T-009c, hoặc T-052/T-053 khi đủ điều kiện).

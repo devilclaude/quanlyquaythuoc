@@ -3,7 +3,18 @@ import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { chiNhanh, donViTinh, loHang, phieuKiemKe, phieuKiemKeDong, sanPham, theKho, tonKhoLo } from './schema';
+import {
+  chiNhanh,
+  donViTinh,
+  loHang,
+  phieuKiemKe,
+  phieuKiemKeDong,
+  phieuXuatHuy,
+  phieuXuatHuyDong,
+  sanPham,
+  theKho,
+  tonKhoLo,
+} from './schema';
 
 type DbTest = ReturnType<typeof drizzle>;
 
@@ -492,6 +503,110 @@ describe('phieu_kiem_ke', () => {
         .insert(phieuKiemKeDong)
         .values({ id: 'pkkd-2', phieuId: 'pkk-1', loId, soLuongSoSach: 10, soLuongThucTe: 9 })
         .run(),
+    ).toThrow();
+  });
+});
+
+describe('phieu_xuat_huy', () => {
+  function taoChiNhanh(id: string) {
+    db.insert(chiNhanh).values({ id, ten: 'Quầy chính' }).run();
+  }
+
+  function taoSanPhamCoLo(sanPhamId: string, maHang: string) {
+    db.insert(sanPham).values({ id: sanPhamId, maHang, ten: 'Paracetamol 500mg' }).run();
+    const [lo] = db.select().from(loHang).where(eq(loHang.sanPhamId, sanPhamId)).all();
+    if (!lo) throw new Error('trigger lô ngầm định không chạy');
+    return lo.id;
+  }
+
+  it('tạo được một phiếu xuất huỷ hợp lệ kèm dòng', () => {
+    taoChiNhanh('cn-1');
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+
+    db.insert(phieuXuatHuy)
+      .values({
+        id: 'pxh-1',
+        chiNhanhId: 'cn-1',
+        lyDo: 'Hết hạn sử dụng',
+        nguoiThucHien: 'Dược sĩ Lan',
+        thoiGian: '2026-09-16T08:00:00.000Z',
+      })
+      .run();
+    db.insert(phieuXuatHuyDong).values({ id: 'pxhd-1', phieuId: 'pxh-1', loId, soLuong: 10 }).run();
+
+    const rows = db.select().from(phieuXuatHuyDong).where(eq(phieuXuatHuyDong.phieuId, 'pxh-1')).all();
+
+    expect(rows).toEqual([{ id: 'pxhd-1', phieuId: 'pxh-1', loId, soLuong: 10 }]);
+  });
+
+  it('lý do rỗng hoặc chỉ khoảng trắng bị chặn ở tầng CSDL', () => {
+    taoChiNhanh('cn-1');
+
+    expect(() =>
+      db
+        .insert(phieuXuatHuy)
+        .values({
+          id: 'pxh-1',
+          chiNhanhId: 'cn-1',
+          lyDo: '   ',
+          nguoiThucHien: 'Dược sĩ Lan',
+          thoiGian: '2026-09-16T08:00:00.000Z',
+        })
+        .run(),
+    ).toThrow();
+  });
+
+  it('người thực hiện rỗng hoặc chỉ khoảng trắng bị chặn ở tầng CSDL', () => {
+    taoChiNhanh('cn-1');
+
+    expect(() =>
+      db
+        .insert(phieuXuatHuy)
+        .values({
+          id: 'pxh-1',
+          chiNhanhId: 'cn-1',
+          lyDo: 'Hết hạn sử dụng',
+          nguoiThucHien: '   ',
+          thoiGian: '2026-09-16T08:00:00.000Z',
+        })
+        .run(),
+    ).toThrow();
+  });
+
+  it('so_luong không dương bị chặn ở tầng CSDL (xuất huỷ luôn xuất một số lượng dương)', () => {
+    taoChiNhanh('cn-1');
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+    db.insert(phieuXuatHuy)
+      .values({
+        id: 'pxh-1',
+        chiNhanhId: 'cn-1',
+        lyDo: 'Hết hạn sử dụng',
+        nguoiThucHien: 'Dược sĩ Lan',
+        thoiGian: '2026-09-16T08:00:00.000Z',
+      })
+      .run();
+
+    expect(() =>
+      db.insert(phieuXuatHuyDong).values({ id: 'pxhd-1', phieuId: 'pxh-1', loId, soLuong: 0 }).run(),
+    ).toThrow();
+  });
+
+  it('cùng một lô không xuất huỷ hai lần trong cùng một phiếu', () => {
+    taoChiNhanh('cn-1');
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+    db.insert(phieuXuatHuy)
+      .values({
+        id: 'pxh-1',
+        chiNhanhId: 'cn-1',
+        lyDo: 'Hết hạn sử dụng',
+        nguoiThucHien: 'Dược sĩ Lan',
+        thoiGian: '2026-09-16T08:00:00.000Z',
+      })
+      .run();
+    db.insert(phieuXuatHuyDong).values({ id: 'pxhd-1', phieuId: 'pxh-1', loId, soLuong: 5 }).run();
+
+    expect(() =>
+      db.insert(phieuXuatHuyDong).values({ id: 'pxhd-2', phieuId: 'pxh-1', loId, soLuong: 3 }).run(),
     ).toThrow();
   });
 });
