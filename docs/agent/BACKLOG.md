@@ -19,13 +19,24 @@ hoặc ghi `BLOCKED.md` nếu không chẻ được. Không tự cấp ngoại l
 
 ## Tiêu chí gắn tầng
 
-`CLAUDE.md` quy định nhóm **luôn là `[B]`**: tồn kho, lô, hạn dùng, quy đổi đơn vị,
-tiền, hoá đơn, đồng bộ offline, migration, phân quyền, backup.
+Cập nhật theo chỉ đạo chủ dự án 2026-09-14 (#quaythuoc-admin, xem `CLAUDE.md`
+mục "Tầng merge"): **không còn nhóm "luôn `[B]`" theo miền nghiệp vụ.** Mặc
+định khi nghi ngờ giờ là `[A]`. Agent tự đánh giá theo từng task và vẫn được
+tự chọn `[B]` khi thấy có lý do cụ thể cần người duyệt trước khi merge (ví dụ:
+quyết định nền khó đảo ngược, không chắc chắn về nghiệp vụ) — nhưng đây là lựa
+chọn theo từng task, không phải quy tắc cứng theo miền (kho/tiền/migration/...
+không còn tự động bắt buộc `[B]`).
 
-**Nhóm đó chỉ áp cho task GHI dữ liệu.** Task chỉ ĐỌC — báo cáo, cảnh báo, in ấn,
-màn hình hiển thị — được `[A]`, kể cả khi nó đọc tồn kho hay tiền.
+`[A]` khai đúng vẫn **không** tự merge nếu PR chạm nhóm tự-quản-trị của agent
+(`.github/`, `.claude/`, `scripts/`, `CLAUDE.md`, config gốc, bốn file chỉ-đọc
+trong `docs/agent/`) — xem `.github/workflows/auto-merge.yml`. Nhóm này luôn
+"nghi ngờ thì `[B]`" bất kể agent khai gì trong mô tả PR.
 
-Nghi ngờ thì `[B]`. Không bao giờ tự nâng `[B]` lên `[A]`.
+**Tầng khai trong một PR là bất biến sau khi mở.** Không bao giờ tự nâng
+`[B]` đã khai trên một PR lên `[A]` sau đó, kể cả khi tiêu chí mặc định đổi
+sau khi PR đó đã mở — thay đổi tiêu chí chỉ áp dụng cho các PR mở SAU thời
+điểm đổi, không hồi tố PR cũ. Muốn một PR `[B]` cũ tự merge thì cách đúng là
+người duyệt merge tay, không phải agent sửa lại dòng khai báo.
 
 ---
 
