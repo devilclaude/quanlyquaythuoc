@@ -3,7 +3,18 @@ import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { chiNhanh, donViTinh, loHang, phieuXuatHuy, phieuXuatHuyDong, sanPham, theKho, tonKhoLo } from './schema';
+import {
+  chiNhanh,
+  donViTinh,
+  loHang,
+  phieuKiemKe,
+  phieuKiemKeDong,
+  phieuXuatHuy,
+  phieuXuatHuyDong,
+  sanPham,
+  theKho,
+  tonKhoLo,
+} from './schema';
 
 type DbTest = ReturnType<typeof drizzle>;
 
@@ -407,6 +418,91 @@ describe('ton_kho_lo', () => {
 
     expect(() =>
       db.insert(tonKhoLo).values({ loId, chiNhanhId: 'cn-1', ton: 10, giaTriTon: -1 }).run(),
+    ).toThrow();
+  });
+});
+
+describe('phieu_kiem_ke', () => {
+  function taoChiNhanh(id: string) {
+    db.insert(chiNhanh).values({ id, ten: 'Quầy chính' }).run();
+  }
+
+  function taoSanPhamCoLo(sanPhamId: string, maHang: string) {
+    db.insert(sanPham).values({ id: sanPhamId, maHang, ten: 'Paracetamol 500mg' }).run();
+    const [lo] = db.select().from(loHang).where(eq(loHang.sanPhamId, sanPhamId)).all();
+    if (!lo) throw new Error('trigger lô ngầm định không chạy');
+    return lo.id;
+  }
+
+  it('tạo được một phiếu kiểm kê hợp lệ kèm dòng', () => {
+    taoChiNhanh('cn-1');
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+
+    db.insert(phieuKiemKe)
+      .values({ id: 'pkk-1', chiNhanhId: 'cn-1', lyDo: 'Kiểm kê định kỳ', thoiGian: '2026-09-16T08:00:00.000Z' })
+      .run();
+    db.insert(phieuKiemKeDong)
+      .values({ id: 'pkkd-1', phieuId: 'pkk-1', loId, soLuongSoSach: 100, soLuongThucTe: 95 })
+      .run();
+
+    const rows = db.select().from(phieuKiemKeDong).where(eq(phieuKiemKeDong.phieuId, 'pkk-1')).all();
+
+    expect(rows).toEqual([{ id: 'pkkd-1', phieuId: 'pkk-1', loId, soLuongSoSach: 100, soLuongThucTe: 95 }]);
+  });
+
+  it('lý do rỗng hoặc chỉ khoảng trắng bị chặn ở tầng CSDL', () => {
+    taoChiNhanh('cn-1');
+
+    expect(() =>
+      db.insert(phieuKiemKe).values({ id: 'pkk-1', chiNhanhId: 'cn-1', lyDo: '   ', thoiGian: '2026-09-16T08:00:00.000Z' }).run(),
+    ).toThrow();
+  });
+
+  it('so_luong_so_sach âm được chấp nhận (tồn lệch kho có thể đang âm — SPEC.md §4.4)', () => {
+    taoChiNhanh('cn-1');
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+    db.insert(phieuKiemKe)
+      .values({ id: 'pkk-1', chiNhanhId: 'cn-1', lyDo: 'Xử lý lệch kho', thoiGian: '2026-09-16T08:00:00.000Z' })
+      .run();
+
+    expect(() =>
+      db
+        .insert(phieuKiemKeDong)
+        .values({ id: 'pkkd-1', phieuId: 'pkk-1', loId, soLuongSoSach: -5, soLuongThucTe: 0 })
+        .run(),
+    ).not.toThrow();
+  });
+
+  it('so_luong_thuc_te âm bị chặn ở tầng CSDL (không đếm được số lượng âm ngoài đời)', () => {
+    taoChiNhanh('cn-1');
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+    db.insert(phieuKiemKe)
+      .values({ id: 'pkk-1', chiNhanhId: 'cn-1', lyDo: 'Kiểm kê định kỳ', thoiGian: '2026-09-16T08:00:00.000Z' })
+      .run();
+
+    expect(() =>
+      db
+        .insert(phieuKiemKeDong)
+        .values({ id: 'pkkd-1', phieuId: 'pkk-1', loId, soLuongSoSach: 10, soLuongThucTe: -1 })
+        .run(),
+    ).toThrow();
+  });
+
+  it('cùng một lô không đếm hai lần trong cùng một phiếu', () => {
+    taoChiNhanh('cn-1');
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+    db.insert(phieuKiemKe)
+      .values({ id: 'pkk-1', chiNhanhId: 'cn-1', lyDo: 'Kiểm kê định kỳ', thoiGian: '2026-09-16T08:00:00.000Z' })
+      .run();
+    db.insert(phieuKiemKeDong)
+      .values({ id: 'pkkd-1', phieuId: 'pkk-1', loId, soLuongSoSach: 10, soLuongThucTe: 10 })
+      .run();
+
+    expect(() =>
+      db
+        .insert(phieuKiemKeDong)
+        .values({ id: 'pkkd-2', phieuId: 'pkk-1', loId, soLuongSoSach: 10, soLuongThucTe: 9 })
+        .run(),
     ).toThrow();
   });
 });

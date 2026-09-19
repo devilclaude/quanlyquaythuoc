@@ -19,13 +19,24 @@ hoặc ghi `BLOCKED.md` nếu không chẻ được. Không tự cấp ngoại l
 
 ## Tiêu chí gắn tầng
 
-`CLAUDE.md` quy định nhóm **luôn là `[B]`**: tồn kho, lô, hạn dùng, quy đổi đơn vị,
-tiền, hoá đơn, đồng bộ offline, migration, phân quyền, backup.
+Cập nhật theo chỉ đạo chủ dự án 2026-09-14 (#quaythuoc-admin, xem `CLAUDE.md`
+mục "Tầng merge"): **không còn nhóm "luôn `[B]`" theo miền nghiệp vụ.** Mặc
+định khi nghi ngờ giờ là `[A]`. Agent tự đánh giá theo từng task và vẫn được
+tự chọn `[B]` khi thấy có lý do cụ thể cần người duyệt trước khi merge (ví dụ:
+quyết định nền khó đảo ngược, không chắc chắn về nghiệp vụ) — nhưng đây là lựa
+chọn theo từng task, không phải quy tắc cứng theo miền (kho/tiền/migration/...
+không còn tự động bắt buộc `[B]`).
 
-**Nhóm đó chỉ áp cho task GHI dữ liệu.** Task chỉ ĐỌC — báo cáo, cảnh báo, in ấn,
-màn hình hiển thị — được `[A]`, kể cả khi nó đọc tồn kho hay tiền.
+`[A]` khai đúng vẫn **không** tự merge nếu PR chạm nhóm tự-quản-trị của agent
+(`.github/`, `.claude/`, `scripts/`, `CLAUDE.md`, config gốc, bốn file chỉ-đọc
+trong `docs/agent/`) — xem `.github/workflows/auto-merge.yml`. Nhóm này luôn
+"nghi ngờ thì `[B]`" bất kể agent khai gì trong mô tả PR.
 
-Nghi ngờ thì `[B]`. Không bao giờ tự nâng `[B]` lên `[A]`.
+**Tầng khai trong một PR là bất biến sau khi mở.** Không bao giờ tự nâng
+`[B]` đã khai trên một PR lên `[A]` sau đó, kể cả khi tiêu chí mặc định đổi
+sau khi PR đó đã mở — thay đổi tiêu chí chỉ áp dụng cho các PR mở SAU thời
+điểm đổi, không hồi tố PR cũ. Muốn một PR `[B]` cũ tự merge thì cách đúng là
+người duyệt merge tay, không phải agent sửa lại dòng khai báo.
 
 ---
 
@@ -123,7 +134,7 @@ screenshot gắn với Bán online (NGOÀI v1, `SPEC.md` §2) — bỏ, ghi `JOU
 phần "Khác KiotViet". Tầng A vì chỉ đọc.
 
 ### T-009b [B] prio:9.2 — Tạo mới hàng hoá (nhiều đơn vị)
-Trạng thái: TODO · Phụ thuộc: T-009a, T-003
+Trạng thái: DONE · Phụ thuộc: T-009a, T-003
 Xong khi: form "Tạo mới hàng hóa" có Mã hàng (tự động/nhập), Tên hàng (bắt buộc),
 Giá bán đơn vị cơ sở, và khai được nhiều đơn vị tính kèm hệ số nguyên ≥1 + giá
 riêng từng đơn vị; **thêm đơn vị mới thì form điền sẵn gợi ý giá = giá đơn vị cơ
@@ -263,7 +274,7 @@ kho** — hoặc vào hết hoặc không vào gì.
 ## Milestone 5 — Tồn kho đúng
 
 ### T-050 [B] prio:50 — Kiểm kê
-Trạng thái: TODO · Phụ thuộc: T-006
+Trạng thái: DONE · Phụ thuộc: T-006
 Xong khi: đếm thực tế theo lô, so sổ sách, tạo phiếu điều chỉnh **có lý do**, ghi
 thẻ kho; dùng được để xử lý cảnh báo lệch kho từ T-034; dùng được để gán lô thật
 cho tồn cũ đang nằm ở lô ngầm định.
@@ -285,7 +296,7 @@ Xong khi: khớp screenshot "Trả hàng nhập"; liên kết ngược tới phi
 đúng lô đã nhập; ghi thẻ kho.
 
 ### T-054 [A] prio:54 — Màn thẻ kho
-Trạng thái: TODO · Phụ thuộc: T-005, T-007
+Trạng thái: BLOCKED · Phụ thuộc: T-005, T-007
 Xong khi: cột Thời gian · Chứng từ · Loại · Lô/HSD · Số lượng (±) · Tồn cuối · Giá
 vốn; **cột Lô/HSD ẩn khi sản phẩm ở chế độ phẳng**; "Tồn cuối" tính lại theo **thứ
 tự đến máy chủ**, không lưu; xem được trên điện thoại như bản KiotViet mobile.

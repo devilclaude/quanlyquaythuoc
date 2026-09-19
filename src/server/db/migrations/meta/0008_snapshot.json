@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "cf540115-193a-40eb-9fae-d99502f261b9",
-  "prevId": "d444dfca-ba67-48e7-93f0-b9f641c40858",
+  "id": "15f7a505-7f30-47f2-beaa-8ac48d9f5b16",
+  "prevId": "cf540115-193a-40eb-9fae-d99502f261b9",
   "tables": {
     "chi_nhanh": {
       "name": "chi_nhanh",
@@ -355,6 +355,161 @@
         "phieu_kiem_ke_dong_so_luong_thuc_te_khong_am": {
           "name": "phieu_kiem_ke_dong_so_luong_thuc_te_khong_am",
           "value": "\"phieu_kiem_ke_dong\".\"so_luong_thuc_te\" >= 0"
+        }
+      }
+    },
+    "phieu_xuat_huy": {
+      "name": "phieu_xuat_huy",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chi_nhanh_id": {
+          "name": "chi_nhanh_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ly_do": {
+          "name": "ly_do",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "nguoi_thuc_hien": {
+          "name": "nguoi_thuc_hien",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "thoi_gian": {
+          "name": "thoi_gian",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "thoi_gian_may_chu": {
+          "name": "thoi_gian_may_chu",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "phieu_xuat_huy_chi_nhanh_id_chi_nhanh_id_fk": {
+          "name": "phieu_xuat_huy_chi_nhanh_id_chi_nhanh_id_fk",
+          "tableFrom": "phieu_xuat_huy",
+          "tableTo": "chi_nhanh",
+          "columnsFrom": [
+            "chi_nhanh_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "phieu_xuat_huy_ly_do_khong_rong": {
+          "name": "phieu_xuat_huy_ly_do_khong_rong",
+          "value": "length(trim(\"phieu_xuat_huy\".\"ly_do\")) > 0"
+        },
+        "phieu_xuat_huy_nguoi_thuc_hien_khong_rong": {
+          "name": "phieu_xuat_huy_nguoi_thuc_hien_khong_rong",
+          "value": "length(trim(\"phieu_xuat_huy\".\"nguoi_thuc_hien\")) > 0"
+        }
+      }
+    },
+    "phieu_xuat_huy_dong": {
+      "name": "phieu_xuat_huy_dong",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "phieu_id": {
+          "name": "phieu_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lo_id": {
+          "name": "lo_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "so_luong": {
+          "name": "so_luong",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "phieu_xuat_huy_dong_phieu_lo_unique": {
+          "name": "phieu_xuat_huy_dong_phieu_lo_unique",
+          "columns": [
+            "phieu_id",
+            "lo_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "phieu_xuat_huy_dong_phieu_id_phieu_xuat_huy_id_fk": {
+          "name": "phieu_xuat_huy_dong_phieu_id_phieu_xuat_huy_id_fk",
+          "tableFrom": "phieu_xuat_huy_dong",
+          "tableTo": "phieu_xuat_huy",
+          "columnsFrom": [
+            "phieu_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "phieu_xuat_huy_dong_lo_id_lo_hang_id_fk": {
+          "name": "phieu_xuat_huy_dong_lo_id_lo_hang_id_fk",
+          "tableFrom": "phieu_xuat_huy_dong",
+          "tableTo": "lo_hang",
+          "columnsFrom": [
+            "lo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "phieu_xuat_huy_dong_so_luong_duong": {
+          "name": "phieu_xuat_huy_dong_so_luong_duong",
+          "value": "\"phieu_xuat_huy_dong\".\"so_luong\" > 0"
         }
       }
     },

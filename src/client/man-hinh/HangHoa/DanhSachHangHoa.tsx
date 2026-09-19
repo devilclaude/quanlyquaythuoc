@@ -3,8 +3,9 @@ import { Fragment, useEffect, useState } from 'react';
 import { DanhSachHangHoaResSchema, type HangHoaDanhSachItem } from '../../../shared/hop-dong/hang-hoa';
 import { dong } from '../../../shared/kieu/dong';
 import { dinhDangSo, dinhDangTien } from '../../../shared/tien/dinh-dang';
-import { Bang, OSo, TruongNhap } from '../../thanh-phan';
+import { Bang, Nut, OSo, TruongNhap } from '../../thanh-phan';
 import { ChiTietHangHoa } from './ChiTietHangHoa';
+import { TaoMoiHangHoa } from './TaoMoiHangHoa';
 import './DanhSachHangHoa.css';
 
 /** SPEC.md §3.6: lưu UTC, hiển thị giờ Việt Nam — dd/MM/yyyy HH:mm. */
@@ -125,6 +126,8 @@ export function DanhSachHangHoa() {
   const [dangTai, setDangTai] = useState(true);
   const [loi, setLoi] = useState<string | undefined>(undefined);
   const [hangChonId, setHangChonId] = useState<string | undefined>(undefined);
+  const [phienBanLamMoi, setPhienBanLamMoi] = useState(0);
+  const [dangTaoMoi, setDangTaoMoi] = useState(false);
 
   useEffect(() => {
     const dinhThoiGian = setTimeout(() => {
@@ -149,17 +152,22 @@ export function DanhSachHangHoa() {
     }, 250);
 
     return () => clearTimeout(dinhThoiGian);
-  }, [tim]);
+  }, [tim, phienBanLamMoi]);
 
   return (
     <section className="danh-sach-hang-hoa">
       <h1 className="danh-sach-hang-hoa__tieu-de">Hàng hóa</h1>
-      <TruongNhap
-        aria-label="Tìm hàng hoá theo mã, tên hàng"
-        placeholder="Theo mã, tên hàng"
-        value={tim}
-        onChange={(su) => setTim(su.target.value)}
-      />
+      <div className="danh-sach-hang-hoa__thanh-cong-cu">
+        <TruongNhap
+          aria-label="Tìm hàng hoá theo mã, tên hàng"
+          placeholder="Theo mã, tên hàng"
+          value={tim}
+          onChange={(su) => setTim(su.target.value)}
+        />
+        <Nut bienThe="chinh" onClick={() => setDangTaoMoi(true)}>
+          + Tạo mới
+        </Nut>
+      </div>
       <BangDanhSachHangHoa
         duLieu={duLieu}
         dangTai={dangTai}
@@ -168,6 +176,16 @@ export function DanhSachHangHoa() {
         onChonDong={(id) => setHangChonId((hienTai) => chonDongTiepTheo(hienTai, id))}
         renderChiTiet={(id) => <ChiTietHangHoa id={id} />}
       />
+      {dangTaoMoi ? (
+        <TaoMoiHangHoa
+          onHuy={() => setDangTaoMoi(false)}
+          onTaoXong={(id) => {
+            setDangTaoMoi(false);
+            setPhienBanLamMoi((v) => v + 1);
+            setHangChonId(id);
+          }}
+        />
+      ) : null}
     </section>
   );
 }
