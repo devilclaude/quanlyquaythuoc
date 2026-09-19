@@ -37,3 +37,26 @@ export type DonViTinhRes = z.infer<typeof DonViTinhResSchema>;
 export type HangHoaDanhSachItem = z.infer<typeof HangHoaDanhSachItemSchema>;
 export type DanhSachHangHoaRes = z.infer<typeof DanhSachHangHoaResSchema>;
 export type HangHoaChiTietRes = z.infer<typeof HangHoaChiTietResSchema>;
+
+// Hợp đồng tạo mới hàng hoá (T-009b). Chỉ các trường trong phạm vi v1 — xem
+// "Xong khi" T-009b trong BACKLOG.md: không có nhóm hàng, ảnh, thuộc tính, vị
+// trí, trọng lượng, hãng/nước sản xuất, định mức tồn, tồn kho ban đầu (tồn vào
+// qua phiếu nhập — T-040 — không phải lúc tạo hàng hoá).
+export const TaoDonViKhacReqSchema = z.object({
+  ten: z.string().trim().min(1),
+  /** Hệ số quy đổi so với đơn vị cơ sở (SPEC.md §3.3: số nguyên ≥ 1). */
+  heSo: z.number().int().min(1),
+  giaBan: z.number().int().nonnegative(),
+});
+
+export const TaoHangHoaReqSchema = z.object({
+  /** Bỏ trống thì server tự sinh (form ghi "Tự động"). */
+  maHang: z.string().trim().min(1).optional(),
+  ten: z.string().trim().min(1),
+  donViCoSoTen: z.string().trim().min(1),
+  giaBan: z.number().int().nonnegative(),
+  donViKhac: z.array(TaoDonViKhacReqSchema).default([]),
+});
+
+export type TaoDonViKhacReq = z.infer<typeof TaoDonViKhacReqSchema>;
+export type TaoHangHoaReq = z.infer<typeof TaoHangHoaReqSchema>;

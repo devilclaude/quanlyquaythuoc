@@ -1,0 +1,95 @@
+.tao-moi-hang-hoa__man-phu {
+  position: fixed;
+  inset: 0;
+  background: rgb(15 23 42 / 50%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--kc-6) var(--kc-4);
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.tao-moi-hang-hoa {
+  background: var(--mau-nen-the);
+  border-radius: var(--bo-goc);
+  box-shadow: 0 8px 24px rgb(15 23 42 / 20%);
+  width: min(640px, 100%);
+  padding: var(--kc-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--kc-4);
+}
+
+.tao-moi-hang-hoa__dau {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tao-moi-hang-hoa__tieu-de {
+  font-size: var(--chu-lg);
+  margin: 0;
+}
+
+.tao-moi-hang-hoa__dong {
+  border: none;
+  background: transparent;
+  font-size: var(--chu-lg);
+  line-height: 1;
+  color: var(--mau-chu-phu);
+}
+
+.tao-moi-hang-hoa__loi {
+  margin: 0;
+  padding: var(--kc-3);
+  background: var(--mau-nguy-nen);
+  color: var(--mau-nguy);
+  border-radius: var(--bo-goc);
+}
+
+.tao-moi-hang-hoa__hang-truong {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--kc-3);
+}
+
+.tao-moi-hang-hoa__tieu-de-phu {
+  font-size: var(--chu-base);
+  margin: 0 0 var(--kc-3);
+}
+
+.tao-moi-hang-hoa__don-vi {
+  border-top: var(--vien);
+  padding-top: var(--kc-4);
+}
+
+.tao-moi-hang-hoa__dong-co-so {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--kc-3);
+  margin-bottom: var(--kc-3);
+}
+
+.tao-moi-hang-hoa__dong-khac {
+  display: grid;
+  grid-template-columns: 1.2fr auto 1fr 1fr 1.2fr auto;
+  align-items: end;
+  gap: var(--kc-2);
+  margin-bottom: var(--kc-3);
+}
+
+.tao-moi-hang-hoa__quy-doi-dau,
+.tao-moi-hang-hoa__quy-doi-don-vi {
+  color: var(--mau-chu-phu);
+  font-size: var(--chu-sm);
+  padding-bottom: var(--kc-3);
+}
+
+.tao-moi-hang-hoa__chan {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--kc-3);
+  border-top: var(--vien);
+  padding-top: var(--kc-4);
+}

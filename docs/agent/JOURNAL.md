@@ -258,6 +258,19 @@ task không yêu cầu, theo đúng tiền lệ T-006/T-007.
 PR: (xem mô tả PR)
 Tầng: B
 Kế tiếp: T-051 (Xuất huỷ) hoặc T-009c sau khi PR#30 merge.
+## 2026-09-16 — dọn PR + T-009b
+Làm: PR#28 (T-007), PR#29 (T-009a) đã merge → chuyển DONE. Chọn T-009b: thêm
+`taoUlid` (sinh id lần đầu server-side), `TaoHangHoaReqSchema`, `POST
+/api/hang-hoa` (mã hàng tự sinh "HH000001.." nếu bỏ trống, thử lại khi đụng
+UNIQUE do đua; nhập tay trùng thì 409), form "Tạo hàng hóa" (đơn vị cơ sở +
+nhiều đơn vị khác, mỗi dòng mới điền sẵn giá = giá cơ sở × hệ số, sửa giá sau
+không tự đổi lại — SPEC.md §3.3). Đối chiếu screenshot bằng Playwright thật
+(dev server + API), luồng tạo→hiện trong danh sách→mở chi tiết chạy đúng.
+PR: (xem mô tả PR)
+Tầng: B
+Khác KiotViet: bỏ nhóm hàng/ảnh/thuộc tính/vị trí/trọng lượng/hãng-nước sản
+xuất/định mức tồn/tồn kho ban đầu/giá vốn/mã vạch — ngoài phạm vi "Xong khi".
+Kế tiếp: T-009c (sửa, xoá/ngừng hoạt động hàng hoá).
 
 ## 2026-09-16 — dọn PR, không chọn task mới
 Làm: PR#30 (T-009b), #31 (T-050), #32 (T-051) đều xanh, không comment, không
@@ -268,3 +281,93 @@ PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: chọn theo prio khi có PR merge — T-009c sau T-009b, hoặc T-050/T-051
 tiếp tục chờ duyệt.
+
+## 2026-09-17 — dọn PR, BLOCKED T-054, không chọn task mới
+Làm: PR#30/#31/#32 vẫn xanh, không comment, không conflict, chờ duyệt — không
+sửa. T-054 là TODO duy nhất còn đủ điều kiện phụ thuộc (còn lại đều chờ
+T-009c/T-050/T-051 merge), nhưng phát hiện `the_kho` không có cột nào tham
+chiếu chứng từ sinh ra dòng đó — kể cả T-050/T-051 (đang mở PR) cũng không
+truyền. Cột "Chứng từ" của T-054 không dựng được mà không bịa một quyết định
+kiến trúc ảnh hưởng mọi module ghi sổ cái sau này. Ghi BLOCKED.md, chuyển
+T-054 sang BLOCKED, không mở task khác.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: cần người quyết khuôn tham chiếu chứng từ cho `the_kho` (BLOCKED.md).
+
+## 2026-09-17 (run kế) — dọn PR, không chọn task mới
+Làm: PR#30/#31/#32 vẫn xanh, không comment, không conflict, chờ duyệt — không
+sửa. Không có PR nào merge từ run trước. Slack #quaythuoc-admin không có chỉ
+đạo mới từ 2026-09-15. Rà lại toàn bộ lịch sử CI (không chỉ view lọc theo
+nhánh main, view đó bị cắt bớt) — mọi run gần nhất đều xanh, main không đỏ.
+Mọi TODO còn lại vẫn phụ thuộc T-009c/T-050/T-051 (đều CHỜ MERGE, chưa DONE)
+— không có task đủ điều kiện, giống hệt kết luận run trước cùng ngày.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: chọn theo prio khi có PR merge (T-009c sau T-009b, hoặc T-050/T-051
+tự nó); BLOCKED T-054/T-061 vẫn cần người quyết.
+
+## 2026-09-17 (run kế, lần 3) — dọn PR, không chọn task mới
+Làm: PR#30/#31/#32 vẫn xanh, không comment, không conflict (xác nhận bằng
+merge thật vào một worktree tạm, không chỉ đọc cờ `mergeable_state`) — không
+sửa. Không có PR nào merge kể từ run trước cùng ngày (16:13). Slack
+#quaythuoc-admin không có chỉ đạo mới từ 2026-09-15. Tình huống giống hệt run
+trước: mọi TODO còn lại vẫn phụ thuộc T-009c/T-050/T-051 (CHỜ MERGE) hoặc đã
+BLOCKED (T-054, T-061/T-062) — không có task đủ điều kiện.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: không đổi so với run trước — chọn theo prio khi một trong ba PR
+merge.
+
+## 2026-09-18 — dọn PR, không chọn task mới
+Làm: PR#30/#31/#32 vẫn xanh, không comment, không review, không conflict (xác
+nhận bằng `git merge-tree` cục bộ với `main` mới nhất) — không sửa. Không có
+PR nào merge kể từ run trước. Slack #quaythuoc-admin không có chỉ đạo mới từ
+2026-09-15. Tình huống giống hệt ba run trước: mọi TODO còn lại vẫn phụ thuộc
+T-009c/T-050/T-051 (CHỜ MERGE) hoặc đã BLOCKED (T-054, T-061/T-062).
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: không đổi — chọn theo prio khi một trong ba PR merge.
+
+## 2026-09-18 (run kế) — dọn PR, không chọn task mới
+Làm: PR#30/#31/#32 vẫn xanh, không comment/review, không conflict thật (xác
+nhận `git merge-tree` với `main` mới nhất, không chỉ đọc `mergeable_state`).
+Không PR nào merge từ run trước (5 run liên tiếp cùng kết luận). Slack
+#quaythuoc-admin không có chỉ đạo mới từ 2026-09-15. Báo Slack #quaythuoc-build
+đề nghị Dương duyệt/merge — 3 PR đã chờ hơn 2 ngày, chặn toàn bộ backlog.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: không đổi — chọn theo prio khi một trong ba PR merge.
+
+## 2026-09-18 (run kế, lần 3) — dọn PR, không chọn task mới
+Làm: PR#30/#31/#32 vẫn xanh, không comment/review, không conflict thật (xác
+nhận `git merge-tree` với `origin/main` mới nhất, không chỉ đọc
+`mergeable_state`). Không PR nào merge từ run trước (6 run liên tiếp cùng kết
+luận). Slack #quaythuoc-admin không có chỉ đạo mới từ 2026-09-15; đề nghị
+duyệt/merge gửi #quaythuoc-build ở run trước vẫn chưa có phản hồi.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: không đổi — chọn theo prio khi một trong ba PR merge.
+
+## 2026-09-18 (run kế, lần 4) — dọn PR, không chọn task mới
+Làm: PR#30/#31/#32 vẫn xanh, không comment/review, không conflict thật (xác
+nhận `git merge-tree` với `origin/main` mới nhất). Không PR nào merge từ run
+trước (7 run liên tiếp cùng kết luận, từ 2026-09-16). Slack #quaythuoc-admin
+không có chỉ đạo mới từ 2026-09-15; đề nghị duyệt/merge gửi #quaythuoc-build
+hai run trước vẫn chưa có phản hồi. Cả ba PR khai Tầng B nhưng không nêu lý do
+cụ thể cần người duyệt trong mô tả — không tự nâng lên A (CLAUDE.md cấm), chỉ
+ghi nhận để người quyết cân nhắc. Báo Slack (đợt 2, nhấn mạnh thời lượng chờ).
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: không đổi — chọn theo prio khi một trong ba PR merge hoặc có chỉ đạo mới.
+
+## 2026-09-19 — dọn PR: giải thích #30/#31/#32 vẫn chờ duyệt tay
+Làm: Dương hỏi (#quaythuoc-admin) sao còn PR cần duyệt tay dù CLAUDE.md đã đổi
+mặc định sang A. Xác nhận bằng `git diff --name-only`: cả ba không chạm đường
+dẫn tự-quản-trị trong `auto-merge.yml` — workflow chỉ đọc dòng `Tầng:` ghi
+cứng trong mô tả PR lúc mở (16-17/9), không tính lại theo tiêu chí hiện tại.
+Không tự nâng B lên A (CLAUDE.md cấm) — sửa BACKLOG.md "Tiêu chí gắn tầng"
+(còn mô tả chính sách cũ, gây hiểu lầm) thay vì sửa PR. Không chọn task mới —
+mọi TODO còn lại vẫn phụ thuộc ba PR trên.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: Dương duyệt/merge #30/#31/#32 tay, hoặc chỉ rõ muốn đổi tầng PR nào.
