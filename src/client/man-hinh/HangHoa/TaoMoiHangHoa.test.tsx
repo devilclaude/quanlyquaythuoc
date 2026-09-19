@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
+import type { HangHoaChiTietRes } from '../../../shared/hop-dong/hang-hoa';
 import {
   FormTaoHangHoa,
   dongDonViKhacMoi,
   taoTrangThaiRong,
+  taoTrangThaiTuChiTiet,
+  xayDungYeuCauSuaHangHoa,
   xayDungYeuCauTaoHangHoa,
 } from './TaoMoiHangHoa';
 
@@ -75,6 +78,55 @@ describe('xayDungYeuCauTaoHangHoa', () => {
   });
 });
 
+describe('xayDungYeuCauSuaHangHoa (T-009c)', () => {
+  const goc = { ...taoTrangThaiRong(), ten: 'Paracetamol 500mg', donViCoSoTen: 'viên', giaBan: '500' };
+
+  it('dựng đúng yêu cầu, không có mã hàng dù trạng thái form có mã hàng (mã hàng không sửa được)', () => {
+    const ketQua = xayDungYeuCauSuaHangHoa({ ...goc, maHang: 'SP001' });
+    expect(ketQua).toEqual({ ten: 'Paracetamol 500mg', donViCoSoTen: 'viên', giaBan: 500, donViKhac: [] });
+  });
+
+  it('từ chối tên hàng bỏ trống, cùng luật với tạo mới', () => {
+    expect(xayDungYeuCauSuaHangHoa({ ...goc, ten: '  ' })).toEqual({ loi: 'Tên hàng là bắt buộc' });
+  });
+
+  it('chuyển đúng hệ số và giá riêng cho từng đơn vị khác đã gõ tên', () => {
+    const ketQua = xayDungYeuCauSuaHangHoa({
+      ...goc,
+      donViKhac: [{ key: 'k1', ten: 'vỉ', heSo: '12', giaBan: '6000' }],
+    });
+    expect('donViKhac' in ketQua && ketQua.donViKhac).toEqual([{ ten: 'vỉ', heSo: 12, giaBan: 6000 }]);
+  });
+});
+
+describe('taoTrangThaiTuChiTiet (T-009c)', () => {
+  it('điền form sửa từ chi tiết hàng hoá đã tải, đơn vị cơ sở tách riêng khỏi đơn vị khác', () => {
+    const chiTiet: HangHoaChiTietRes = {
+      id: 'sp-1',
+      maHang: 'SP001',
+      ten: 'Paracetamol 500mg',
+      giaBan: 500,
+      giaVon: 0,
+      tonKho: 864,
+      ngayTao: '2026-09-01T00:00:00.000Z',
+      trangThai: 'HOAT_DONG',
+      coTheXoaCung: true,
+      donViTinh: [
+        { id: 'dvt-vien', ten: 'viên', heSo: 1, laCoSo: true, giaBan: 500 },
+        { id: 'dvt-vi', ten: 'vỉ', heSo: 12, laCoSo: false, giaBan: 6000 },
+      ],
+    };
+
+    expect(taoTrangThaiTuChiTiet(chiTiet)).toEqual({
+      maHang: 'SP001',
+      ten: 'Paracetamol 500mg',
+      donViCoSoTen: 'viên',
+      giaBan: '500',
+      donViKhac: [{ key: 'dvt-vi', ten: 'vỉ', heSo: '12', giaBan: '6000' }],
+    });
+  });
+});
+
 describe('FormTaoHangHoa (bố cục)', () => {
   it('có đủ nhãn khớp screenshot "Tạo mới hàng hóa" trong phạm vi T-009b', () => {
     const html = renderToStaticMarkup(
@@ -106,5 +158,24 @@ describe('FormTaoHangHoa (bố cục)', () => {
     );
 
     expect(html).toContain('Mã hàng đã tồn tại: SP001');
+  });
+
+  it('chế độ sửa (T-009c): tiêu đề đổi thành "Sửa hàng hóa", mã hàng chỉ đọc', () => {
+    const html = renderToStaticMarkup(
+      <FormTaoHangHoa
+        trangThai={{ ...taoTrangThaiRong(), maHang: 'SP001' }}
+        dangLuu={false}
+        loi={undefined}
+        onDoi={() => {}}
+        onHuy={() => {}}
+        onLuu={() => {}}
+        tieuDe="Sửa hàng hóa"
+        maHangChiDoc
+      />,
+    );
+
+    expect(html).toContain('Sửa hàng hóa');
+    expect(html).toContain('value="SP001"');
+    expect(html).toContain('disabled=""');
   });
 });

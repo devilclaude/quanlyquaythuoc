@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { HangHoaChiTietRes } from '../../../shared/hop-dong/hang-hoa';
-import { ThongTinHangHoa } from './ChiTietHangHoa';
+import { ChanHangHoa, ThongTinHangHoa } from './ChiTietHangHoa';
 
 const chiTietNhieuDonVi: HangHoaChiTietRes = {
   id: 'sp-1',
@@ -11,6 +11,8 @@ const chiTietNhieuDonVi: HangHoaChiTietRes = {
   giaVon: 0,
   tonKho: 864,
   ngayTao: '2026-09-01T02:00:00.000Z',
+  trangThai: 'HOAT_DONG',
+  coTheXoaCung: true,
   donViTinh: [
     { id: 'dvt-vien', ten: 'viên', heSo: 1, laCoSo: true, giaBan: 500 },
     { id: 'dvt-vi', ten: 'vỉ', heSo: 12, laCoSo: false, giaBan: 6000 },
@@ -26,6 +28,8 @@ const chiTietTonPhang: HangHoaChiTietRes = {
   giaVon: 0,
   tonKho: 50,
   ngayTao: '2026-09-01T02:00:00.000Z',
+  trangThai: 'HOAT_DONG',
+  coTheXoaCung: true,
   donViTinh: [{ id: 'dvt-chai', ten: 'chai', heSo: 1, laCoSo: true, giaBan: 15000 }],
 };
 
@@ -46,5 +50,54 @@ describe('ThongTinHangHoa', () => {
 
   it('sản phẩm chỉ có đơn vị cơ sở (tồn phẳng) thì không hiện dòng quy đổi phụ', () => {
     expect(renderToStaticMarkup(<ThongTinHangHoa chiTiet={chiTietTonPhang} />)).not.toContain('≈');
+  });
+});
+
+describe('ChanHangHoa (T-009c) — vị trí khớp ảnh "xem chi tiết 1 sản phẩm"', () => {
+  it('còn hoạt động và CHƯA phát sinh thẻ kho: nút trái là "Xóa", nút phải là "Chỉnh sửa"', () => {
+    const html = renderToStaticMarkup(
+      <ChanHangHoa
+        trangThai="HOAT_DONG"
+        coTheXoaCung={true}
+        dangXuLy={false}
+        onBamSua={() => {}}
+        onBamXoaHoacNgungHoatDong={() => {}}
+      />,
+    );
+
+    expect(html).toContain('Xóa');
+    expect(html).toContain('Chỉnh sửa');
+    expect(html.indexOf('Xóa')).toBeLessThan(html.indexOf('Chỉnh sửa'));
+  });
+
+  it('còn hoạt động nhưng ĐÃ phát sinh thẻ kho: nút trái đổi thành "Ngừng hoạt động"', () => {
+    const html = renderToStaticMarkup(
+      <ChanHangHoa
+        trangThai="HOAT_DONG"
+        coTheXoaCung={false}
+        dangXuLy={false}
+        onBamSua={() => {}}
+        onBamXoaHoacNgungHoatDong={() => {}}
+      />,
+    );
+
+    expect(html).toContain('Ngừng hoạt động');
+    expect(html).not.toContain('>Xóa<');
+  });
+
+  it('đã ngừng hoạt động: không còn nút Xoá/Ngừng hoạt động, chỉ còn badge trạng thái', () => {
+    const html = renderToStaticMarkup(
+      <ChanHangHoa
+        trangThai="NGUNG_HOAT_DONG"
+        coTheXoaCung={false}
+        dangXuLy={false}
+        onBamSua={() => {}}
+        onBamXoaHoacNgungHoatDong={() => {}}
+      />,
+    );
+
+    expect(html).toContain('Đã ngừng hoạt động');
+    expect(html).not.toContain('Ngừng hoạt động<');
+    expect(html).toContain('Chỉnh sửa');
   });
 });

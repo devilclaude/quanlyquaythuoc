@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   DanhSachHangHoaResSchema,
   HangHoaChiTietResSchema,
+  SuaHangHoaReqSchema,
   TaoHangHoaReqSchema,
 } from './hang-hoa';
 
@@ -37,20 +38,29 @@ describe('DanhSachHangHoaResSchema', () => {
   });
 });
 
+const mucChiTiet = {
+  ...mucDanhSach,
+  donViTinh: [mucDonVi],
+  trangThai: 'HOAT_DONG' as const,
+  coTheXoaCung: true,
+};
+
 describe('HangHoaChiTietResSchema', () => {
   it('chấp nhận chi tiết hợp lệ kèm danh sách đơn vị tính', () => {
-    expect(() =>
-      HangHoaChiTietResSchema.parse({ ...mucDanhSach, donViTinh: [mucDonVi] }),
-    ).not.toThrow();
+    expect(() => HangHoaChiTietResSchema.parse(mucChiTiet)).not.toThrow();
   });
 
   it('từ chối hệ số nhỏ hơn 1 (SPEC.md §3.3)', () => {
     expect(() =>
       HangHoaChiTietResSchema.parse({
-        ...mucDanhSach,
+        ...mucChiTiet,
         donViTinh: [{ ...mucDonVi, heSo: 0 }],
       }),
     ).toThrow();
+  });
+
+  it('từ chối trạng thái ngoài HOAT_DONG/NGUNG_HOAT_DONG (T-009c)', () => {
+    expect(() => HangHoaChiTietResSchema.parse({ ...mucChiTiet, trangThai: 'KHONG_HOP_LE' })).toThrow();
   });
 });
 
@@ -96,6 +106,24 @@ describe('TaoHangHoaReqSchema', () => {
   it('từ chối hệ số không nguyên ở đơn vị khác', () => {
     expect(() =>
       TaoHangHoaReqSchema.parse({ ...yeuCauMau, donViKhac: [{ ten: 'vỉ', heSo: 1.5, giaBan: 6000 }] }),
+    ).toThrow();
+  });
+});
+
+describe('SuaHangHoaReqSchema (T-009c)', () => {
+  it('chấp nhận yêu cầu sửa không có mã hàng — mã hàng không đổi được trong task này', () => {
+    const ketQua = SuaHangHoaReqSchema.parse(yeuCauMau);
+    expect(ketQua).toEqual({ ...yeuCauMau, donViKhac: [] });
+    expect('maHang' in ketQua).toBe(false);
+  });
+
+  it('từ chối tên hàng rỗng, cùng luật với tạo mới', () => {
+    expect(() => SuaHangHoaReqSchema.parse({ ...yeuCauMau, ten: '' })).toThrow();
+  });
+
+  it('từ chối hệ số nhỏ hơn 1 ở đơn vị khác, cùng luật với tạo mới', () => {
+    expect(() =>
+      SuaHangHoaReqSchema.parse({ ...yeuCauMau, donViKhac: [{ ten: 'vỉ', heSo: 0, giaBan: 6000 }] }),
     ).toThrow();
   });
 });

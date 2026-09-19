@@ -14,15 +14,24 @@ export const chiNhanh = sqliteTable('chi_nhanh', {
   ten: text('ten').notNull(),
 });
 
-export const sanPham = sqliteTable('san_pham', {
-  id: text('id').primaryKey(),
-  maHang: text('ma_hang').notNull().unique(),
-  ten: text('ten').notNull(),
-  // Dùng để sắp xếp cột "Thời gian tạo" ở màn danh sách hàng hoá (T-009a).
-  ngayTao: text('ngay_tao')
-    .notNull()
-    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
-});
+export const sanPham = sqliteTable(
+  'san_pham',
+  {
+    id: text('id').primaryKey(),
+    maHang: text('ma_hang').notNull().unique(),
+    ten: text('ten').notNull(),
+    // Dùng để sắp xếp cột "Thời gian tạo" ở màn danh sách hàng hoá (T-009a).
+    ngayTao: text('ngay_tao')
+      .notNull()
+      .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+    // "Ngừng hoạt động" thay cho xoá cứng khi sản phẩm đã phát sinh thẻ kho
+    // (SPEC.md §3.5, T-009c) — xoá cứng chỉ hợp lệ khi CHƯA có dòng thẻ kho nào.
+    trangThai: text('trang_thai').notNull().default('HOAT_DONG').$type<'HOAT_DONG' | 'NGUNG_HOAT_DONG'>(),
+  },
+  (t) => [
+    check('san_pham_trang_thai_hop_le', sql`${t.trangThai} IN ('HOAT_DONG', 'NGUNG_HOAT_DONG')`),
+  ],
+);
 
 export const donViTinh = sqliteTable(
   'don_vi_tinh',
