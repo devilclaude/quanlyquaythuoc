@@ -68,6 +68,27 @@ describe('san_pham', () => {
 
     expect(row?.ngayTao).toBe('2026-01-01T00:00:00.000Z');
   });
+
+  it('trang_thai mặc định HOAT_DONG khi không khai (T-009c)', () => {
+    db.insert(sanPham).values({ id: 'sp-1', maHang: 'SP001', ten: 'Paracetamol 500mg' }).run();
+
+    const [row] = db.select().from(sanPham).where(eq(sanPham.id, 'sp-1')).all();
+
+    expect(row?.trangThai).toBe('HOAT_DONG');
+  });
+
+  it('trang_thai ngoài tập HOAT_DONG/NGUNG_HOAT_DONG bị CHECK chặn', () => {
+    // Ép kiểu để cố tình đưa giá trị sai qua CHECK tầng CSDL — TS đã chặn giá
+    // trị này ở biên dịch nhờ `.$type<>()`, nhưng test này xác nhận CSDL cũng
+    // chặn nó ở runtime (dữ liệu từ nơi không qua kiểm tra kiểu, vd. import).
+    const trangThaiSai = 'KHONG_HOP_LE' as unknown as 'HOAT_DONG';
+    expect(() =>
+      db
+        .insert(sanPham)
+        .values({ id: 'sp-1', maHang: 'SP001', ten: 'Paracetamol 500mg', trangThai: trangThaiSai })
+        .run(),
+    ).toThrow();
+  });
 });
 
 describe('don_vi_tinh', () => {

@@ -64,6 +64,13 @@
       "when": 1789794616010,
       "tag": "0008_white_aqueduct",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1789809284319,
+      "tag": "0009_exotic_wiccan",
+      "breakpoints": true
     }
   ]
 }

@@ -6,11 +6,17 @@ import { Hono } from 'hono';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { chiNhanh, donViTinh, loHang, sanPham, theKho, tonKhoLo } from '../db/schema';
 import {
+  DoiDonViCoSoBiCamError,
+  HangHoaKhongTonTaiError,
   MaHangDaTonTaiError,
+  XoaCungBiChanError,
   dangKyHangHoaRoutes,
   layChiTietHangHoa,
   layDanhSachHangHoa,
+  ngungHoatDongHangHoa,
+  suaHangHoa,
   taoHangHoa,
+  xoaHangHoa,
 } from './hang-hoa';
 
 type DbTest = ReturnType<typeof drizzle>;
@@ -109,7 +115,7 @@ describe('layChiTietHangHoa', () => {
     expect(layChiTietHangHoa(db, 'khong-ton-tai')).toBeUndefined();
   });
 
-  it('trả về đầy đủ đơn vị tính và tổng tồn của đúng sản phẩm', () => {
+  it('trả về đầy đủ đơn vị tính và tổng tồn của đúng sản phẩm, coTheXoaCung=false khi đã phát sinh thẻ kho (T-009c)', () => {
     taoSanPham('sp-1', 'SP001', 'Paracetamol 500mg', '2026-09-01T00:00:00.000Z');
     db.insert(donViTinh)
       .values([
@@ -129,11 +135,20 @@ describe('layChiTietHangHoa', () => {
       giaVon: 0,
       tonKho: 900,
       ngayTao: '2026-09-01T00:00:00.000Z',
+      trangThai: 'HOAT_DONG',
+      coTheXoaCung: false,
       donViTinh: [
         { id: 'dvt-vien', ten: 'viên', heSo: 1, laCoSo: true, giaBan: 500 },
         { id: 'dvt-vi', ten: 'vỉ', heSo: 12, laCoSo: false, giaBan: 6000 },
       ],
     });
+  });
+
+  it('coTheXoaCung=true khi sản phẩm chưa phát sinh dòng thẻ kho nào (T-009c)', () => {
+    taoSanPham('sp-1', 'SP001', 'Paracetamol 500mg', '2026-09-01T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 500);
+
+    expect(layChiTietHangHoa(db, 'sp-1')?.coTheXoaCung).toBe(true);
   });
 });
 
@@ -187,6 +202,99 @@ describe('taoHangHoa', () => {
     expect(() =>
       taoHangHoa(db, { maHang: 'SP001', ten: 'Hàng mới', donViCoSoTen: 'cái', giaBan: 100, donViKhac: [] }),
     ).toThrow(MaHangDaTonTaiError);
+  });
+});
+
+describe('suaHangHoa', () => {
+  it('sửa tên, giá và đơn vị cơ sở khi CHƯA phát sinh thẻ kho', () => {
+    taoSanPham('sp-1', 'SP001', 'Paracetamol 500mg', '2026-09-01T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 500);
+
+    const chiTiet = suaHangHoa(db, 'sp-1', {
+      ten: 'Paracetamol 500mg (mới)',
+      donViCoSoTen: 'viên nén',
+      giaBan: 600,
+      donViKhac: [{ ten: 'vỉ', heSo: 12, giaBan: 7000 }],
+    });
+
+    expect(chiTiet.ten).toBe('Paracetamol 500mg (mới)');
+    expect(chiTiet.donViTinh).toEqual([
+      expect.objectContaining({ ten: 'viên nén', heSo: 1, laCoSo: true, giaBan: 600 }),
+      expect.objectContaining({ ten: 'vỉ', heSo: 12, laCoSo: false, giaBan: 7000 }),
+    ]);
+  });
+
+  it('cấm đổi tên đơn vị cơ sở khi đã phát sinh thẻ kho (SPEC.md §3.3)', () => {
+    taoSanPham('sp-1', 'SP001', 'Paracetamol 500mg', '2026-09-01T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 500);
+    nhapVaoLoNgamDinh('sp-1', 900);
+
+    expect(() =>
+      suaHangHoa(db, 'sp-1', { ten: 'Paracetamol 500mg', donViCoSoTen: 'vỉ', giaBan: 500, donViKhac: [] }),
+    ).toThrow(DoiDonViCoSoBiCamError);
+  });
+
+  it('vẫn sửa được giá đơn vị cơ sở dù đã phát sinh thẻ kho, miễn không đổi tên', () => {
+    taoSanPham('sp-1', 'SP001', 'Paracetamol 500mg', '2026-09-01T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 500);
+    nhapVaoLoNgamDinh('sp-1', 900);
+
+    const chiTiet = suaHangHoa(db, 'sp-1', {
+      ten: 'Paracetamol 500mg',
+      donViCoSoTen: 'viên',
+      giaBan: 700,
+      donViKhac: [],
+    });
+
+    expect(chiTiet.giaBan).toBe(700);
+  });
+
+  it('ném HangHoaKhongTonTaiError khi sản phẩm không tồn tại', () => {
+    expect(() =>
+      suaHangHoa(db, 'khong-ton-tai', { ten: 'X', donViCoSoTen: 'cái', giaBan: 100, donViKhac: [] }),
+    ).toThrow(HangHoaKhongTonTaiError);
+  });
+});
+
+describe('xoaHangHoa', () => {
+  it('xoá cứng sản phẩm, đơn vị tính và lô ngầm định khi CHƯA phát sinh thẻ kho', () => {
+    taoSanPham('sp-1', 'SP001', 'Paracetamol 500mg', '2026-09-01T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 500);
+
+    xoaHangHoa(db, 'sp-1');
+
+    expect(db.select().from(sanPham).where(eq(sanPham.id, 'sp-1')).all()).toEqual([]);
+    expect(db.select().from(donViTinh).where(eq(donViTinh.sanPhamId, 'sp-1')).all()).toEqual([]);
+    expect(db.select().from(loHang).where(eq(loHang.sanPhamId, 'sp-1')).all()).toEqual([]);
+  });
+
+  it('ném XoaCungBiChanError và không xoá gì khi đã phát sinh thẻ kho (SPEC.md §3.5)', () => {
+    taoSanPham('sp-1', 'SP001', 'Paracetamol 500mg', '2026-09-01T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 500);
+    nhapVaoLoNgamDinh('sp-1', 900);
+
+    expect(() => xoaHangHoa(db, 'sp-1')).toThrow(XoaCungBiChanError);
+    expect(db.select().from(sanPham).where(eq(sanPham.id, 'sp-1')).all()).toHaveLength(1);
+  });
+
+  it('ném HangHoaKhongTonTaiError khi sản phẩm không tồn tại', () => {
+    expect(() => xoaHangHoa(db, 'khong-ton-tai')).toThrow(HangHoaKhongTonTaiError);
+  });
+});
+
+describe('ngungHoatDongHangHoa', () => {
+  it('chuyển trạng thái sản phẩm sang NGUNG_HOAT_DONG', () => {
+    taoSanPham('sp-1', 'SP001', 'Paracetamol 500mg', '2026-09-01T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 500);
+    nhapVaoLoNgamDinh('sp-1', 900);
+
+    const chiTiet = ngungHoatDongHangHoa(db, 'sp-1');
+
+    expect(chiTiet.trangThai).toBe('NGUNG_HOAT_DONG');
+  });
+
+  it('ném HangHoaKhongTonTaiError khi sản phẩm không tồn tại', () => {
+    expect(() => ngungHoatDongHangHoa(db, 'khong-ton-tai')).toThrow(HangHoaKhongTonTaiError);
   });
 });
 
@@ -257,5 +365,90 @@ describe('dangKyHangHoaRoutes', () => {
     const res = await guiTao({ maHang: 'SP001', ten: 'Hàng mới', donViCoSoTen: 'cái', giaBan: 100, donViKhac: [] });
 
     expect(res.status).toBe(409);
+  });
+
+  function guiSua(id: string, body: unknown) {
+    return taoRouter().request(`/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  }
+
+  it('PUT /:id sửa thành công, trả về 200 kèm chi tiết mới', async () => {
+    taoSanPham('sp-1', 'SP001', 'Paracetamol 500mg', '2026-09-01T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 500);
+
+    const res = await guiSua('sp-1', { ten: 'Tên mới', donViCoSoTen: 'viên', giaBan: 600, donViKhac: [] });
+
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { ten: string }).ten).toBe('Tên mới');
+  });
+
+  it('PUT /:id trả về 400 khi dữ liệu không hợp lệ', async () => {
+    taoSanPham('sp-1', 'SP001', 'Paracetamol 500mg', '2026-09-01T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 500);
+
+    const res = await guiSua('sp-1', { ten: '', donViCoSoTen: 'viên', giaBan: 500, donViKhac: [] });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('PUT /:id trả về 404 khi sản phẩm không tồn tại', async () => {
+    const res = await guiSua('khong-ton-tai', { ten: 'X', donViCoSoTen: 'cái', giaBan: 100, donViKhac: [] });
+
+    expect(res.status).toBe(404);
+  });
+
+  it('PUT /:id trả về 409 khi đổi đơn vị cơ sở lúc đã phát sinh thẻ kho', async () => {
+    taoSanPham('sp-1', 'SP001', 'Paracetamol 500mg', '2026-09-01T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 500);
+    nhapVaoLoNgamDinh('sp-1', 900);
+
+    const res = await guiSua('sp-1', { ten: 'Paracetamol 500mg', donViCoSoTen: 'vỉ', giaBan: 500, donViKhac: [] });
+
+    expect(res.status).toBe(409);
+  });
+
+  it('DELETE /:id xoá cứng thành công, trả về 204', async () => {
+    taoSanPham('sp-1', 'SP001', 'Paracetamol 500mg', '2026-09-01T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 500);
+
+    const res = await taoRouter().request('/sp-1', { method: 'DELETE' });
+
+    expect(res.status).toBe(204);
+  });
+
+  it('DELETE /:id trả về 409 khi đã phát sinh thẻ kho', async () => {
+    taoSanPham('sp-1', 'SP001', 'Paracetamol 500mg', '2026-09-01T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 500);
+    nhapVaoLoNgamDinh('sp-1', 900);
+
+    const res = await taoRouter().request('/sp-1', { method: 'DELETE' });
+
+    expect(res.status).toBe(409);
+  });
+
+  it('DELETE /:id trả về 404 khi sản phẩm không tồn tại', async () => {
+    const res = await taoRouter().request('/khong-ton-tai', { method: 'DELETE' });
+
+    expect(res.status).toBe(404);
+  });
+
+  it('POST /:id/ngung-hoat-dong chuyển trạng thái, trả về 200', async () => {
+    taoSanPham('sp-1', 'SP001', 'Paracetamol 500mg', '2026-09-01T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 500);
+    nhapVaoLoNgamDinh('sp-1', 900);
+
+    const res = await taoRouter().request('/sp-1/ngung-hoat-dong', { method: 'POST' });
+
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { trangThai: string }).trangThai).toBe('NGUNG_HOAT_DONG');
+  });
+
+  it('POST /:id/ngung-hoat-dong trả về 404 khi sản phẩm không tồn tại', async () => {
+    const res = await taoRouter().request('/khong-ton-tai/ngung-hoat-dong', { method: 'POST' });
+
+    expect(res.status).toBe(404);
   });
 });

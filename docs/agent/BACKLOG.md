@@ -147,7 +147,7 @@ trí, trọng lượng, hãng/nước sản xuất, định mức tồn) — KH�
 tình không làm" của PR (`SPEC.md` §2 đã chốt các nhóm này ngoài v1).
 
 ### T-009c [B] prio:9.3 — Sửa, xoá/ngừng hoạt động hàng hoá
-Trạng thái: TODO · Phụ thuộc: T-009b
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-009b
 Xong khi: `PUT /api/hang-hoa/:id` sửa tên/giá/đơn vị; **cấm đổi đơn vị cơ sở khi
 sản phẩm đã phát sinh dòng `the_kho`** — có test; `DELETE /api/hang-hoa/:id` xoá
 cứng **chỉ khi chưa phát sinh thẻ kho**, đã phát sinh thì trả lỗi rõ và client gọi
@@ -280,7 +280,7 @@ thẻ kho; dùng được để xử lý cảnh báo lệch kho từ T-034; dùn
 cho tồn cũ đang nằm ở lô ngầm định.
 
 ### T-051 [B] prio:51 — Xuất huỷ
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-006
+Trạng thái: DONE · Phụ thuộc: T-006
 Xong khi: xuất khỏi kho có lý do và người thực hiện, ghi thẻ kho, chọn đúng lô.
 
 ### T-052 [B] prio:52 — Trả hàng (khách trả)

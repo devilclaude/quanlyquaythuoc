@@ -396,3 +396,26 @@ PR: https://github.com/devilclaude/quanlyquaythuoc/pull/32
 Tầng: B
 Kế tiếp: chờ người duyệt #32 (đã khai Tầng B từ đầu, lý do trong mô tả PR);
 sau khi merge, chọn theo prio (T-009c, hoặc T-052/T-053 khi đủ điều kiện).
+
+## 2026-09-19 (run kế 2) — dọn PR + T-009c
+Làm: #30/#31/#32 đều đã merge → chuyển T-009b/T-050/T-051 sang DONE (T-009b/
+T-050 đã DONE sẵn từ người duyệt, chỉ T-051 cần sửa). Chọn T-009c: `PUT
+/api/hang-hoa/:id` sửa tên/giá/đơn vị (thay toàn bộ đơn vị khác, giữ nguyên id
+đơn vị cơ sở); cấm đổi tên đơn vị cơ sở khi đã phát sinh thẻ kho
+(`DoiDonViCoSoBiCamError`). `DELETE /:id` xoá cứng chỉ khi chưa phát sinh thẻ
+kho, ngược lại 409 (`XoaCungBiChanError`); thêm `POST /:id/ngung-hoat-dong` +
+cột `trang_thai` (`san_pham`). Client: `FormTaoHangHoa` (T-009b) tái dùng cho
+`SuaHangHoa` (thêm `tieuDe`/`maHangChiDoc`); nút Xoá/Ngừng hoạt động + Chỉnh
+sửa ở `ChiTietHangHoa` khớp vị trí ảnh "xem chi tiết 1 sản phẩm".
+PR: (xem mô tả PR)
+Tầng: B
+Quyết định: migration `npm run db:generate` sinh SQL sai (rebuild bảng
+`san_pham` do thêm CHECK nhưng SELECT cột `trang_thai` từ bảng CŨ chưa có cột
+đó) — sửa tay trước khi commit (chưa merge nên không phạm luật "không sửa
+migration đã merge"), đồng thời phát hiện DROP TABLE làm mất trigger
+`san_pham_tao_lo_mac_dinh` (T-004b), phải tạo lại nguyên văn trong cùng
+migration. Có test xác nhận trigger vẫn chạy sau migration.
+Khác KiotViet: bỏ "Sao chép"/"In tem mã"/"…" ở chân panel chi tiết — ngoài
+phạm vi "Xong khi" T-009c.
+Kế tiếp: T-010 (cài đặt quản lý theo lô) hoặc T-020 (màn bán hàng), cả hai đều
+đủ điều kiện phụ thuộc sau khi PR này merge.

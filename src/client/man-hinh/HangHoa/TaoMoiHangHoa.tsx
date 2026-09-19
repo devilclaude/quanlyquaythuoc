@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import {
   HangHoaChiTietResSchema,
+  type HangHoaChiTietRes,
+  type SuaHangHoaReq,
   type TaoDonViKhacReq,
   type TaoHangHoaReq,
 } from '../../../shared/hop-dong/hang-hoa';
@@ -55,11 +57,16 @@ function laSoNguyenKhongAm(n: number): boolean {
   return Number.isInteger(n) && n >= 0;
 }
 
-/** Chuyển trạng thái form (chuỗi nhập tay) sang yêu cầu API, hoặc thông báo lỗi
- * đầu tiên gặp phải. Dòng đơn vị khác chưa gõ tên bị bỏ qua (coi như chưa dùng). */
-export function xayDungYeuCauTaoHangHoa(
-  tt: TrangThaiFormTaoHangHoa,
-): TaoHangHoaReq | { loi: string } {
+interface TruongChungHangHoa {
+  ten: string;
+  donViCoSoTen: string;
+  giaBan: number;
+  donViKhac: TaoDonViKhacReq[];
+}
+
+/** Validate các trường chung cho cả tạo mới (T-009b) và sửa (T-009c) — mã hàng
+ * là phần khác nhau duy nhất giữa hai yêu cầu, xử lý riêng ở từng hàm gọi. */
+function validateCacTruongChung(tt: TrangThaiFormTaoHangHoa): TruongChungHangHoa | { loi: string } {
   const ten = tt.ten.trim();
   if (!ten) return { loi: 'Tên hàng là bắt buộc' };
 
@@ -87,8 +94,42 @@ export function xayDungYeuCauTaoHangHoa(
     donViKhac.push({ ten: tenDong, heSo, giaBan: giaBanDong });
   }
 
+  return { ten, donViCoSoTen, giaBan, donViKhac };
+}
+
+/** Chuyển trạng thái form (chuỗi nhập tay) sang yêu cầu tạo mới, hoặc thông báo
+ * lỗi đầu tiên gặp phải. Dòng đơn vị khác chưa gõ tên bị bỏ qua (coi như chưa dùng). */
+export function xayDungYeuCauTaoHangHoa(
+  tt: TrangThaiFormTaoHangHoa,
+): TaoHangHoaReq | { loi: string } {
+  const cot = validateCacTruongChung(tt);
+  if ('loi' in cot) return cot;
+
   const maHang = tt.maHang.trim();
-  return maHang ? { maHang, ten, donViCoSoTen, giaBan, donViKhac } : { ten, donViCoSoTen, giaBan, donViKhac };
+  return maHang ? { maHang, ...cot } : { ...cot };
+}
+
+/** Chuyển trạng thái form sang yêu cầu sửa (T-009c) — không có mã hàng, mã hàng
+ * không đổi được trong task này. Cùng luật validate với tạo mới. */
+export function xayDungYeuCauSuaHangHoa(
+  tt: TrangThaiFormTaoHangHoa,
+): SuaHangHoaReq | { loi: string } {
+  return validateCacTruongChung(tt);
+}
+
+/** Điền form sửa từ chi tiết hàng hoá đã tải (T-009c) — đơn vị cơ sở tách
+ * riêng vào các trường của form, phần còn lại thành mảng "đơn vị khác". */
+export function taoTrangThaiTuChiTiet(chiTiet: HangHoaChiTietRes): TrangThaiFormTaoHangHoa {
+  const donViCoSo = chiTiet.donViTinh.find((d) => d.laCoSo);
+  return {
+    maHang: chiTiet.maHang,
+    ten: chiTiet.ten,
+    donViCoSoTen: donViCoSo?.ten ?? '',
+    giaBan: String(donViCoSo?.giaBan ?? chiTiet.giaBan),
+    donViKhac: chiTiet.donViTinh
+      .filter((d) => !d.laCoSo)
+      .map((d) => ({ key: d.id, ten: d.ten, heSo: String(d.heSo), giaBan: String(d.giaBan) })),
+  };
 }
 
 function capNhatDongKhac(
@@ -113,23 +154,35 @@ interface FormTaoHangHoaProps {
   onDoi: (tt: TrangThaiFormTaoHangHoa) => void;
   onHuy: () => void;
   onLuu: () => void;
+  /** T-009c: form sửa tái dùng form tạo, chỉ đổi tiêu đề và khoá mã hàng. */
+  tieuDe?: string;
+  maHangChiDoc?: boolean;
 }
 
 /** Thuần theo props — dựng riêng để test bố cục không phải đợi fetch thật. */
-export function FormTaoHangHoa({ trangThai, dangLuu, loi, onDoi, onHuy, onLuu }: FormTaoHangHoaProps) {
+export function FormTaoHangHoa({
+  trangThai,
+  dangLuu,
+  loi,
+  onDoi,
+  onHuy,
+  onLuu,
+  tieuDe = 'Tạo hàng hóa',
+  maHangChiDoc = false,
+}: FormTaoHangHoaProps) {
   return (
     <div className="tao-moi-hang-hoa__man-phu" role="presentation">
       <div
         className="tao-moi-hang-hoa"
         role="dialog"
         aria-modal="true"
-        aria-label="Tạo hàng hóa"
+        aria-label={tieuDe}
         onKeyDown={(su) => {
           if (su.key === 'Escape') onHuy();
         }}
       >
         <header className="tao-moi-hang-hoa__dau">
-          <h2 className="tao-moi-hang-hoa__tieu-de">Tạo hàng hóa</h2>
+          <h2 className="tao-moi-hang-hoa__tieu-de">{tieuDe}</h2>
           <button type="button" aria-label="Đóng" className="tao-moi-hang-hoa__dong" onClick={onHuy}>
             ×
           </button>
@@ -147,6 +200,7 @@ export function FormTaoHangHoa({ trangThai, dangLuu, loi, onDoi, onHuy, onLuu }:
             placeholder="Tự động"
             value={trangThai.maHang}
             onChange={(su) => onDoi({ ...trangThai, maHang: su.target.value })}
+            disabled={maHangChiDoc}
           />
           <TruongNhap
             nhan="Tên hàng"

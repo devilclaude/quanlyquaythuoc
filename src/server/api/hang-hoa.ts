@@ -4,12 +4,14 @@ import type { Hono } from 'hono';
 import {
   DanhSachHangHoaResSchema,
   HangHoaChiTietResSchema,
+  SuaHangHoaReqSchema,
   TaoHangHoaReqSchema,
   type HangHoaDanhSachItem,
+  type SuaHangHoaReq,
   type TaoHangHoaReq,
 } from '../../shared/hop-dong/hang-hoa';
 import { taoUlid } from '../../shared/kieu/ulid';
-import { donViTinh, loHang, sanPham, tonKhoLo } from '../db/schema';
+import { donViTinh, loHang, sanPham, theKho, tonKhoLo } from '../db/schema';
 
 type Db = ReturnType<typeof drizzle>;
 
@@ -69,7 +71,27 @@ export function layDanhSachHangHoa(db: Db, tim?: string): HangHoaDanhSachItem[] 
 }
 
 export interface HangHoaChiTiet extends HangHoaDanhSachItem {
+  trangThai: 'HOAT_DONG' | 'NGUNG_HOAT_DONG';
+  /** true khi CHƯA phát sinh dòng thẻ kho nào — quyết định Xoá hay Ngừng hoạt động (T-009c). */
+  coTheXoaCung: boolean;
   donViTinh: { id: string; ten: string; heSo: number; laCoSo: boolean; giaBan: number }[];
+}
+
+/**
+ * Sản phẩm đã "phát sinh dòng thẻ kho" khi có ít nhất một dòng `the_kho` ghi
+ * qua một trong các lô của nó (T-009c) — đây là ranh giới xoá cứng vs "Ngừng
+ * hoạt động" theo SPEC.md §3.5, và cũng là ranh giới cấm đổi đơn vị cơ sở theo
+ * SPEC.md §3.3 (đổi cơ sở nghĩa là viết lại lịch sử đã ghi).
+ */
+function daPhatSinhTheKho(db: Db, sanPhamId: string): boolean {
+  const rows = db
+    .select({ id: theKho.id })
+    .from(theKho)
+    .innerJoin(loHang, eq(loHang.id, theKho.loId))
+    .where(eq(loHang.sanPhamId, sanPhamId))
+    .limit(1)
+    .all();
+  return rows.length > 0;
 }
 
 /** Chi tiết một sản phẩm, tối thiểu tab "Thông tin" (T-009a). */
@@ -97,6 +119,8 @@ export function layChiTietHangHoa(db: Db, id: string): HangHoaChiTiet | undefine
     giaBan: donViCoSo?.giaBan ?? 0,
     giaVon: 0,
     tonKho,
+    trangThai: sp.trangThai,
+    coTheXoaCung: !daPhatSinhTheKho(db, id),
     donViTinh: cacDonVi.map((d) => ({
       id: d.id,
       ten: d.ten,
@@ -110,6 +134,24 @@ export function layChiTietHangHoa(db: Db, id: string): HangHoaChiTiet | undefine
 export class MaHangDaTonTaiError extends Error {
   constructor(public readonly maHang: string) {
     super(`Mã hàng đã tồn tại: ${maHang}`);
+  }
+}
+
+export class HangHoaKhongTonTaiError extends Error {
+  constructor(public readonly id: string) {
+    super(`Không tìm thấy hàng hoá: ${id}`);
+  }
+}
+
+export class DoiDonViCoSoBiCamError extends Error {
+  constructor() {
+    super('Không thể đổi đơn vị cơ sở khi hàng hoá đã phát sinh thẻ kho (SPEC.md §3.3)');
+  }
+}
+
+export class XoaCungBiChanError extends Error {
+  constructor() {
+    super('Hàng hoá đã phát sinh thẻ kho, không thể xoá cứng — dùng "Ngừng hoạt động" thay thế');
   }
 }
 
@@ -175,6 +217,85 @@ export function taoHangHoa(db: Db, req: TaoHangHoaReq): HangHoaChiTiet {
   throw new Error('không sinh được mã hàng tự động sau nhiều lần thử');
 }
 
+/**
+ * Sửa tên/giá/đơn vị (T-009c). Mã hàng không đổi được trong task này. Đơn vị
+ * khác dùng ngữ nghĩa THAY TOÀN BỘ (xoá hết rồi chèn lại) — an toàn vì
+ * `don_vi_tinh` không phải sổ cái, thẻ kho ghi theo lô chứ không theo đơn vị
+ * tính. Đơn vị cơ sở chỉ UPDATE tại chỗ để giữ nguyên id của nó.
+ */
+export function suaHangHoa(db: Db, id: string, req: SuaHangHoaReq): HangHoaChiTiet {
+  const [sp] = db.select({ id: sanPham.id }).from(sanPham).where(eq(sanPham.id, id)).all();
+  if (!sp) throw new HangHoaKhongTonTaiError(id);
+
+  const [donViCoSoHienTai] = db
+    .select()
+    .from(donViTinh)
+    .where(and(eq(donViTinh.sanPhamId, id), eq(donViTinh.laCoSo, true)))
+    .all();
+  if (!donViCoSoHienTai) throw new Error(`sản phẩm ${id} thiếu đơn vị cơ sở — bất biến bị vi phạm`);
+
+  if (donViCoSoHienTai.ten !== req.donViCoSoTen && daPhatSinhTheKho(db, id)) {
+    throw new DoiDonViCoSoBiCamError();
+  }
+
+  db.transaction((tx) => {
+    tx.update(sanPham).set({ ten: req.ten }).where(eq(sanPham.id, id)).run();
+    tx.update(donViTinh)
+      .set({ ten: req.donViCoSoTen, giaBan: req.giaBan })
+      .where(eq(donViTinh.id, donViCoSoHienTai.id))
+      .run();
+    tx.delete(donViTinh).where(and(eq(donViTinh.sanPhamId, id), eq(donViTinh.laCoSo, false))).run();
+    if (req.donViKhac.length > 0) {
+      tx.insert(donViTinh)
+        .values(
+          req.donViKhac.map((d) => ({
+            id: taoUlid(),
+            sanPhamId: id,
+            ten: d.ten,
+            heSo: d.heSo,
+            laCoSo: false,
+            giaBan: d.giaBan,
+          })),
+        )
+        .run();
+    }
+  });
+
+  const chiTiet = layChiTietHangHoa(db, id);
+  if (!chiTiet) throw new Error('không đọc lại được hàng hoá vừa sửa');
+  return chiTiet;
+}
+
+/**
+ * Xoá cứng chỉ khi CHƯA phát sinh thẻ kho (SPEC.md §3.5) — xoá cả đơn vị tính
+ * và lô (chỉ có thể là lô ngầm định, vì có lô thật thì đã phải qua nhập hàng,
+ * tức đã có thẻ kho). Đã phát sinh thẻ kho thì từ chối, không xoá gì; client
+ * gọi `ngungHoatDongHangHoa` thay thế.
+ */
+export function xoaHangHoa(db: Db, id: string): void {
+  const [sp] = db.select({ id: sanPham.id }).from(sanPham).where(eq(sanPham.id, id)).all();
+  if (!sp) throw new HangHoaKhongTonTaiError(id);
+  if (daPhatSinhTheKho(db, id)) throw new XoaCungBiChanError();
+
+  db.transaction((tx) => {
+    tx.delete(donViTinh).where(eq(donViTinh.sanPhamId, id)).run();
+    tx.delete(loHang).where(eq(loHang.sanPhamId, id)).run();
+    tx.delete(sanPham).where(eq(sanPham.id, id)).run();
+  });
+}
+
+/** Thay thế cho xoá cứng khi sản phẩm đã phát sinh thẻ kho (SPEC.md §3.5). */
+export function ngungHoatDongHangHoa(db: Db, id: string): HangHoaChiTiet {
+  const [sp] = db.select({ id: sanPham.id }).from(sanPham).where(eq(sanPham.id, id)).all();
+  if (!sp) throw new HangHoaKhongTonTaiError(id);
+
+  db.update(sanPham).set({ trangThai: 'NGUNG_HOAT_DONG' }).where(eq(sanPham.id, id)).run();
+
+  const chiTiet = layChiTietHangHoa(db, id);
+  if (!chiTiet) throw new Error('không đọc lại được hàng hoá vừa ngừng hoạt động');
+  return chiTiet;
+}
+
 export function dangKyHangHoaRoutes(app: Hono, db: Db): void {
   app.get('/', (c) => {
     const tim = c.req.query('tim');
@@ -201,6 +322,43 @@ export function dangKyHangHoaRoutes(app: Hono, db: Db): void {
       if (loi instanceof MaHangDaTonTaiError) {
         return c.json({ loi: loi.message }, 409);
       }
+      throw loi;
+    }
+  });
+
+  app.put('/:id', async (c) => {
+    const than = SuaHangHoaReqSchema.safeParse(await c.req.json());
+    if (!than.success) {
+      return c.json({ loi: 'Dữ liệu không hợp lệ', chiTiet: than.error.flatten() }, 400);
+    }
+
+    try {
+      const chiTiet = suaHangHoa(db, c.req.param('id'), than.data);
+      return c.json(HangHoaChiTietResSchema.parse(chiTiet));
+    } catch (loi) {
+      if (loi instanceof HangHoaKhongTonTaiError) return c.json({ loi: loi.message }, 404);
+      if (loi instanceof DoiDonViCoSoBiCamError) return c.json({ loi: loi.message }, 409);
+      throw loi;
+    }
+  });
+
+  app.delete('/:id', (c) => {
+    try {
+      xoaHangHoa(db, c.req.param('id'));
+      return c.body(null, 204);
+    } catch (loi) {
+      if (loi instanceof HangHoaKhongTonTaiError) return c.json({ loi: loi.message }, 404);
+      if (loi instanceof XoaCungBiChanError) return c.json({ loi: loi.message }, 409);
+      throw loi;
+    }
+  });
+
+  app.post('/:id/ngung-hoat-dong', (c) => {
+    try {
+      const chiTiet = ngungHoatDongHangHoa(db, c.req.param('id'));
+      return c.json(HangHoaChiTietResSchema.parse(chiTiet));
+    } catch (loi) {
+      if (loi instanceof HangHoaKhongTonTaiError) return c.json({ loi: loi.message }, 404);
       throw loi;
     }
   });

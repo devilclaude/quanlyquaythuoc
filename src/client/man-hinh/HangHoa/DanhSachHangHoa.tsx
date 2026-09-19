@@ -174,7 +174,16 @@ export function DanhSachHangHoa() {
         loi={loi}
         hangChonId={hangChonId}
         onChonDong={(id) => setHangChonId((hienTai) => chonDongTiepTheo(hienTai, id))}
-        renderChiTiet={(id) => <ChiTietHangHoa id={id} />}
+        renderChiTiet={(id) => (
+          <ChiTietHangHoa
+            id={id}
+            onDaSua={() => setPhienBanLamMoi((v) => v + 1)}
+            onDaXoa={() => {
+              setPhienBanLamMoi((v) => v + 1);
+              setHangChonId(undefined);
+            }}
+          />
+        )}
       />
       {dangTaoMoi ? (
         <TaoMoiHangHoa

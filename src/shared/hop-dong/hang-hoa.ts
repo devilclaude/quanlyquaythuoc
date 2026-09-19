@@ -31,6 +31,10 @@ export const DanhSachHangHoaResSchema = z.object({
 
 export const HangHoaChiTietResSchema = HangHoaDanhSachItemSchema.extend({
   donViTinh: z.array(DonViTinhResSchema),
+  /** "Ngừng hoạt động" thay xoá cứng khi đã phát sinh thẻ kho (SPEC.md §3.5, T-009c). */
+  trangThai: z.enum(['HOAT_DONG', 'NGUNG_HOAT_DONG']),
+  /** true khi CHƯA phát sinh dòng thẻ kho nào — quyết định nút Xoá hay Ngừng hoạt động. */
+  coTheXoaCung: z.boolean(),
 });
 
 export type DonViTinhRes = z.infer<typeof DonViTinhResSchema>;
@@ -60,3 +64,18 @@ export const TaoHangHoaReqSchema = z.object({
 
 export type TaoDonViKhacReq = z.infer<typeof TaoDonViKhacReqSchema>;
 export type TaoHangHoaReq = z.infer<typeof TaoHangHoaReqSchema>;
+
+// Hợp đồng sửa hàng hoá (T-009c). Không có `maHang` — mã hàng không đổi được
+// trong phạm vi task này (BACKLOG.md "Xong khi" T-009c chỉ nói "sửa tên/giá/
+// đơn vị"). Đơn vị khác dùng ngữ nghĩa THAY THẾ TOÀN BỘ danh sách hiện có —
+// khớp cách form tái dùng từ form tạo (T-009b) build lại toàn bộ mảng mỗi lần
+// lưu; an toàn vì `don_vi_tinh` không phải sổ cái, không bên nào tham chiếu id
+// của nó (thẻ kho ghi theo lô, không theo đơn vị tính).
+export const SuaHangHoaReqSchema = z.object({
+  ten: z.string().trim().min(1),
+  donViCoSoTen: z.string().trim().min(1),
+  giaBan: z.number().int().nonnegative(),
+  donViKhac: z.array(TaoDonViKhacReqSchema).default([]),
+});
+
+export type SuaHangHoaReq = z.infer<typeof SuaHangHoaReqSchema>;
