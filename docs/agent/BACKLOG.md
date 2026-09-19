@@ -274,7 +274,7 @@ kho** — hoặc vào hết hoặc không vào gì.
 ## Milestone 5 — Tồn kho đúng
 
 ### T-050 [B] prio:50 — Kiểm kê
-Trạng thái: TODO · Phụ thuộc: T-006
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-006
 Xong khi: đếm thực tế theo lô, so sổ sách, tạo phiếu điều chỉnh **có lý do**, ghi
 thẻ kho; dùng được để xử lý cảnh báo lệch kho từ T-034; dùng được để gán lô thật
 cho tồn cũ đang nằm ở lô ngầm định.

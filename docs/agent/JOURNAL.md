@@ -247,6 +247,17 @@ Tầng: A
 Khác KiotViet: bỏ hàng tổng cộng dưới header bảng — ngoài phạm vi "Xong khi".
 Kế tiếp: T-009b (tạo mới hàng hoá) sau khi PR này merge.
 
+## 2026-09-16 — dọn PR + T-050
+Làm: PR#30 (T-009b) xanh chờ duyệt, không sửa. T-009b vẫn TODO trên `main` (PR
+chưa merge) nên không chọn lại — chọn T-050 (Kiểm kê, prio kế tiếp đủ điều
+kiện). Bảng `phieu_kiem_ke`/`phieu_kiem_ke_dong` (lý do bắt buộc, một lô một
+lần/phiếu); `taoPhieuKiemKe` so sổ sách với thực tế theo từng lô, ghi `KIEM_KE`
+qua đúng một hàm viết (tách `ghiMotDongTheKho` khỏi `ghiTheKho` để dùng chung
+transaction, không lồng `db.transaction`). Không thêm API/UI — "Xong khi" của
+task không yêu cầu, theo đúng tiền lệ T-006/T-007.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-051 (Xuất huỷ) hoặc T-009c sau khi PR#30 merge.
 ## 2026-09-16 — dọn PR + T-009b
 Làm: PR#28 (T-007), PR#29 (T-009a) đã merge → chuyển DONE. Chọn T-009b: thêm
 `taoUlid` (sinh id lần đầu server-side), `TaoHangHoaReqSchema`, `POST
