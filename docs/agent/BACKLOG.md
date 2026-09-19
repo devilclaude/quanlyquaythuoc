@@ -134,7 +134,7 @@ screenshot gắn với Bán online (NGOÀI v1, `SPEC.md` §2) — bỏ, ghi `JOU
 phần "Khác KiotViet". Tầng A vì chỉ đọc.
 
 ### T-009b [B] prio:9.2 — Tạo mới hàng hoá (nhiều đơn vị)
-Trạng thái: TODO · Phụ thuộc: T-009a, T-003
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-009a, T-003
 Xong khi: form "Tạo mới hàng hóa" có Mã hàng (tự động/nhập), Tên hàng (bắt buộc),
 Giá bán đơn vị cơ sở, và khai được nhiều đơn vị tính kèm hệ số nguyên ≥1 + giá
 riêng từng đơn vị; **thêm đơn vị mới thì form điền sẵn gợi ý giá = giá đơn vị cơ
