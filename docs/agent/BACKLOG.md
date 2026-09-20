@@ -147,7 +147,7 @@ trí, trọng lượng, hãng/nước sản xuất, định mức tồn) — KH�
 tình không làm" của PR (`SPEC.md` §2 đã chốt các nhóm này ngoài v1).
 
 ### T-009c [B] prio:9.3 — Sửa, xoá/ngừng hoạt động hàng hoá
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-009b
+Trạng thái: DONE · Phụ thuộc: T-009b
 Xong khi: `PUT /api/hang-hoa/:id` sửa tên/giá/đơn vị; **cấm đổi đơn vị cơ sở khi
 sản phẩm đã phát sinh dòng `the_kho`** — có test; `DELETE /api/hang-hoa/:id` xoá
 cứng **chỉ khi chưa phát sinh thẻ kho**, đã phát sinh thì trả lỗi rõ và client gọi
@@ -156,13 +156,39 @@ form sửa tái dùng form tạo (T-009b); nút Xoá/Ngừng hoạt động kh�
 ảnh chi tiết sản phẩm; test: xoá cứng khi chưa có thẻ kho, xoá bị chặn + chuyển
 ngừng hoạt động khi đã có thẻ kho.
 
-### T-010 [B] prio:10 — Cài đặt quản lý theo lô
+### T-010a [B] prio:10.1 — Cài đặt quản lý theo lô: schema + hàm giải nghĩa
 Trạng thái: TODO · Phụ thuộc: T-006, T-009c
-Xong khi: cài đặt toàn cục + ghi đè theo sản phẩm (ba trạng thái), **mặc định TẮT**;
-giao diện nhập/bán/thẻ kho phản ứng đúng bảng trong `DOMAIN-NOTES.md`; tắt→bật luôn
-cho phép; bật→tắt bị chặn khi sản phẩm còn hơn một lô có tồn > 0; cả hai chiều ghi
-thẻ kho loại `DOI_CHE_DO` với số lượng 0; **test kiểm tra hàm giải nghĩa cài đặt
-không xuất hiện trong `src/server/kho/**`**.
+Xong khi: bảng `cai_dat` (cài đặt toàn cục, đúng một dòng, **mặc định TẮT**) và cột
+ghi đè theo sản phẩm (ba trạng thái: kế thừa/bật/tắt) trên `san_pham`; hàm giải
+nghĩa cài đặt (thuần, không chạm CSDL) áp đúng thứ tự ưu tiên "ghi đè sản phẩm >
+cài đặt toàn cục"; hàm đổi cài đặt (cả toàn cục lẫn theo sản phẩm): tắt→bật luôn
+cho phép, bật→tắt bị chặn khi sản phẩm còn hơn một lô có tồn > 0, cả hai chiều ghi
+thẻ kho loại `DOI_CHE_DO` với số lượng 0; **`dependency-cruiser` chặn
+`src/server/kho/**` import hàm giải nghĩa cài đặt** (ARCHITECTURE.md §5 — quy tắc
+này thêm ngay ở task tạo ra module, không chờ task sau). Không có API, không có UI.
+Ghi chú: đây là T-010 cũ, chẻ vì bản đầy đủ (schema+logic+API+UI) ước lượng vượt
+1000 dòng/24 file khi làm trọn gói — số liệu đo được lúc chẻ: ~1120 dòng/25 file
+tính theo ngưỡng CLAUDE.md (không tính migration tự sinh). Slice này riêng còn
+trong ngưỡng.
+
+### T-010b [B] prio:10.2 — Cài đặt quản lý theo lô: API
+Trạng thái: TODO · Phụ thuộc: T-010a
+Xong khi: `GET`/`PUT /api/cai-dat/quan-ly-lo` (cài đặt toàn cục) và
+`PUT /api/hang-hoa/:id/quan-ly-lo` (ghi đè theo sản phẩm, trả 409 kèm lý do khi bị
+chặn); chi tiết hàng hoá (`GET /api/hang-hoa/:id`) trả thêm ghi đè hiện tại của sản
+phẩm đó. Không có UI — dùng test tích hợp gọi thẳng route.
+Ghi chú: T-040 (phiếu nhập) chỉ cần tới đây (tầng dữ liệu/API), không cần T-010c —
+form nhập hàng tự đọc cài đặt qua API, không phụ thuộc màn cài đặt có tồn tại hay
+không.
+
+### T-010c [A] prio:10.3 — Cài đặt quản lý theo lô: giao diện
+Trạng thái: TODO · Phụ thuộc: T-010b
+Xong khi: màn cài đặt có công tắc bật/tắt toàn cục (chưa có screenshot KiotViet
+tham chiếu cho màn này trong `docs/reference/kiotviet/` — dựng theo token trong
+`.claude/skills/design-system/`, ghi rõ trong PR); chi tiết hàng hoá (T-009c) có
+điều khiển đổi ghi đè riêng cho sản phẩm, hiện lỗi rõ khi bị chặn (bật→tắt còn
+nhiều lô tồn). Tầng A: chỉ đọc/ghi cài đặt hiển thị, không tự viết dòng sổ cái nào
+ngoài đường đã có sẵn ở T-010a/b.
 
 ---
 
@@ -247,7 +273,7 @@ khi offline.
 ## Milestone 4 — Nhập hàng
 
 ### T-040 [B] prio:40 — Phiếu nhập kèm lô và hạn dùng
-Trạng thái: TODO · Phụ thuộc: T-007, T-010
+Trạng thái: TODO · Phụ thuộc: T-007, T-010b
 Xong khi: khớp luồng trong screenshots nhập hàng; **tạo hàng mới ngay trong màn
 nhập**, không rời màn; bắt buộc lô + HSD khi sản phẩm bật quản lý lô, không hỏi khi
 tắt; lưu tạm (phiếu tạm) và hoàn thành là hai trạng thái; hoàn thành mới ghi kho.
@@ -305,7 +331,7 @@ mà T-007 tạo ra (SPEC.md §3.4); bản gốc chỉ ghi phụ thuộc T-005 l�
 không dựng được đúng "Xong khi" nếu thiếu T-007.
 
 ### T-055 [A] prio:55 — Cảnh báo cận date
-Trạng thái: TODO · Phụ thuộc: T-010
+Trạng thái: TODO · Phụ thuộc: T-010b
 Xong khi: báo cáo hết hạn trong 30/60/90 ngày; một ô trên màn tổng quan.
 Ghi chú: **chỉ có tác dụng khi quầy đã bắt đầu dùng lô thật.** Ngày đầu toàn bộ tồn
 nằm ở lô ngầm định nên báo cáo sẽ rỗng — đó là đúng, không phải bug.
