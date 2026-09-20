@@ -429,3 +429,19 @@ sang T-010b (chỉ cần tầng dữ liệu, không cần màn cài đặt).
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: T-010a.
+
+## 2026-09-20 (run kế) — dọn PR + T-010a
+Làm: PR#43 (chẻ T-010) đã merge, không sửa gì thêm. Chọn T-010a: bảng `cai_dat`
+(toàn cục, đúng 1 dòng, mặc định TẮT) + cột `quan_ly_lo_ghi_de` (NULL/BAT/TAT)
+trên `san_pham`; `giaiNghiaCaiDatQuanLyLo` (hàm thuần, ưu tiên ghi đè > toàn
+cục); `doiGhiDeSanPham`/`doiCaiDatToanCuc` chặn bật→tắt khi còn >1 lô tồn > 0,
+ghi `DOI_CHE_DO` số lượng 0 khi hiệu lực đổi thật; đổi toàn cục chỉ ảnh hưởng
+sản phẩm đang kế thừa, rollback toàn bộ nếu một sản phẩm bị chặn.
+dependency-cruiser chặn `kho/**` import module giải nghĩa. Không API/UI. `npm
+run ci` xanh (291 test).
+PR: (xem mô tả PR)
+Tầng: B
+Quyết định: rebuild `san_pham` (thêm CHECK) lại mất trigger lô ngầm định như
+T-009c — tạo lại + sửa tay INSERT tự sinh. Module `cai-dat` được phép gọi hàm
+giải nghĩa (chỉ `kho/**` bị cấm, ARCHITECTURE.md §5).
+Kế tiếp: T-010b (API) sau khi merge; T-020/T-060 cũng đủ điều kiện.
