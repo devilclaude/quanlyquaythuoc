@@ -195,7 +195,7 @@ ngoài đường đã có sẵn ở T-010a/b.
 ## Milestone 2 — Bán hàng (ưu tiên cao nhất)
 
 ### T-020 [B] prio:20 — Màn bán hàng: tìm và thêm hàng
-Trạng thái: TODO · Phụ thuộc: T-006, T-009c
+Trạng thái: DOING · Phụ thuộc: T-006, T-009c
 Xong khi: bố cục khớp screenshot "Giao diện bán hàng chưa có sản phẩm" và "Tìm sản
 phẩm để bán"; tìm **theo tên và mã hàng** (tìm theo hoạt chất là v1.1, không làm);
 gợi ý hiện tồn và giá như trong ảnh; **chọn và thêm hoàn toàn bằng bàn phím**.

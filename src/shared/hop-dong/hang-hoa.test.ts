@@ -16,6 +16,7 @@ const mucDanhSach = {
   giaVon: 0,
   tonKho: 864,
   ngayTao: '2026-09-15T08:00:00.000Z',
+  donViTinh: [mucDonVi],
 };
 
 describe('DanhSachHangHoaResSchema', () => {
@@ -35,6 +36,21 @@ describe('DanhSachHangHoaResSchema', () => {
     const thieuTen: Record<string, unknown> = { ...mucDanhSach };
     delete thieuTen['ten'];
     expect(() => DanhSachHangHoaResSchema.parse({ duLieu: [thieuTen] })).toThrow();
+  });
+
+  it('từ chối thiếu đơn vị tính — màn bán hàng (T-020) cần giá/hệ số từng đơn vị ngay trong gợi ý tìm', () => {
+    const thieuDonVi: Record<string, unknown> = { ...mucDanhSach };
+    delete thieuDonVi['donViTinh'];
+    expect(() => DanhSachHangHoaResSchema.parse({ duLieu: [thieuDonVi] })).toThrow();
+  });
+
+  it('mang theo nhiều đơn vị tính kèm hệ số/giá riêng, khớp gợi ý một dòng mỗi đơn vị', () => {
+    const nhieuDonVi = {
+      ...mucDanhSach,
+      donViTinh: [mucDonVi, { id: 'dvt-2', ten: 'vỉ', heSo: 12, laCoSo: false, giaBan: 6000 }],
+    };
+    const ketQua = DanhSachHangHoaResSchema.parse({ duLieu: [nhieuDonVi] });
+    expect(ketQua.duLieu[0]?.donViTinh).toHaveLength(2);
   });
 });
 
