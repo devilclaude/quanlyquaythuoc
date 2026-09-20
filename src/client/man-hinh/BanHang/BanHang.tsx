@@ -92,6 +92,11 @@ export function tinhTongTien(gioHang: DongGioHang[]): number {
   return gioHang.reduce((tong, d) => tong + d.giaBan * d.soLuong, 0);
 }
 
+/** Tổng số lượng mọi dòng — số cạnh nhãn "Tổng tiền hàng" trong ảnh KiotViet, không phải số dòng. */
+export function tinhSoMon(gioHang: DongGioHang[]): number {
+  return gioHang.reduce((tong, d) => tong + d.soLuong, 0);
+}
+
 /** Tồn hiển thị theo một đơn vị — CHỈ để hiển thị (SPEC.md §3.3), khớp ảnh "Tìm sản phẩm để bán". */
 export function dinhDangTonTheoDonVi(tonCoSo: number, heSo: number): string {
   return (tonCoSo / heSo).toLocaleString('en-US', { maximumFractionDigits: 3 });
@@ -315,7 +320,9 @@ export function BanHang() {
 
         <aside className="ban-hang__panel">
           <div className="ban-hang__hang">
-            <span>Tổng tiền hàng</span>
+            <span>
+              Tổng tiền hàng <span className="so">{tinhSoMon(gioHang)}</span>
+            </span>
             <span className="so">{dinhDangTien(dong(tongTien))}</span>
           </div>
           <div className="ban-hang__hang">

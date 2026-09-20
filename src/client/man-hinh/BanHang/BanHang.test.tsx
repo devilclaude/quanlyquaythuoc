@@ -10,6 +10,7 @@ import {
   dinhDangTonTheoDonVi,
   layGoiYTimHang,
   themVaoGioHang,
+  tinhSoMon,
   tinhTongTien,
   type DongGioHang,
   type GoiYBanHang,
@@ -167,6 +168,20 @@ describe('tinhTongTien', () => {
       { sanPhamId: 'sp-2', maHang: 'SP2', ten: 'B', donViTinhId: 'd2', donViTen: 'hộp', giaBan: 260000, soLuong: 1 },
     ];
     expect(tinhTongTien(gioHang)).toBe(17000 * 2 + 260000);
+  });
+});
+
+describe('tinhSoMon', () => {
+  it('bằng 0 khi giỏ rỗng — khớp ảnh "Giao diện bán hàng chưa có sản phẩm" (dòng Tổng tiền hàng hiện "0  0")', () => {
+    expect(tinhSoMon([])).toBe(0);
+  });
+
+  it('cộng dồn số lượng mọi dòng, không phải đếm số dòng', () => {
+    const gioHang: DongGioHang[] = [
+      { sanPhamId: 'sp-1', maHang: 'SP1', ten: 'A', donViTinhId: 'd1', donViTen: 'vỉ', giaBan: 17000, soLuong: 2 },
+      { sanPhamId: 'sp-2', maHang: 'SP2', ten: 'B', donViTinhId: 'd2', donViTen: 'hộp', giaBan: 260000, soLuong: 1 },
+    ];
+    expect(tinhSoMon(gioHang)).toBe(3);
   });
 });
 

@@ -51,6 +51,8 @@ test('bán hàng: tìm và thêm hàng vào giỏ hoàn toàn bằng bàn phím 
 
   await expect(page.getByText('Khách cần trả')).toBeVisible();
   await expect(page.locator('.ban-hang__hang--can-tra .so')).toHaveText('260,000');
+  // Khớp ảnh KiotViet: dòng "Tổng tiền hàng" hiện cả số món lẫn tổng tiền.
+  await expect(page.getByText('Tổng tiền hàng')).toContainText('1');
 
   // F3 lấy lại focus ô tìm dù đang ở đâu trên trang (UI-FIDELITY.md nhóm 1).
   await oTim.blur();
