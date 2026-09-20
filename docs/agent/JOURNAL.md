@@ -419,3 +419,13 @@ Khác KiotViet: bỏ "Sao chép"/"In tem mã"/"…" ở chân panel chi tiết �
 phạm vi "Xong khi" T-009c.
 Kế tiếp: T-010 (cài đặt quản lý theo lô) hoặc T-020 (màn bán hàng), cả hai đều
 đủ điều kiện phụ thuộc sau khi PR này merge.
+
+## 2026-09-20 — dọn PR + T-010 (chẻ task, không code)
+Làm: PR#42 (T-009c) đã merge → chuyển DONE. Chọn T-010, dựng trọn vẹn theo TDD
+(`npm run ci` xanh, xác nhận bằng browser thật) rồi đo trước khi mở PR: 1118
+dòng/25 file, vượt cả hai ngưỡng CLAUDE.md. Bỏ toàn bộ code, chẻ thành T-010a
+(schema+hàm giải nghĩa)/T-010b (API)/T-010c (UI); T-040/T-055 đổi phụ thuộc
+sang T-010b (chỉ cần tầng dữ liệu, không cần màn cài đặt).
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: T-010a.
