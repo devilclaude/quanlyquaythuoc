@@ -85,7 +85,28 @@ describe('layDanhSachHangHoa', () => {
       giaVon: 0,
       tonKho: 1000,
       ngayTao: '2026-09-01T00:00:00.000Z',
+      donViTinh: [{ id: 'dvt-sp-1', ten: 'viên', heSo: 1, laCoSo: true, giaBan: 500 }],
     });
+  });
+
+  it('mang theo đầy đủ đơn vị tính từng sản phẩm — màn bán hàng (T-020) dựng gợi ý một dòng mỗi đơn vị từ đây, không gọi thêm API chi tiết', () => {
+    taoSanPham('sp-1', 'SP001', 'Panadol Extra', '2026-09-01T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 17000);
+    db.insert(donViTinh)
+      .values({ id: 'dvt-hop', sanPhamId: 'sp-1', ten: 'hộp', heSo: 15, laCoSo: false, giaBan: 260000 })
+      .run();
+    taoSanPham('sp-2', 'SP002', 'Vitamin C', '2026-09-02T00:00:00.000Z');
+    taoDonViCoSo('sp-2', 1000);
+
+    const ketQua = layDanhSachHangHoa(db);
+    const panadol = ketQua.find((r) => r.maHang === 'SP001');
+    const vitaminC = ketQua.find((r) => r.maHang === 'SP002');
+
+    expect(panadol?.donViTinh).toEqual([
+      { id: 'dvt-sp-1', ten: 'viên', heSo: 1, laCoSo: true, giaBan: 17000 },
+      { id: 'dvt-hop', ten: 'hộp', heSo: 15, laCoSo: false, giaBan: 260000 },
+    ]);
+    expect(vitaminC?.donViTinh).toEqual([{ id: 'dvt-sp-2', ten: 'viên', heSo: 1, laCoSo: true, giaBan: 1000 }]);
   });
 
   it('tìm theo mã hàng hoặc tên hàng', () => {

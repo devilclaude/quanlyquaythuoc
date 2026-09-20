@@ -1,13 +1,30 @@
+import { useState } from 'react';
+import { BanHang } from './man-hinh/BanHang/BanHang';
 import { DanhSachHangHoa } from './man-hinh/HangHoa/DanhSachHangHoa';
+import { Nut } from './thanh-phan';
+import './App.css';
 
-// "Quầy thuốc" là tên ứng dụng, không phải tên màn hình — giữ lại làm tiêu đề
-// trang trong lúc chưa có thanh điều hướng tổng thể (Tổng quan/Bán hàng/... của
-// KiotViet chưa tồn tại ở v1 hiện tại; T-020 sẽ là màn tiếp theo được dựng).
+type Man = 'ban-hang' | 'hang-hoa';
+
+// Bộ chuyển màn tối thiểu — KHÔNG bám sidebar đầy đủ của KiotViet (chưa có task
+// dựng nav thật trong BACKLOG.md). Chỉ để "Hàng hoá" (T-009) không biến mất khỏi
+// giao diện từ khi T-020 thêm màn thứ hai; mặc định "Bán hàng" vì đó là việc
+// dược sĩ làm cả ngày.
 export function App() {
+  const [man, setMan] = useState<Man>('ban-hang');
+
   return (
     <main>
-      <h1>Quầy thuốc</h1>
-      <DanhSachHangHoa />
+      <nav className="app__dieu-huong" aria-label="Chuyển màn hình">
+        <h1 className="app__tieu-de">Quầy thuốc</h1>
+        <Nut bienThe={man === 'ban-hang' ? 'chinh' : 'phu'} onClick={() => setMan('ban-hang')}>
+          Bán hàng
+        </Nut>
+        <Nut bienThe={man === 'hang-hoa' ? 'chinh' : 'phu'} onClick={() => setMan('hang-hoa')}>
+          Hàng hoá
+        </Nut>
+      </nav>
+      {man === 'ban-hang' ? <BanHang /> : <DanhSachHangHoa />}
     </main>
   );
 }

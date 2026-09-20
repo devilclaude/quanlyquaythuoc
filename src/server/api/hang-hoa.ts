@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, like, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, like, or, sql } from 'drizzle-orm';
 import type { drizzle } from 'drizzle-orm/better-sqlite3';
 import type { Hono } from 'hono';
 import {
@@ -6,6 +6,7 @@ import {
   HangHoaChiTietResSchema,
   SuaHangHoaReqSchema,
   TaoHangHoaReqSchema,
+  type DonViTinhRes,
   type HangHoaDanhSachItem,
   type SuaHangHoaReq,
   type TaoHangHoaReq,
@@ -32,10 +33,43 @@ function tinhTonKhoTheoSanPham(db: Db): Map<string, number> {
 }
 
 /**
+ * Mọi đơn vị tính của một nhóm sản phẩm, đơn vị cơ sở trước rồi tăng dần hệ
+ * số — cùng thứ tự với `layChiTietHangHoa`. Dùng chung cho danh sách (T-020
+ * cần giá/hệ số từng đơn vị để dựng gợi ý bán hàng) và không lặp truy vấn
+ * cho từng sản phẩm (N+1).
+ */
+function donViTinhTheoSanPham(db: Db, sanPhamIds: string[]): Map<string, DonViTinhRes[]> {
+  if (sanPhamIds.length === 0) return new Map();
+
+  const rows = db
+    .select({
+      sanPhamId: donViTinh.sanPhamId,
+      id: donViTinh.id,
+      ten: donViTinh.ten,
+      heSo: donViTinh.heSo,
+      laCoSo: donViTinh.laCoSo,
+      giaBan: donViTinh.giaBan,
+    })
+    .from(donViTinh)
+    .where(inArray(donViTinh.sanPhamId, sanPhamIds))
+    .orderBy(desc(donViTinh.laCoSo), asc(donViTinh.heSo))
+    .all();
+
+  const ketQua = new Map<string, DonViTinhRes[]>();
+  for (const r of rows) {
+    const danhSach = ketQua.get(r.sanPhamId) ?? [];
+    danhSach.push({ id: r.id, ten: r.ten, heSo: r.heSo, laCoSo: r.laCoSo, giaBan: r.giaBan });
+    ketQua.set(r.sanPhamId, danhSach);
+  }
+  return ketQua;
+}
+
+/**
  * Danh sách hàng hoá, khớp cột trong screenshot "Danh sách hàng hóa" nằm
  * trong phạm vi v1 (T-009a): Mã hàng, Tên hàng, Giá bán, Giá vốn, Tồn kho,
  * Thời gian tạo. `giaVon` tạm luôn 0 — T-007 (giá vốn bình quân gia quyền)
- * chưa merge vào nhánh này.
+ * chưa merge vào nhánh này. `donViTinh` mang đầy đủ đơn vị tính (không chỉ
+ * cơ sở) — T-020 dựng gợi ý tìm hàng ở màn bán hàng trực tiếp từ đây.
  */
 export function layDanhSachHangHoa(db: Db, tim?: string): HangHoaDanhSachItem[] {
   const tuKhoa = tim?.trim();
@@ -58,6 +92,10 @@ export function layDanhSachHangHoa(db: Db, tim?: string): HangHoaDanhSachItem[] 
     .all();
 
   const tonTheoSanPham = tinhTonKhoTheoSanPham(db);
+  const donViTheoSanPham = donViTinhTheoSanPham(
+    db,
+    hang.map((h) => h.id),
+  );
 
   return hang.map((h) => ({
     id: h.id,
@@ -67,6 +105,7 @@ export function layDanhSachHangHoa(db: Db, tim?: string): HangHoaDanhSachItem[] 
     giaBan: h.giaBan ?? 0,
     giaVon: 0,
     tonKho: tonTheoSanPham.get(h.id) ?? 0,
+    donViTinh: donViTheoSanPham.get(h.id) ?? [],
   }));
 }
 

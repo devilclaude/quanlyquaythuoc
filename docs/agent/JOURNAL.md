@@ -445,3 +445,24 @@ Quyết định: rebuild `san_pham` (thêm CHECK) lại mất trigger lô ngầm
 T-009c — tạo lại + sửa tay INSERT tự sinh. Module `cai-dat` được phép gọi hàm
 giải nghĩa (chỉ `kho/**` bị cấm, ARCHITECTURE.md §5).
 Kế tiếp: T-010b (API) sau khi merge; T-020/T-060 cũng đủ điều kiện.
+
+## 2026-09-20 (run kế) — dọn PR + T-020
+Làm: PR#44 (T-010a) xanh, không comment, không conflict, chờ duyệt (khai Tầng B
+đúng — chạm `.dependency-cruiser.cjs`, nhóm tự-quản-trị) — không sửa. T-010a vẫn
+TODO trên `main` nên T-010b/c chưa đủ điều kiện; chọn T-020 (Màn bán hàng: tìm và
+thêm hàng). Mở rộng `GET /api/hang-hoa` trả thêm `donViTinh` từng sản phẩm (không
+chỉ cơ sở) để màn bán hàng dựng gợi ý một dòng mỗi đơn vị mà không cần endpoint
+riêng. `BanHang.tsx`: ô tìm (F3, debounce 150ms), gợi ý theo đơn vị (↑↓/Enter/Esc
+hai bước), thêm vào giỏ (dedup theo sản phẩm+đơn vị). doi-chieu-ui đối chiếu 3 ảnh
+KiotViet: không vi phạm nặng; sửa 1 điểm thật (panel "Tổng tiền hàng" thiếu số
+lượng món, ảnh gốc hiện cả hai số). E2e mới chặn `/api/hang-hoa`, kiểm luồng bàn
+phím đầu-cuối (ARCHITECTURE.md: luồng này chỉ kiểm được ở tầng e2e).
+PR: (xem mô tả PR)
+Tầng: A
+Quyết định: `TruongNhap` chuyển sang `forwardRef` (lần đầu dùng) để F3 focus lập
+trình được ô tìm.
+Khác KiotViet: bảng giỏ hàng có dòng tiêu đề cột (ảnh gốc không có) — giữ để
+người mới đọc được ý nghĩa từng cột, không đổi thứ tự cột. Thanh chuyển màn
+"Bán hàng"/"Hàng hoá" ở trên cùng là lối đi tạm, không bám sidebar KiotViet —
+chưa có task dựng nav thật trong BACKLOG.md.
+Kế tiếp: T-021 (chọn đơn vị và số lượng) sau khi PR này merge.
