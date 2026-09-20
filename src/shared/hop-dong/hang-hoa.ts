@@ -23,6 +23,12 @@ export const HangHoaDanhSachItemSchema = z.object({
   /** Tổng tồn ở đơn vị cơ sở, cộng dồn mọi lô của sản phẩm. */
   tonKho: z.number().int(),
   ngayTao: z.string(),
+  /**
+   * Mọi đơn vị tính của sản phẩm — màn bán hàng (T-020) cần giá và hệ số
+   * từng đơn vị ngay trong danh sách tìm kiếm để dựng gợi ý một dòng mỗi
+   * đơn vị, không phải gọi thêm API chi tiết cho từng gợi ý.
+   */
+  donViTinh: z.array(DonViTinhResSchema),
 });
 
 export const DanhSachHangHoaResSchema = z.object({

@@ -1,0 +1,165 @@
+/* Màn bán hàng (T-020). Bố cục bám ảnh "Giao diện bán hàng chưa có sản phẩm"
+ * và "Tìm sản phẩm để bán": thanh trên xanh dương chứa ô tìm bên trái, thân
+ * chia giỏ hàng (trái, co giãn) + panel tổng tiền (phải, cố định). */
+
+.ban-hang {
+  display: flex;
+  flex-direction: column;
+  min-height: 70vh;
+}
+
+.ban-hang__thanh-tren {
+  background: var(--mau-chinh);
+  display: flex;
+  align-items: center;
+  gap: var(--kc-3);
+  padding: var(--kc-2) var(--kc-3);
+}
+
+.ban-hang__o-tim {
+  position: relative;
+  flex: 0 1 420px;
+  min-width: 240px;
+}
+
+.ban-hang__hoa-don-hien-tai {
+  background: var(--xam-0);
+  color: var(--mau-chu);
+  font-weight: 600;
+  font-size: var(--chu-sm);
+  padding: var(--kc-2) var(--kc-3);
+  border-radius: var(--bo-goc);
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+/* ---------- gợi ý tìm ---------- */
+.goi-y {
+  position: absolute;
+  top: 44px;
+  left: 0;
+  right: 0;
+  background: var(--xam-0);
+  border: var(--vien);
+  border-radius: var(--bo-goc);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16);
+  max-height: 360px;
+  overflow-y: auto;
+  z-index: 20;
+}
+
+.goi-y__thong-bao {
+  margin: 0;
+  padding: var(--kc-4);
+  font-size: var(--chu-sm);
+  color: var(--mau-chu-phu);
+}
+
+.goi-y__thong-bao--loi {
+  color: var(--mau-nguy);
+}
+
+.goi-y__dong {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--kc-1) var(--kc-3);
+  padding: var(--kc-2) var(--kc-3);
+  border-bottom: var(--vien);
+  cursor: pointer;
+}
+
+.goi-y__dong:last-child {
+  border-bottom: none;
+}
+
+.goi-y__dong--chon {
+  background: var(--mau-chinh-nhat);
+}
+
+.goi-y__ten {
+  font-size: var(--chu-sm);
+  font-weight: 500;
+}
+
+.goi-y__badge-dv {
+  display: inline-block;
+  background: var(--mau-chinh-nhat);
+  color: var(--mau-chinh);
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: var(--kc-2);
+  vertical-align: middle;
+}
+
+.goi-y__gia {
+  font-size: var(--chu-sm);
+  font-weight: 600;
+  color: var(--mau-chinh);
+  white-space: nowrap;
+}
+
+.goi-y__phu {
+  grid-column: 1 / -1;
+  font-size: var(--chu-xs);
+  color: var(--mau-chu-phu);
+}
+
+/* ---------- thân: giỏ + panel ---------- */
+.ban-hang__than {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.ban-hang__gio {
+  flex: 1;
+  min-width: 0;
+  background: var(--mau-nen);
+}
+
+.ban-hang__gio-trong {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  min-height: 240px;
+  color: var(--mau-chu-phu);
+  font-size: var(--chu-sm);
+  text-align: center;
+  padding: var(--kc-5);
+}
+
+.ban-hang__panel {
+  width: 320px;
+  flex-shrink: 0;
+  background: var(--xam-0);
+  border-left: var(--vien);
+  padding: var(--kc-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--kc-1);
+}
+
+.ban-hang__hang {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: var(--chu-sm);
+  padding: var(--kc-1) 0;
+  color: var(--mau-chu-phu);
+}
+
+.ban-hang__hang--can-tra {
+  border-top: var(--vien);
+  padding-top: var(--kc-3);
+  margin-top: var(--kc-2);
+  color: var(--mau-chu);
+  font-weight: 600;
+}
+
+.ban-hang__hang--can-tra .so {
+  color: var(--mau-chinh);
+  font-size: var(--chu-xl);
+  font-weight: 600;
+}

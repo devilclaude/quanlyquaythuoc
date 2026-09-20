@@ -1,0 +1,13 @@
+.app__dieu-huong {
+  display: flex;
+  align-items: center;
+  gap: var(--kc-3);
+  padding: var(--kc-2) var(--kc-4);
+  background: var(--xam-900);
+}
+
+.app__tieu-de {
+  color: var(--xam-0);
+  font-size: var(--chu-base);
+  margin: 0 var(--kc-3) 0 0;
+}

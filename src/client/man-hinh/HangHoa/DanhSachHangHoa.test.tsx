@@ -36,6 +36,7 @@ const mucMau: HangHoaDanhSachItem = {
   giaVon: 0,
   tonKho: 900,
   ngayTao: '2026-09-01T02:00:00.000Z',
+  donViTinh: [{ id: 'dvt-1', ten: 'viên', heSo: 1, laCoSo: true, giaBan: 500 }],
 };
 
 function ve(props: Partial<ComponentProps<typeof BangDanhSachHangHoa>> = {}) {
