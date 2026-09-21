@@ -195,13 +195,13 @@ ngoài đường đã có sẵn ở T-010a/b.
 ## Milestone 2 — Bán hàng (ưu tiên cao nhất)
 
 ### T-020 [B] prio:20 — Màn bán hàng: tìm và thêm hàng
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-006, T-009c
+Trạng thái: DONE · Phụ thuộc: T-006, T-009c
 Xong khi: bố cục khớp screenshot "Giao diện bán hàng chưa có sản phẩm" và "Tìm sản
 phẩm để bán"; tìm **theo tên và mã hàng** (tìm theo hoạt chất là v1.1, không làm);
 gợi ý hiện tồn và giá như trong ảnh; **chọn và thêm hoàn toàn bằng bàn phím**.
 
 ### T-021 [B] prio:21 — Chọn đơn vị và số lượng
-Trạng thái: TODO · Phụ thuộc: T-020, T-003
+Trạng thái: DOING · Phụ thuộc: T-020, T-003
 Xong khi: khớp screenshot "Chọn 1 món hàng để bán"; đổi đơn vị trừ đúng số đơn vị
 cơ sở; sửa số lượng bằng bàn phím; giá lấy theo đơn vị đã chọn, không nhân hệ số.
 

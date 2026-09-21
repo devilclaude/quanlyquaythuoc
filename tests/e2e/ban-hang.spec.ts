@@ -29,17 +29,21 @@ test('bán hàng: tìm và thêm hàng vào giỏ hoàn toàn bằng bàn phím 
 
   const oTim = page.getByPlaceholder('Tìm hàng hóa (F3)');
   await expect(oTim).toBeFocused();
+  // Gợi ý tìm hàng — role "option" của trình đọc màn hình cũng khớp mọi
+  // <option> trong dropdown đổi đơn vị của dòng giỏ hàng (T-021), nên phải
+  // khoanh vùng vào đúng listbox gợi ý, không dùng getByRole('option') trần.
+  const goiYOption = page.getByRole('listbox', { name: 'Gợi ý hàng hoá' }).getByRole('option');
 
   await oTim.pressSequentially('pana');
-  await expect(page.getByRole('option')).toHaveCount(2);
+  await expect(goiYOption).toHaveCount(2);
 
   // Dòng đầu (vỉ) đang chọn sẵn; ArrowDown sang dòng hộp rồi Enter để thêm —
   // không chạm chuột từ đầu tới cuối.
   await page.keyboard.press('ArrowDown');
-  await expect(page.getByRole('option').nth(1)).toHaveAttribute('aria-selected', 'true');
+  await expect(goiYOption.nth(1)).toHaveAttribute('aria-selected', 'true');
   await page.keyboard.press('Enter');
 
-  await expect(page.getByRole('option')).toHaveCount(0);
+  await expect(goiYOption).toHaveCount(0);
   await expect(oTim).toHaveValue('');
   await expect(oTim).toBeFocused();
 
@@ -59,4 +63,43 @@ test('bán hàng: tìm và thêm hàng vào giỏ hoàn toàn bằng bàn phím 
   await expect(oTim).not.toBeFocused();
   await page.keyboard.press('F3');
   await expect(oTim).toBeFocused();
+});
+
+test('bán hàng: đổi đơn vị và sửa số lượng dòng giỏ hàng hoàn toàn bằng bàn phím (T-021)', async ({ page }) => {
+  await page.route('**/api/hang-hoa*', (route) => route.fulfill({ json: DU_LIEU_TIM }));
+  await page.goto('/');
+
+  const oTim = page.getByPlaceholder('Tìm hàng hóa (F3)');
+  const goiYOption = page.getByRole('listbox', { name: 'Gợi ý hàng hoá' }).getByRole('option');
+  await oTim.pressSequentially('pana');
+  await expect(goiYOption).toHaveCount(2);
+  await page.keyboard.press('Enter'); // dòng đầu (vỉ) đang chọn sẵn trong gợi ý
+
+  const dongGio = page.locator('tbody tr');
+  await expect(dongGio).toHaveCount(1);
+  await expect(dongGio).toContainText('vỉ');
+  await expect(dongGio.locator('input[type="number"]')).toHaveValue('1');
+
+  // F2: dòng vừa thêm tự động là "dòng đang chọn" — đổi sang đơn vị kế tiếp
+  // (hộp), giá lấy thẳng từ đơn vị mới, không nhân hệ số.
+  await page.keyboard.press('F2');
+  await expect(dongGio).toContainText('hộp');
+  await expect(dongGio).toContainText('260,000');
+  await expect(page.locator('.ban-hang__hang--can-tra .so')).toHaveText('260,000');
+
+  // '+' tăng số lượng dòng đang chọn.
+  await page.keyboard.press('+');
+  await expect(dongGio.locator('input[type="number"]')).toHaveValue('2');
+  await expect(page.locator('.ban-hang__hang--can-tra .so')).toHaveText('520,000');
+
+  // '-' giảm lại, không xuống dưới 1.
+  await page.keyboard.press('-');
+  await expect(dongGio.locator('input[type="number"]')).toHaveValue('1');
+  await page.keyboard.press('-');
+  await expect(dongGio.locator('input[type="number"]')).toHaveValue('1');
+
+  // Delete xoá dòng đang chọn — giỏ về rỗng, hướng dẫn F3 hiện lại.
+  await page.keyboard.press('Delete');
+  await expect(page.locator('tbody tr')).toHaveCount(0);
+  await expect(page.getByText('Chưa có hàng trong đơn.')).toBeVisible();
 });
