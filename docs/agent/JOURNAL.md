@@ -471,3 +471,15 @@ diện); T-023/T-025/T-052 đổi phụ thuộc sang T-022c.
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: T-022a.
+
+## 2026-09-21 (run kế 2) — dọn PR + T-022a
+Làm: PR#44 (T-010a) vẫn xanh chờ B, không sửa. Chọn T-022a: bảng `hoa_don`/
+`hoa_don_dong` + `hoa_don_dong_lo` (bảng mới, ghi lô đã trừ theo từng dòng —
+cần cho LIFO trả hàng T-052 sau này, không đụng thiết kế chứng từ chung của
+`the_kho` đang BLOCKED ở T-054). `taoHoaDonTuGioHang` trừ FEFO qua
+`chonLoXuatKho` trong transaction (mở rộng kiểu để nhận cả `tx`), phân bổ giảm
+giá bằng `phanBoSoDuLonNhat`, mã hoá đơn tự sinh tuần tự. 13 test mới + 53 test
+schema, `npm run ci` xanh.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-022b (API) sau khi PR này merge.

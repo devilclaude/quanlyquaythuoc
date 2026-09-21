@@ -6,6 +6,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   chiNhanh,
   donViTinh,
+  hoaDon,
+  hoaDonDong,
+  hoaDonDongLo,
   loHang,
   phieuKiemKe,
   phieuKiemKeDong,
@@ -628,6 +631,218 @@ describe('phieu_xuat_huy', () => {
 
     expect(() =>
       db.insert(phieuXuatHuyDong).values({ id: 'pxhd-2', phieuId: 'pxh-1', loId, soLuong: 3 }).run(),
+    ).toThrow();
+  });
+});
+
+describe('hoa_don', () => {
+  function taoChiNhanh(id: string) {
+    db.insert(chiNhanh).values({ id, ten: 'Quầy chính' }).run();
+  }
+
+  function taoSanPhamCoLo(sanPhamId: string, maHang: string) {
+    db.insert(sanPham).values({ id: sanPhamId, maHang, ten: 'Paracetamol 500mg' }).run();
+    const [lo] = db.select().from(loHang).where(eq(loHang.sanPhamId, sanPhamId)).all();
+    if (!lo) throw new Error('trigger lô ngầm định không chạy');
+    return lo.id;
+  }
+
+  function taoHoaDonHopLe(id: string, chiNhanhId: string) {
+    db.insert(hoaDon)
+      .values({
+        id,
+        chiNhanhId,
+        ma: 'HD000001',
+        phuongThucThanhToan: 'TIEN_MAT',
+        tongTienHang: 100_000,
+        giamGia: 0,
+        thuKhac: 0,
+        lamTron: 0,
+        khachCanTra: 100_000,
+        thoiGian: '2026-09-21T08:00:00.000Z',
+      })
+      .run();
+  }
+
+  it('tạo được một hoá đơn hợp lệ', () => {
+    taoChiNhanh('cn-1');
+    taoHoaDonHopLe('hd-1', 'cn-1');
+
+    const [row] = db.select().from(hoaDon).where(eq(hoaDon.id, 'hd-1')).all();
+
+    expect(row?.ma).toBe('HD000001');
+    expect(row?.khachCanTra).toBe(100_000);
+  });
+
+  it('ma trùng bị UNIQUE chặn', () => {
+    taoChiNhanh('cn-1');
+    taoHoaDonHopLe('hd-1', 'cn-1');
+
+    expect(() =>
+      db
+        .insert(hoaDon)
+        .values({
+          id: 'hd-2',
+          chiNhanhId: 'cn-1',
+          ma: 'HD000001',
+          phuongThucThanhToan: 'TIEN_MAT',
+          tongTienHang: 0,
+          khachCanTra: 0,
+          thoiGian: '2026-09-21T08:00:00.000Z',
+        })
+        .run(),
+    ).toThrow();
+  });
+
+  it('phuong_thuc_thanh_toan ngoài tập hợp lệ bị CHECK chặn', () => {
+    taoChiNhanh('cn-1');
+    const phuongThucSai = 'BITCOIN' as unknown as 'TIEN_MAT';
+
+    expect(() =>
+      db
+        .insert(hoaDon)
+        .values({
+          id: 'hd-1',
+          chiNhanhId: 'cn-1',
+          ma: 'HD000001',
+          phuongThucThanhToan: phuongThucSai,
+          tongTienHang: 0,
+          khachCanTra: 0,
+          thoiGian: '2026-09-21T08:00:00.000Z',
+        })
+        .run(),
+    ).toThrow();
+  });
+
+  it('giam_gia vượt tong_tien_hang bị CHECK chặn', () => {
+    taoChiNhanh('cn-1');
+
+    expect(() =>
+      db
+        .insert(hoaDon)
+        .values({
+          id: 'hd-1',
+          chiNhanhId: 'cn-1',
+          ma: 'HD000001',
+          phuongThucThanhToan: 'TIEN_MAT',
+          tongTienHang: 10_000,
+          giamGia: 10_001,
+          khachCanTra: 0,
+          thoiGian: '2026-09-21T08:00:00.000Z',
+        })
+        .run(),
+    ).toThrow();
+  });
+
+  it('giam_gia/thu_khac/lam_tron mặc định 0 khi không khai', () => {
+    taoChiNhanh('cn-1');
+    db.insert(hoaDon)
+      .values({
+        id: 'hd-1',
+        chiNhanhId: 'cn-1',
+        ma: 'HD000001',
+        phuongThucThanhToan: 'TIEN_MAT',
+        tongTienHang: 10_000,
+        khachCanTra: 10_000,
+        thoiGian: '2026-09-21T08:00:00.000Z',
+      })
+      .run();
+
+    const [row] = db.select().from(hoaDon).where(eq(hoaDon.id, 'hd-1')).all();
+
+    expect(row?.giamGia).toBe(0);
+    expect(row?.thuKhac).toBe(0);
+    expect(row?.lamTron).toBe(0);
+  });
+
+  it('tạo được dòng hoá đơn kèm dòng phân bổ lô', () => {
+    taoChiNhanh('cn-1');
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+    taoHoaDonHopLe('hd-1', 'cn-1');
+    db.insert(hoaDonDong)
+      .values({
+        id: 'hdd-1',
+        hoaDonId: 'hd-1',
+        sanPhamId: 'sp-1',
+        donViTen: 'Vỉ',
+        heSo: 12,
+        donGia: 17_000,
+        soLuong: 3,
+        thanhTien: 51_000,
+        giamGiaPhanBo: 0,
+      })
+      .run();
+    db.insert(hoaDonDongLo).values({ id: 'hddl-1', hoaDonDongId: 'hdd-1', loId, soLuong: 36 }).run();
+
+    const [dongLo] = db.select().from(hoaDonDongLo).where(eq(hoaDonDongLo.hoaDonDongId, 'hdd-1')).all();
+
+    expect(dongLo).toEqual({ id: 'hddl-1', hoaDonDongId: 'hdd-1', loId, soLuong: 36 });
+  });
+
+  it('so_luong dòng hoá đơn không dương bị CHECK chặn', () => {
+    taoChiNhanh('cn-1');
+    taoSanPhamCoLo('sp-1', 'SP001');
+    taoHoaDonHopLe('hd-1', 'cn-1');
+
+    expect(() =>
+      db
+        .insert(hoaDonDong)
+        .values({
+          id: 'hdd-1',
+          hoaDonId: 'hd-1',
+          sanPhamId: 'sp-1',
+          donViTen: 'Vỉ',
+          heSo: 12,
+          donGia: 17_000,
+          soLuong: 0,
+          thanhTien: 0,
+        })
+        .run(),
+    ).toThrow();
+  });
+
+  it('so_luong dòng phân bổ lô không dương bị CHECK chặn', () => {
+    taoChiNhanh('cn-1');
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+    taoHoaDonHopLe('hd-1', 'cn-1');
+    db.insert(hoaDonDong)
+      .values({
+        id: 'hdd-1',
+        hoaDonId: 'hd-1',
+        sanPhamId: 'sp-1',
+        donViTen: 'Vỉ',
+        heSo: 12,
+        donGia: 17_000,
+        soLuong: 3,
+        thanhTien: 51_000,
+      })
+      .run();
+
+    expect(() =>
+      db.insert(hoaDonDongLo).values({ id: 'hddl-1', hoaDonDongId: 'hdd-1', loId, soLuong: 0 }).run(),
+    ).toThrow();
+  });
+
+  it('cùng một lô không xuất hiện hai lần cho cùng một dòng hoá đơn', () => {
+    taoChiNhanh('cn-1');
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+    taoHoaDonHopLe('hd-1', 'cn-1');
+    db.insert(hoaDonDong)
+      .values({
+        id: 'hdd-1',
+        hoaDonId: 'hd-1',
+        sanPhamId: 'sp-1',
+        donViTen: 'Vỉ',
+        heSo: 12,
+        donGia: 17_000,
+        soLuong: 3,
+        thanhTien: 51_000,
+      })
+      .run();
+    db.insert(hoaDonDongLo).values({ id: 'hddl-1', hoaDonDongId: 'hdd-1', loId, soLuong: 20 }).run();
+
+    expect(() =>
+      db.insert(hoaDonDongLo).values({ id: 'hddl-2', hoaDonDongId: 'hdd-1', loId, soLuong: 16 }).run(),
     ).toThrow();
   });
 });

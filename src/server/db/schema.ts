@@ -222,3 +222,99 @@ export const phieuXuatHuyDong = sqliteTable(
     check('phieu_xuat_huy_dong_so_luong_duong', sql`${t.soLuong} > 0`),
   ],
 );
+
+// Chứng từ bán hàng (T-022a, SPEC.md §3.4/§5.3) — chứng từ giao dịch, không xoá
+// cứng (SPEC.md §3.5). `ma` sinh tuần tự (HD000001...) ở tầng ứng dụng — đây là
+// quy ước TRƯỚC khi có hàng đợi offline (T-032 sẽ đổi sang cấp số tại client,
+// dạng `HD<mã máy>-<số>`; task đó tự thay cách sinh, không migrate ngược số cũ).
+// `khach_can_tra` lưu sẵn (không suy ra khi đọc) vì đẳng thức SPEC.md §3.4 phải
+// khớp với đúng con số đã hiển thị/in cho khách, kể cả khi tỷ lệ giảm giá % thay
+// đổi ý nghĩa về sau.
+export const hoaDon = sqliteTable(
+  'hoa_don',
+  {
+    id: text('id').primaryKey(),
+    chiNhanhId: text('chi_nhanh_id')
+      .notNull()
+      .references(() => chiNhanh.id),
+    ma: text('ma').notNull().unique(),
+    phuongThucThanhToan: text('phuong_thuc_thanh_toan')
+      .notNull()
+      .$type<'TIEN_MAT' | 'CHUYEN_KHOAN' | 'THE' | 'VI'>(),
+    tongTienHang: integer('tong_tien_hang').notNull(),
+    giamGia: integer('giam_gia').notNull().default(0),
+    thuKhac: integer('thu_khac').notNull().default(0),
+    lamTron: integer('lam_tron').notNull().default(0),
+    khachCanTra: integer('khach_can_tra').notNull(),
+    thoiGian: text('thoi_gian').notNull(),
+    thoiGianMayChu: text('thoi_gian_may_chu')
+      .notNull()
+      .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+  },
+  (t) => [
+    check(
+      'hoa_don_phuong_thuc_thanh_toan_hop_le',
+      sql`${t.phuongThucThanhToan} IN ('TIEN_MAT', 'CHUYEN_KHOAN', 'THE', 'VI')`,
+    ),
+    check('hoa_don_tong_tien_hang_khong_am', sql`${t.tongTienHang} >= 0`),
+    check('hoa_don_giam_gia_khong_am', sql`${t.giamGia} >= 0`),
+    check('hoa_don_giam_gia_khong_vuot_tong', sql`${t.giamGia} <= ${t.tongTienHang}`),
+  ],
+);
+
+// Từng dòng bán của một hoá đơn. Snapshot đơn vị/giá tại thời điểm bán — KHÔNG
+// tham chiếu `don_vi_tinh` bằng FK: đơn vị có thể bị xoá khi sửa hàng hoá sau
+// này (T-009c thay TOÀN BỘ đơn vị khác), và SPEC.md §5.4 quy định rõ chứng từ
+// "sao chép giá lúc bán, không tham chiếu". `giam_gia_phan_bo` lưu sẵn để trả
+// hàng một phần dùng lại đúng số đã phân bổ, không tính lại từ % (SPEC.md §3.4).
+export const hoaDonDong = sqliteTable(
+  'hoa_don_dong',
+  {
+    id: text('id').primaryKey(),
+    hoaDonId: text('hoa_don_id')
+      .notNull()
+      .references(() => hoaDon.id),
+    sanPhamId: text('san_pham_id')
+      .notNull()
+      .references(() => sanPham.id),
+    donViTen: text('don_vi_ten').notNull(),
+    heSo: integer('he_so').notNull(),
+    donGia: integer('don_gia').notNull(),
+    /** Số lượng theo đơn vị đã chọn (`don_vi_ten`), KHÔNG phải đơn vị cơ sở. */
+    soLuong: integer('so_luong').notNull(),
+    thanhTien: integer('thanh_tien').notNull(),
+    giamGiaPhanBo: integer('giam_gia_phan_bo').notNull().default(0),
+  },
+  (t) => [
+    check('hoa_don_dong_he_so_toi_thieu', sql`${t.heSo} >= 1`),
+    check('hoa_don_dong_don_gia_khong_am', sql`${t.donGia} >= 0`),
+    check('hoa_don_dong_so_luong_duong', sql`${t.soLuong} > 0`),
+    check('hoa_don_dong_thanh_tien_khong_am', sql`${t.thanhTien} >= 0`),
+    check('hoa_don_dong_giam_gia_phan_bo_khong_am', sql`${t.giamGiaPhanBo} >= 0`),
+  ],
+);
+
+// Lô nào đã bị trừ, bao nhiêu, cho từng dòng hoá đơn — một dòng có thể tràn
+// sang nhiều lô do FEFO (SPEC.md §9 bất biến 10). Bảng này là thứ duy nhất cho
+// biết "dòng này đã trừ đúng những lô nào" — `the_kho` chỉ biết lô, không biết
+// dòng hoá đơn nào gây ra nó. T-052 (trả hàng, LIFO "trên chính các dòng đã
+// trừ") cần bảng này để hoàn đúng lô; không đụng tới thiết kế tham chiếu chứng
+// từ chung của `the_kho` (đang BLOCKED — xem BLOCKED.md mục T-054).
+export const hoaDonDongLo = sqliteTable(
+  'hoa_don_dong_lo',
+  {
+    id: text('id').primaryKey(),
+    hoaDonDongId: text('hoa_don_dong_id')
+      .notNull()
+      .references(() => hoaDonDong.id),
+    loId: text('lo_id')
+      .notNull()
+      .references(() => loHang.id),
+    /** Dương, đơn vị cơ sở — số lượng đã trừ từ đúng lô này cho dòng này. */
+    soLuong: integer('so_luong').notNull(),
+  },
+  (t) => [
+    unique('hoa_don_dong_lo_dong_lo_unique').on(t.hoaDonDongId, t.loId),
+    check('hoa_don_dong_lo_so_luong_duong', sql`${t.soLuong} > 0`),
+  ],
+);

@@ -206,7 +206,7 @@ Xong khi: khớp screenshot "Chọn 1 món hàng để bán"; đổi đơn vị 
 cơ sở; sửa số lượng bằng bàn phím; giá lấy theo đơn vị đã chọn, không nhân hệ số.
 
 ### T-022a [B] prio:22.1 — Thanh toán và tạo hoá đơn: schema + lõi nghiệp vụ
-Trạng thái: TODO · Phụ thuộc: T-021, T-007
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-021, T-007
 Xong khi: bảng `hoa_don`/`hoa_don_dong` (chứng từ giao dịch, không xoá cứng —
 SPEC.md §3.5); hàm `taoHoaDonTuGioHang` trừ kho theo FEFO cho từng dòng trong
 **một transaction nguyên tử** (bán vượt tồn ở bất kỳ dòng nào rollback toàn bộ,
