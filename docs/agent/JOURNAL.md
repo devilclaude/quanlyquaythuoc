@@ -461,3 +461,13 @@ hiện trước khi sửa.
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: T-022 (thanh toán, tạo hoá đơn) sau khi PR này merge.
+
+## 2026-09-21 (run kế) — dọn PR + T-022 (chẻ task, không code)
+Làm: PR#46 (T-021) đã merge → DONE. PR#44 (T-010a) vẫn xanh chờ B, không sửa.
+Chọn T-022, dựng schema+lõi `taoHoaDonTuGioHang` theo TDD (xanh) rồi đo trước
+khi mở PR: riêng phần này (chưa API/UI/hợp đồng Zod) đã ~1005 dòng theo ngưỡng
+CLAUDE.md. Bỏ toàn bộ code, chẻ T-022a (schema+lõi)/T-022b (API)/T-022c (giao
+diện); T-023/T-025/T-052 đổi phụ thuộc sang T-022c.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: T-022a.

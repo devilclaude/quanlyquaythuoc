@@ -201,20 +201,54 @@ phẩm để bán"; tìm **theo tên và mã hàng** (tìm theo hoạt chất l�
 gợi ý hiện tồn và giá như trong ảnh; **chọn và thêm hoàn toàn bằng bàn phím**.
 
 ### T-021 [B] prio:21 — Chọn đơn vị và số lượng
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-020, T-003
+Trạng thái: DONE · Phụ thuộc: T-020, T-003
 Xong khi: khớp screenshot "Chọn 1 món hàng để bán"; đổi đơn vị trừ đúng số đơn vị
 cơ sở; sửa số lượng bằng bàn phím; giá lấy theo đơn vị đã chọn, không nhân hệ số.
 
-### T-022 [B] prio:22 — Thanh toán và tạo hoá đơn
+### T-022a [B] prio:22.1 — Thanh toán và tạo hoá đơn: schema + lõi nghiệp vụ
 Trạng thái: TODO · Phụ thuộc: T-021, T-007
-Xong khi: trừ kho theo FEFO trong **một transaction nguyên tử**; ghi thẻ kho; đẳng
-thức `khách_cần_trả = tổng − giảm_giá + thu_khác + làm_tròn` có test; làm tròn hoá
-đơn **mặc định tắt**; phương thức thanh toán tiền mặt/chuyển khoản/thẻ/ví; nút tiền
-mặt nhanh như trong ảnh; test hai đơn cùng bán hộp cuối khi online → đơn thứ hai bị
-từ chối.
+Xong khi: bảng `hoa_don`/`hoa_don_dong` (chứng từ giao dịch, không xoá cứng —
+SPEC.md §3.5); hàm `taoHoaDonTuGioHang` trừ kho theo FEFO cho từng dòng trong
+**một transaction nguyên tử** (bán vượt tồn ở bất kỳ dòng nào rollback toàn bộ,
+không tạo hoá đơn "một nửa"), ghi thẻ kho loại `BAN` qua đúng một hàm viết đã có
+(`ghiMotDongTheKho`, không tự tính giá vốn — tầng đó tự lo); đẳng thức
+`khách_cần_trả = tổng − giảm_giá + thu_khác + làm_tròn` có test (làm tròn hoá đơn
+**mặc định tắt**, luôn 0 ở slice này — chưa có giao diện bật); phân bổ giảm giá
+hoá đơn về từng dòng theo "số dư lớn nhất" (Σ phần khớp đúng tổng, không lệch 1đ);
+mã hoá đơn tự sinh tuần tự (`HD000001`...); test hai hoá đơn liên tiếp cùng bán
+hộp cuối khi online → hoá đơn thứ hai bị từ chối; test tồn không đủ ở một lô chia
+đúng sang lô kế tiếp theo FEFO. Nhận `phuongThucThanhToan` qua tham số hàm (không
+qua UI). **Không có API, không có UI.**
+Ghi chú: đây là T-022 cũ, chẻ vì bản đầy đủ (schema+logic+API+UI) ước lượng vượt
+1000 dòng/PR khi làm trọn gói — số liệu đo được lúc chẻ: chỉ riêng phần schema
++ lõi nghiệp vụ (không tính API/UI/hop-đồng Zod) đã ~1005 dòng đổi tính theo
+ngưỡng CLAUDE.md (loại migration tự sinh), tức phần backend đầy đủ (schema+lõi+
+API+hợp đồng) sẽ vượt hẳn 1000 dòng nếu gộp — huống hồ kèm UI. Slice này riêng
+(chỉ schema+lõi, không API không UI) còn trong ngưỡng.
+
+### T-022b [B] prio:22.2 — Thanh toán và tạo hoá đơn: API
+Trạng thái: TODO · Phụ thuộc: T-022a
+Xong khi: `POST /api/hoa-don` nhận giỏ hàng qua hợp đồng Zod
+(`src/shared/hop-dong/hoa-don.ts`), gọi `taoHoaDonTuGioHang`; 400 khi dữ liệu
+không hợp lệ, 409 khi tồn không đủ hoặc giảm giá vượt tổng tiền hàng; đảm bảo có
+sẵn một dòng chi nhánh mặc định (v1 chỉ có một chi nhánh, SPEC.md §3.6, chưa có
+UI quản lý chi nhánh nào để tạo dòng này) trước khi ghi chứng từ — đây là API
+đầu tiên thật sự cần `chiNhanhId`. Không có UI.
+
+### T-022c [B] prio:22.3 — Thanh toán và tạo hoá đơn: giao diện
+Trạng thái: TODO · Phụ thuộc: T-022b
+Xong khi: panel thanh toán trong màn bán hàng — giảm giá/thu khác nhập được,
+chọn phương thức thanh toán tiền mặt/chuyển khoản/thẻ/ví, nút tiền mặt nhanh,
+khách cần trả và tiền thừa hiển thị; gọi `POST /api/hoa-don`, thành công thì xoá
+giỏ hàng và báo mã hoá đơn vừa tạo; **F9** chuyển sang khu vực thanh toán,
+**Enter** xác nhận (UI-FIDELITY.md nhóm 2, cần chủ dự án xác nhận với người
+dùng thật — xem BLOCKED.md mục T-020); toàn bộ luồng làm được bằng bàn phím.
+Ghi chú: `docs/reference/kiotviet/` không có screenshot cho màn thanh toán —
+dựng theo token trong `.claude/skills/design-system/`, ghi rõ trong PR (tiền lệ
+T-010c). In hoá đơn thuộc T-023, không làm ở đây.
 
 ### T-023 [A] prio:23 — In hoá đơn
-Trạng thái: TODO · Phụ thuộc: T-022
+Trạng thái: TODO · Phụ thuộc: T-022c
 Xong khi: in được khổ cuộn K57 và K80; có preview; nội dung khớp thông tin trong
 ảnh hoá đơn KiotViet.
 Tầng A: chỉ đọc dữ liệu đã ghi, không thay đổi kho hay tiền.
@@ -226,7 +260,7 @@ không mất nhịp và không mất ký tự; phân biệt được luồng qu�
 phím; máy quét hoạt động như bàn phím nên không cần driver.
 
 ### T-025 [B] prio:25 — Nhiều hoá đơn song song
-Trạng thái: TODO · Phụ thuộc: T-022
+Trạng thái: TODO · Phụ thuộc: T-022c
 Xong khi: mở nhiều tab hoá đơn như KiotViet; chuyển tab bằng bàn phím; giỏ đang gõ
 dở không mất khi chuyển; **có test chứng minh dòng hàng không lẫn giữa các tab**.
 Tầng B dù trông như việc giao diện: trộn nhầm dòng giữa hai tab sinh ra hoá đơn sai
@@ -310,7 +344,7 @@ Trạng thái: DONE · Phụ thuộc: T-006
 Xong khi: xuất khỏi kho có lý do và người thực hiện, ghi thẻ kho, chọn đúng lô.
 
 ### T-052 [B] prio:52 — Trả hàng (khách trả)
-Trạng thái: TODO · Phụ thuộc: T-022
+Trạng thái: TODO · Phụ thuộc: T-022c
 Xong khi: hoàn về đúng lô theo **LIFO trên chính các dòng đã trừ**; ở chế độ phẳng
 tự suy biến thành hoàn về lô ngầm định, không có nhánh riêng; tổng hoàn ≤ tổng đã
 trừ — có test; tiền hoàn dùng `giam_gia_phan_bo` đã lưu lúc bán; khớp screenshot
