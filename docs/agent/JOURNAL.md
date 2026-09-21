@@ -450,3 +450,14 @@ người mới đọc được ý nghĩa từng cột, không đổi thứ tự 
 "Bán hàng"/"Hàng hoá" ở trên cùng là lối đi tạm, không bám sidebar KiotViet —
 chưa có task dựng nav thật trong BACKLOG.md.
 Kế tiếp: T-021 (chọn đơn vị và số lượng) sau khi PR này merge.
+
+## 2026-09-21 — dọn PR + T-021
+Làm: PR#45 (T-020) đã merge → DONE. PR#44 (T-010a) vẫn xanh chờ duyệt B — không
+sửa. Chọn T-021: đổi đơn vị (dropdown/F2, giá lấy thẳng đơn vị mới, không nhân
+hệ số) và sửa số lượng (+/-/ô nhập/Delete) dòng giỏ hàng. doi-chieu-ui bắt được
+bug thật: điều kiện bật phím tắt dùng `goiY.length===0` thay vì ô tìm thực sự
+rỗng, có thể nuốt ký tự đang gõ dở — sửa thành `tim.trim() === ''`, kèm e2e tái
+hiện trước khi sửa.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: T-022 (thanh toán, tạo hoá đơn) sau khi PR này merge.

@@ -1,14 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
-import { DanhSachHangHoaResSchema, type HangHoaDanhSachItem } from '../../../shared/hop-dong/hang-hoa';
+import {
+  DanhSachHangHoaResSchema,
+  type DonViTinhRes,
+  type HangHoaDanhSachItem,
+} from '../../../shared/hop-dong/hang-hoa';
 import { dong } from '../../../shared/kieu/dong';
 import { dinhDangTien } from '../../../shared/tien/dinh-dang';
 import { Bang, OSo, TruongNhap } from '../../thanh-phan';
 import './BanHang.css';
 
-// T-020 — Màn bán hàng: tìm và thêm hàng. Phạm vi: ô tìm (F3), gợi ý một
-// dòng mỗi đơn vị tính, thêm vào giỏ hoàn toàn bằng bàn phím. Sửa đơn vị/số
-// lượng dòng đã có (T-021), thanh toán (T-022), nhiều hoá đơn (T-025), chỉ
-// báo online/offline (T-030) đều KHÔNG thuộc phạm vi.
+// T-020 — Màn bán hàng: tìm và thêm hàng. T-021 — chọn đơn vị và số lượng
+// của dòng đã có trong giỏ (đổi đơn vị bằng dropdown/F2, sửa số lượng bằng
+// ô nhập/+/-, xoá dòng bằng nút/Delete — UI-FIDELITY.md nhóm 2). Thanh toán
+// (T-022), nhiều hoá đơn (T-025), chỉ báo online/offline (T-030) đều KHÔNG
+// thuộc phạm vi.
 
 /** Tối đa số dòng gợi ý hiện cùng lúc — khớp bản thử `docs/reference/prototype/man-ban-hang.html`. */
 const SO_DONG_GOI_Y_TOI_DA = 12;
@@ -22,6 +27,8 @@ export interface GoiYBanHang {
   heSo: number;
   giaBan: number;
   tonKhoCoSo: number;
+  /** Mọi đơn vị của sản phẩm — cần để đổi đơn vị dòng giỏ hàng sau khi thêm (T-021). */
+  dsDonVi: DonViTinhRes[];
 }
 
 export interface DongGioHang {
@@ -30,8 +37,11 @@ export interface DongGioHang {
   ten: string;
   donViTinhId: string;
   donViTen: string;
+  /** Hệ số của đơn vị ĐANG CHỌN — dùng để tính số lượng ở đơn vị cơ sở khi trừ kho (SPEC.md §3.3). */
+  heSo: number;
   giaBan: number;
   soLuong: number;
+  dsDonVi: DonViTinhRes[];
 }
 
 /** Một dòng gợi ý mỗi đơn vị tính (khớp ảnh "Tìm sản phẩm để bán": Panadol Extra ra 2 dòng vỉ/hộp). */
@@ -49,6 +59,7 @@ export function layGoiYTimHang(duLieu: HangHoaDanhSachItem[]): GoiYBanHang[] {
         heSo: dv.heSo,
         giaBan: dv.giaBan,
         tonKhoCoSo: hang.tonKho,
+        dsDonVi: hang.donViTinh,
       });
     }
   }
@@ -79,12 +90,64 @@ export function themVaoGioHang(gioHang: DongGioHang[], goiY: GoiYBanHang): DongG
         ten: goiY.ten,
         donViTinhId: goiY.donViTinhId,
         donViTen: goiY.donViTen,
+        heSo: goiY.heSo,
         giaBan: goiY.giaBan,
         soLuong: 1,
+        dsDonVi: goiY.dsDonVi,
       },
     ];
   }
   return gioHang.map((d, i) => (i === viTri ? { ...d, soLuong: d.soLuong + 1 } : d));
+}
+
+/** Đổi đơn vị của một dòng giỏ hàng — giá lấy TRỰC TIẾP từ đơn vị mới, không
+ * nhân hệ số (SPEC.md §3.3: giá khai riêng từng đơn vị). Số lượng giữ nguyên;
+ * id đơn vị không thuộc sản phẩm của dòng đó thì không đổi gì. */
+export function doiDonViDongGioHang(
+  gioHang: DongGioHang[],
+  chiSo: number,
+  donViTinhIdMoi: string,
+): DongGioHang[] {
+  const dong = gioHang[chiSo];
+  const donViMoi = dong?.dsDonVi.find((d) => d.id === donViTinhIdMoi);
+  if (!dong || !donViMoi) return gioHang;
+  return gioHang.map((d, i) =>
+    i === chiSo
+      ? { ...d, donViTinhId: donViMoi.id, donViTen: donViMoi.ten, heSo: donViMoi.heSo, giaBan: donViMoi.giaBan }
+      : d,
+  );
+}
+
+/** Phím F2 (UI-FIDELITY.md nhóm 2): đổi dòng đang chọn sang đơn vị kế tiếp
+ * trong danh sách đơn vị của sản phẩm, quay vòng. Sản phẩm một đơn vị thì
+ * không đổi gì. */
+export function doiDonViKeTiep(gioHang: DongGioHang[], chiSo: number): DongGioHang[] {
+  const dong = gioHang[chiSo];
+  if (!dong || dong.dsDonVi.length < 2) return gioHang;
+  const viTriHienTai = dong.dsDonVi.findIndex((d) => d.id === dong.donViTinhId);
+  const donViMoi = dong.dsDonVi[diChuyenChiSoGoiY(viTriHienTai, dong.dsDonVi.length, 'ArrowDown')];
+  if (!donViMoi) return gioHang;
+  return doiDonViDongGioHang(gioHang, chiSo, donViMoi.id);
+}
+
+/** Sửa số lượng một dòng giỏ hàng bằng bàn phím. Chỉ nhận số nguyên >= 1 —
+ * số lượng 0 hay âm không phải trạng thái hợp lệ của một dòng đang bán, xoá
+ * dòng dùng `xoaDongGioHang`. Giá trị không hợp lệ bị bỏ qua, giữ nguyên cũ. */
+export function suaSoLuongDongGioHang(gioHang: DongGioHang[], chiSo: number, soLuongMoi: number): DongGioHang[] {
+  if (!Number.isInteger(soLuongMoi) || soLuongMoi < 1) return gioHang;
+  return gioHang.map((d, i) => (i === chiSo ? { ...d, soLuong: soLuongMoi } : d));
+}
+
+/** Xoá một dòng khỏi giỏ hàng theo chỉ số (nút thùng rác hoặc phím Delete). */
+export function xoaDongGioHang(gioHang: DongGioHang[], chiSo: number): DongGioHang[] {
+  return gioHang.filter((_, i) => i !== chiSo);
+}
+
+/** Số lượng ở đơn vị cơ sở của một dòng giỏ hàng — dùng để trừ kho đúng khi
+ * thanh toán (SPEC.md §3.3: tồn kho luôn ở đơn vị cơ sở). Luôn dùng hệ số của
+ * đơn vị ĐANG CHỌN trên dòng, không phải hệ số lúc thêm vào giỏ. */
+export function soLuongCoSoDongGioHang(dong: Pick<DongGioHang, 'soLuong' | 'heSo'>): number {
+  return dong.soLuong * dong.heSo;
 }
 
 /** Tổng tiền giỏ hàng — tiền là số nguyên (CLAUDE.md), không có phép chia nào ở đây. */
@@ -154,10 +217,19 @@ export function DanhSachGoiY({ tuKhoa, goiY, dangTai, loi, chiSoChon, onChon }: 
 
 interface BangGioHangProps {
   gioHang: DongGioHang[];
+  /** Chỉ số dòng đang chọn — đích của phím F2/+/-/Delete. -1 = chưa chọn dòng nào. */
+  chiSoDongChon: number;
+  onChonDong: (chiSo: number) => void;
+  onDoiDonVi: (chiSo: number, donViTinhId: string) => void;
+  onSuaSoLuong: (chiSo: number, soLuong: number) => void;
+  onXoaDong: (chiSo: number) => void;
 }
 
-/** Giỏ hàng của hoá đơn đang mở. Cột khớp thứ tự hàng đã thêm trong ảnh KiotViet. */
-export function BangGioHang({ gioHang }: BangGioHangProps) {
+/** Giỏ hàng của hoá đơn đang mở. Cột khớp thứ tự hàng đã thêm trong ảnh KiotViet.
+ * Mỗi dòng: đơn vị đổi bằng select, số lượng sửa bằng ô nhập/nút +/-, xoá bằng
+ * nút thùng rác — cả ba đều lặp lại được qua phím F2/+/-/Delete ở dòng đang
+ * chọn (T-021, UI-FIDELITY.md nhóm 2). */
+export function BangGioHang({ gioHang, chiSoDongChon, onChonDong, onDoiDonVi, onSuaSoLuong, onXoaDong }: BangGioHangProps) {
   if (gioHang.length === 0) {
     return (
       <div className="ban-hang__gio-trong">
@@ -175,6 +247,7 @@ export function BangGioHang({ gioHang }: BangGioHangProps) {
       <thead>
         <tr>
           <th>STT</th>
+          <th></th>
           <th>Mã hàng</th>
           <th>Tên hàng</th>
           <th>Đơn vị</th>
@@ -185,12 +258,75 @@ export function BangGioHang({ gioHang }: BangGioHangProps) {
       </thead>
       <tbody>
         {gioHang.map((d, i) => (
-          <tr key={`${d.sanPhamId}-${d.donViTinhId}`}>
+          <tr
+            key={`${d.sanPhamId}-${d.donViTinhId}`}
+            className={['gio-hang__dong', i === chiSoDongChon ? 'gio-hang__dong--chon' : ''].filter(Boolean).join(' ')}
+            onClick={() => onChonDong(i)}
+          >
             <OSo>{i + 1}</OSo>
+            <td>
+              <button
+                type="button"
+                className="gio-hang__nut-xoa"
+                aria-label={`Xoá ${d.ten} khỏi giỏ hàng`}
+                onClick={(su) => {
+                  su.stopPropagation();
+                  onXoaDong(i);
+                }}
+              >
+                ✕
+              </button>
+            </td>
             <td>{d.maHang}</td>
             <td>{d.ten}</td>
-            <td>{d.donViTen}</td>
-            <OSo>{d.soLuong}</OSo>
+            <td>
+              <select
+                aria-label={`Đơn vị của ${d.ten}`}
+                value={d.donViTinhId}
+                onClick={(su) => su.stopPropagation()}
+                onChange={(su) => onDoiDonVi(i, su.target.value)}
+              >
+                {d.dsDonVi.map((dv) => (
+                  <option key={dv.id} value={dv.id}>
+                    {dv.ten}
+                  </option>
+                ))}
+              </select>
+            </td>
+            <OSo>
+              <div className="gio-hang__so-luong">
+                <button
+                  type="button"
+                  aria-label={`Giảm số lượng ${d.ten}`}
+                  disabled={d.soLuong <= 1}
+                  onClick={(su) => {
+                    su.stopPropagation();
+                    onSuaSoLuong(i, d.soLuong - 1);
+                  }}
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  min={1}
+                  step={1}
+                  aria-label={`Số lượng ${d.ten}`}
+                  value={d.soLuong}
+                  onClick={(su) => su.stopPropagation()}
+                  onChange={(su) => onSuaSoLuong(i, Number.parseInt(su.target.value, 10))}
+                />
+                <button
+                  type="button"
+                  aria-label={`Tăng số lượng ${d.ten}`}
+                  onClick={(su) => {
+                    su.stopPropagation();
+                    onSuaSoLuong(i, d.soLuong + 1);
+                  }}
+                >
+                  +
+                </button>
+              </div>
+            </OSo>
             <OSo>{dinhDangTien(dong(d.giaBan))}</OSo>
             <OSo>
               <strong>{dinhDangTien(dong(d.giaBan * d.soLuong))}</strong>
@@ -210,6 +346,8 @@ export function BanHang() {
   const [loi, setLoi] = useState<string | undefined>(undefined);
   const [chiSoChon, setChiSoChon] = useState(0);
   const [gioHang, setGioHang] = useState<DongGioHang[]>([]);
+  /** Dòng giỏ hàng đang chọn — đích của F2/+/-/Delete (T-021). -1 = chưa có dòng nào. */
+  const [chiSoDongChon, setChiSoDongChon] = useState(-1);
   const oTimRef = useRef<HTMLInputElement>(null);
 
   const goiY = tim.trim() ? goiYThoBanDau : [];
@@ -247,11 +385,31 @@ export function BanHang() {
   }, [tim]);
 
   function chon(g: GoiYBanHang) {
-    setGioHang((hienTai) => themVaoGioHang(hienTai, g));
+    setGioHang((hienTai) => {
+      const ketQua = themVaoGioHang(hienTai, g);
+      setChiSoDongChon(ketQua.findIndex((d) => d.sanPhamId === g.sanPhamId && d.donViTinhId === g.donViTinhId));
+      return ketQua;
+    });
     setTim('');
     setGoiYThoBanDau([]);
     setChiSoChon(0);
     oTimRef.current?.focus();
+  }
+
+  function doiDonVi(chiSo: number, donViTinhId: string) {
+    setGioHang((hienTai) => doiDonViDongGioHang(hienTai, chiSo, donViTinhId));
+    setChiSoDongChon(chiSo);
+  }
+
+  function suaSoLuong(chiSo: number, soLuongMoi: number) {
+    if (Number.isNaN(soLuongMoi)) return;
+    setGioHang((hienTai) => suaSoLuongDongGioHang(hienTai, chiSo, soLuongMoi));
+    setChiSoDongChon(chiSo);
+  }
+
+  function xoaDong(chiSo: number) {
+    setGioHang((hienTai) => xoaDongGioHang(hienTai, chiSo));
+    setChiSoDongChon((v) => (gioHang.length <= 1 ? -1 : Math.min(v, gioHang.length - 2)));
   }
 
   function xuLyPhimOTim(su: React.KeyboardEvent<HTMLInputElement>) {
@@ -273,6 +431,32 @@ export function BanHang() {
       const { dongGoiY, xoaOTim } = capNhatEsc(goiY.length > 0);
       if (dongGoiY) setGoiYThoBanDau([]);
       if (xoaOTim) setTim('');
+      return;
+    }
+
+    // Ô tìm THỰC SỰ rỗng (không phải chỉ "không có gợi ý" — 0 kết quả khớp
+    // hoặc đang chờ debounce cũng khiến goiY rỗng dù người dùng còn đang gõ
+    // dở) — phím tác động lên dòng giỏ hàng đang chọn (T-021, UI-FIDELITY.md
+    // nhóm 2: F2 đổi đơn vị, +/- sửa số lượng, Delete xoá dòng). Sai chỗ này
+    // sẽ nuốt mất ký tự đang gõ dở — UI-FIDELITY.md cấm tuyệt đối.
+    if (tim.trim() === '' && gioHang.length > 0 && chiSoDongChon >= 0) {
+      const dongDangChon = gioHang[chiSoDongChon];
+      if (su.key === 'ArrowDown' || su.key === 'ArrowUp') {
+        su.preventDefault();
+        setChiSoDongChon((v) => diChuyenChiSoGoiY(v, gioHang.length, su.key as 'ArrowDown' | 'ArrowUp'));
+      } else if (su.key === 'F2') {
+        su.preventDefault();
+        setGioHang((hienTai) => doiDonViKeTiep(hienTai, chiSoDongChon));
+      } else if (su.key === '+' && dongDangChon) {
+        su.preventDefault();
+        suaSoLuong(chiSoDongChon, dongDangChon.soLuong + 1);
+      } else if (su.key === '-' && dongDangChon) {
+        su.preventDefault();
+        suaSoLuong(chiSoDongChon, dongDangChon.soLuong - 1);
+      } else if (su.key === 'Delete') {
+        su.preventDefault();
+        xoaDong(chiSoDongChon);
+      }
     }
   }
 
@@ -315,7 +499,14 @@ export function BanHang() {
 
       <div className="ban-hang__than">
         <div className="ban-hang__gio">
-          <BangGioHang gioHang={gioHang} />
+          <BangGioHang
+            gioHang={gioHang}
+            chiSoDongChon={chiSoDongChon}
+            onChonDong={setChiSoDongChon}
+            onDoiDonVi={doiDonVi}
+            onSuaSoLuong={suaSoLuong}
+            onXoaDong={xoaDong}
+          />
         </div>
 
         <aside className="ban-hang__panel">

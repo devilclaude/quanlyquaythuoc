@@ -163,3 +163,76 @@
   font-size: var(--chu-xl);
   font-weight: 600;
 }
+
+/* ---------- dòng giỏ hàng: đổi đơn vị, sửa số lượng, xoá (T-021) ---------- */
+.gio-hang__dong {
+  cursor: pointer;
+}
+
+.gio-hang__dong--chon {
+  background: var(--mau-chinh-nhat);
+}
+
+.gio-hang__nut-xoa {
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  background: transparent;
+  color: var(--mau-nguy);
+  font-size: var(--chu-base);
+  cursor: pointer;
+  border-radius: var(--bo-goc);
+}
+
+.gio-hang__nut-xoa:hover {
+  background: var(--mau-nguy-nen);
+}
+
+.gio-hang__dong td > select {
+  font-family: var(--font-chinh);
+  font-size: var(--chu-sm);
+  padding: var(--kc-1) var(--kc-2);
+  border: var(--vien);
+  border-radius: var(--bo-goc);
+  background: var(--mau-nen-the);
+  color: var(--mau-chu);
+  min-height: 44px;
+}
+
+.gio-hang__so-luong {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--kc-1);
+  justify-content: flex-end;
+}
+
+.gio-hang__so-luong button {
+  min-width: 44px;
+  min-height: 44px;
+  border: var(--vien);
+  border-radius: var(--bo-goc);
+  background: var(--mau-nen-the);
+  color: var(--mau-chu);
+  font-size: var(--chu-lg);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.gio-hang__so-luong button:hover:not(:disabled) {
+  background: var(--xam-100);
+}
+
+.gio-hang__so-luong button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gio-hang__so-luong input[type='number'] {
+  width: 56px;
+  min-height: 44px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--chu-base);
+  border: var(--vien);
+  border-radius: var(--bo-goc);
+}
