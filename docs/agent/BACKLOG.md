@@ -201,7 +201,7 @@ phẩm để bán"; tìm **theo tên và mã hàng** (tìm theo hoạt chất l�
 gợi ý hiện tồn và giá như trong ảnh; **chọn và thêm hoàn toàn bằng bàn phím**.
 
 ### T-021 [B] prio:21 — Chọn đơn vị và số lượng
-Trạng thái: DOING · Phụ thuộc: T-020, T-003
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-020, T-003
 Xong khi: khớp screenshot "Chọn 1 món hàng để bán"; đổi đơn vị trừ đúng số đơn vị
 cơ sở; sửa số lượng bằng bàn phím; giá lấy theo đơn vị đã chọn, không nhân hệ số.
 

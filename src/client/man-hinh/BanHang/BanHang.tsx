@@ -434,9 +434,12 @@ export function BanHang() {
       return;
     }
 
-    // Không có gợi ý đang mở — phím tác động lên dòng giỏ hàng đang chọn
-    // (T-021, UI-FIDELITY.md nhóm 2: F2 đổi đơn vị, +/- sửa số lượng, Delete xoá dòng).
-    if (goiY.length === 0 && gioHang.length > 0 && chiSoDongChon >= 0) {
+    // Ô tìm THỰC SỰ rỗng (không phải chỉ "không có gợi ý" — 0 kết quả khớp
+    // hoặc đang chờ debounce cũng khiến goiY rỗng dù người dùng còn đang gõ
+    // dở) — phím tác động lên dòng giỏ hàng đang chọn (T-021, UI-FIDELITY.md
+    // nhóm 2: F2 đổi đơn vị, +/- sửa số lượng, Delete xoá dòng). Sai chỗ này
+    // sẽ nuốt mất ký tự đang gõ dở — UI-FIDELITY.md cấm tuyệt đối.
+    if (tim.trim() === '' && gioHang.length > 0 && chiSoDongChon >= 0) {
       const dongDangChon = gioHang[chiSoDongChon];
       if (su.key === 'ArrowDown' || su.key === 'ArrowUp') {
         su.preventDefault();

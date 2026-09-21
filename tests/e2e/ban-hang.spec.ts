@@ -103,3 +103,39 @@ test('bán hàng: đổi đơn vị và sửa số lượng dòng giỏ hàng ho
   await expect(page.locator('tbody tr')).toHaveCount(0);
   await expect(page.getByText('Chưa có hàng trong đơn.')).toBeVisible();
 });
+
+test('bán hàng: gõ "+"/"-" vào ô tìm khi đang có dòng giỏ hàng không bị nuốt ký tự (T-021)', async ({ page }) => {
+  // Tái hiện bug doi-chieu-ui phát hiện: phím tắt của dòng giỏ hàng (F2/+/-/
+  // Delete) trước đây kích hoạt bất cứ khi nào KHÔNG có gợi ý hiện ra
+  // (`goiY.length === 0`) — nhưng gợi ý cũng rỗng khi ô tìm có chữ mà 0 kết
+  // quả khớp, hoặc đang chờ debounce. Ca này: ô tìm có chữ ("zzz", 0 kết quả
+  // khớp) — phải gõ được "+"/"-" bình thường, không được nuốt để tăng/giảm
+  // số lượng dòng giỏ hàng (UI-FIDELITY.md: "Ô tìm phải chịu được luồng đó
+  // không mất ký tự"; "Không phím tắt nào được phá luồng đang gõ dở").
+  await page.route('**/api/hang-hoa*', (route) => {
+    const url = new URL(route.request().url());
+    const tuKhoa = url.searchParams.get('tim') ?? '';
+    route.fulfill({ json: tuKhoa.startsWith('zzz') ? { duLieu: [] } : DU_LIEU_TIM });
+  });
+  await page.goto('/');
+
+  const oTim = page.getByPlaceholder('Tìm hàng hóa (F3)');
+  const goiYOption = page.getByRole('listbox', { name: 'Gợi ý hàng hoá' }).getByRole('option');
+  await oTim.pressSequentially('pana');
+  await expect(goiYOption).toHaveCount(2);
+  await page.keyboard.press('Enter'); // thêm 1 dòng — dòng này tự động là "dòng đang chọn"
+
+  const dongGio = page.locator('tbody tr');
+  await expect(dongGio.locator('input[type="number"]')).toHaveValue('1');
+
+  // Gõ một từ khoá không khớp gì — ô tìm KHÔNG rỗng, nhưng gợi ý rỗng
+  // (0 kết quả) giống hệt trạng thái "chưa có gợi ý".
+  await oTim.pressSequentially('zzz');
+  await expect(page.getByText('Không tìm thấy hàng hoá phù hợp')).toBeVisible();
+
+  // Gõ tiếp "-" và "+" — phải vào ô tìm, KHÔNG được đổi số lượng dòng giỏ hàng.
+  await page.keyboard.press('-');
+  await page.keyboard.press('+');
+  await expect(oTim).toHaveValue('zzz-+');
+  await expect(dongGio.locator('input[type="number"]')).toHaveValue('1');
+});
