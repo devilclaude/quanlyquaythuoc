@@ -544,7 +544,13 @@ export function BanHang() {
       su.preventDefault();
       const { dongGoiY, xoaOTim } = capNhatEsc(goiY.length > 0);
       if (dongGoiY) setGoiYThoBanDau([]);
-      if (xoaOTim) setTim('');
+      if (xoaOTim) {
+        setTim('');
+        // Xoá luôn nhịp gõ đang tích luỹ — không để nhịp của từ khoá cũ (vừa
+        // xoá) cộng dồn với từ khoá gõ tiếp theo nếu gõ lại trong vòng chưa
+        // tới 1s (T-024, phát hiện lúc đối chiếu UI).
+        nhipGoRef.current = { lanTruocMs: null, khoangCach: [] };
+      }
       return;
     }
 
