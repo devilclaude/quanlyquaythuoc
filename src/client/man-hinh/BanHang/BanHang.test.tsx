@@ -6,11 +6,14 @@ import {
   BangGioHang,
   DanhSachGoiY,
   capNhatEsc,
+  capNhatNhipGo,
   diChuyenChiSoGoiY,
   dinhDangTonTheoDonVi,
   doiDonViDongGioHang,
   doiDonViKeTiep,
   layGoiYTimHang,
+  phanLoaiNhipGo,
+  quyetDinhSauKhiQuet,
   soLuongCoSoDongGioHang,
   suaSoLuongDongGioHang,
   themVaoGioHang,
@@ -353,6 +356,74 @@ describe('dinhDangTonTheoDonVi', () => {
 
   it('tồn 0 hiện đúng "0", không phải chuỗi rỗng', () => {
     expect(dinhDangTonTheoDonVi(0, 1)).toBe('0');
+  });
+});
+
+describe('capNhatNhipGo', () => {
+  it('phím đầu tiên (chưa có lần trước) khởi tạo khoảng cách rỗng', () => {
+    const ketQua = capNhatNhipGo({ lanTruocMs: null, khoangCach: [] }, 1000);
+    expect(ketQua).toEqual({ lanTruocMs: 1000, khoangCach: [] });
+  });
+
+  it('phím kế tiếp trong nhịp cộng dồn đúng khoảng cách', () => {
+    const b1 = capNhatNhipGo({ lanTruocMs: null, khoangCach: [] }, 1000);
+    const b2 = capNhatNhipGo(b1, 1005);
+    const b3 = capNhatNhipGo(b2, 1012);
+    expect(b3).toEqual({ lanTruocMs: 1012, khoangCach: [5, 7] });
+  });
+
+  it('tạm dừng quá 1000ms thì reset khoảng cách — bắt đầu nhịp mới', () => {
+    const b1 = capNhatNhipGo({ lanTruocMs: null, khoangCach: [] }, 1000);
+    const b2 = capNhatNhipGo(b1, 1005);
+    const b3 = capNhatNhipGo(b2, 3000); // cách b2 gần 2s — người dùng dừng gõ giữa chừng
+    expect(b3).toEqual({ lanTruocMs: 3000, khoangCach: [] });
+  });
+
+  it('không sửa trạng thái gốc (bất biến)', () => {
+    const goc = { lanTruocMs: 1000, khoangCach: [5] };
+    capNhatNhipGo(goc, 1010);
+    expect(goc).toEqual({ lanTruocMs: 1000, khoangCach: [5] });
+  });
+});
+
+describe('phanLoaiNhipGo', () => {
+  it('khoảng cách rất nhỏ và đủ dài (giống máy quét) → "quet"', () => {
+    expect(phanLoaiNhipGo([4, 5, 3, 6, 4, 5])).toBe('quet');
+  });
+
+  it('khoảng cách lớn kiểu người gõ tay → "go-tay"', () => {
+    expect(phanLoaiNhipGo([120, 150, 100, 130, 140, 110])).toBe('go-tay');
+  });
+
+  it('quá ít khoảng cách dù rất nhanh vẫn coi là gõ tay — tránh nhận nhầm từ khoá ngắn', () => {
+    expect(phanLoaiNhipGo([2, 3, 2])).toBe('go-tay');
+  });
+
+  it('mảng rỗng (chưa gõ ký tự nào có nhịp) → "go-tay"', () => {
+    expect(phanLoaiNhipGo([])).toBe('go-tay');
+  });
+
+  it('trung bình đúng bằng ngưỡng vẫn tính là "quet" (ngưỡng bao gồm)', () => {
+    expect(phanLoaiNhipGo([50, 50, 50, 50, 50])).toBe('quet');
+  });
+});
+
+describe('quyetDinhSauKhiQuet', () => {
+  it('không có gợi ý nào → "khong-tim-thay"', () => {
+    expect(quyetDinhSauKhiQuet([])).toEqual({ hanhDong: 'khong-tim-thay' });
+  });
+
+  it('đúng một sản phẩm, một đơn vị → thêm thẳng vào giỏ', () => {
+    expect(quyetDinhSauKhiQuet([goiYVi])).toEqual({ hanhDong: 'them-vao-gio', goiYChon: goiYVi });
+  });
+
+  it('đúng một sản phẩm nhiều đơn vị (vd. quét trúng mã hàng có cả vỉ/hộp) → thêm dòng ĐẦU TIÊN (đơn vị cơ sở)', () => {
+    expect(quyetDinhSauKhiQuet([goiYVi, goiYHop])).toEqual({ hanhDong: 'them-vao-gio', goiYChon: goiYVi });
+  });
+
+  it('nhiều sản phẩm khác nhau cùng khớp (mã chỉ khớp một phần) → hiện gợi ý, không tự đoán', () => {
+    const goiYKhacSanPham: GoiYBanHang = { ...goiYVi, sanPhamId: 'sp-2', maHang: 'SP002' };
+    expect(quyetDinhSauKhiQuet([goiYVi, goiYKhacSanPham])).toEqual({ hanhDong: 'hien-goi-y' });
   });
 });
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   DanhSachHangHoaResSchema,
   type DonViTinhRes,
@@ -168,6 +168,63 @@ export function dinhDangTonTheoDonVi(tonCoSo: number, heSo: number): string {
 /** Esc hai bước (UI-FIDELITY.md nhóm 2): lần đầu đóng gợi ý, lần hai mới xoá ô tìm. */
 export function capNhatEsc(dangMoGoiY: boolean): { dongGoiY: boolean; xoaOTim: boolean } {
   return dangMoGoiY ? { dongGoiY: true, xoaOTim: false } : { dongGoiY: false, xoaOTim: true };
+}
+
+// T-024 — Quét mã vạch. Máy quét hoạt động như bàn phím gõ cực nhanh rồi
+// Enter (UI-FIDELITY.md, DOMAIN-NOTES.md B7); mã tra được (nhà sản xuất hay
+// tem tự in) chính là `maHang` đã có từ T-009b — không cần cột/bảng mới, ô
+// tìm hiện tại (`GET /api/hang-hoa?tim=`) đã khớp theo `ma_hang`. Việc còn lại
+// là làm ô tìm chịu được nhịp gõ đó mà không mất ký tự (xem debug-co-he-thong:
+// "Máy quét mất ký tự hoặc mất nhịp" — nghi phạm là debounce nuốt ký tự).
+
+export interface NhipGoTrangThai {
+  lanTruocMs: number | null;
+  khoangCach: number[];
+}
+
+/** Quá 1s không gõ gì coi là bắt đầu một nhịp mới — không cộng dồn xuyên hai lần gõ rời nhau. */
+const NGUONG_TAM_DUNG_NHIP_MS = 1000;
+
+/** Ghi nhận một mốc thời gian phím vào chuỗi nhịp gõ hiện tại. Bất biến. */
+export function capNhatNhipGo(trangThai: NhipGoTrangThai, moc: number): NhipGoTrangThai {
+  if (trangThai.lanTruocMs === null || moc - trangThai.lanTruocMs > NGUONG_TAM_DUNG_NHIP_MS) {
+    return { lanTruocMs: moc, khoangCach: [] };
+  }
+  return { lanTruocMs: moc, khoangCach: [...trangThai.khoangCach, moc - trangThai.lanTruocMs] };
+}
+
+/** Ngưỡng khoảng cách trung bình giữa hai ký tự để coi là máy quét — máy quét
+ * thật thường dưới 10ms/ký tự, người gõ tay nhanh nhất cũng hiếm khi xuống
+ * dưới ngưỡng này LIÊN TỤC qua nhiều ký tự. */
+const NGUONG_NHIP_QUET_MS = 50;
+/** Số khoảng cách tối thiểu (ký tự - 1) để đủ tin cậy phân loại — từ khoá ngắn
+ * gõ nhanh vẫn phải coi là gõ tay, tránh nhận nhầm và bỏ qua lựa chọn bằng
+ * mũi tên của người dùng. */
+const SO_KHOANG_CACH_TOI_THIEU = 5;
+
+/** Phân biệt luồng quét với luồng gõ tay theo nhịp phím (UI-FIDELITY.md). */
+export function phanLoaiNhipGo(khoangCachMs: number[]): 'quet' | 'go-tay' {
+  if (khoangCachMs.length < SO_KHOANG_CACH_TOI_THIEU) return 'go-tay';
+  const trungBinh = khoangCachMs.reduce((a, b) => a + b, 0) / khoangCachMs.length;
+  return trungBinh <= NGUONG_NHIP_QUET_MS ? 'quet' : 'go-tay';
+}
+
+export interface KetQuaQuyetDinhSauKhiQuet {
+  hanhDong: 'them-vao-gio' | 'hien-goi-y' | 'khong-tim-thay';
+  goiYChon?: GoiYBanHang;
+}
+
+/** Sau khi xác định là quét (không phải gõ tay): mã khớp đúng MỘT sản phẩm thì
+ * thêm thẳng vào giỏ (dòng đầu tiên = đơn vị cơ sở, do API luôn trả cơ sở
+ * trước — T-009b), không bắt người dùng chọn lại bằng mũi tên. Khớp nhiều sản
+ * phẩm khác nhau (mã chỉ trùng một phần) thì không tự đoán, cứ hiện gợi ý như
+ * gõ tay bình thường. */
+export function quyetDinhSauKhiQuet(goiY: GoiYBanHang[]): KetQuaQuyetDinhSauKhiQuet {
+  const dongDau = goiY[0];
+  if (!dongDau) return { hanhDong: 'khong-tim-thay' };
+  const soSanPhamKhacNhau = new Set(goiY.map((g) => g.sanPhamId)).size;
+  if (soSanPhamKhacNhau === 1) return { hanhDong: 'them-vao-gio', goiYChon: dongDau };
+  return { hanhDong: 'hien-goi-y' };
 }
 
 interface DanhSachGoiYProps {
@@ -349,8 +406,46 @@ export function BanHang() {
   /** Dòng giỏ hàng đang chọn — đích của F2/+/-/Delete (T-021). -1 = chưa có dòng nào. */
   const [chiSoDongChon, setChiSoDongChon] = useState(-1);
   const oTimRef = useRef<HTMLInputElement>(null);
+  /** Nhịp phím đang gõ ở ô tìm — T-024, xem `capNhatNhipGo`/`phanLoaiNhipGo`. */
+  const nhipGoRef = useRef<NhipGoTrangThai>({ lanTruocMs: null, khoangCach: [] });
+  /** Từ khoá của lần gọi API GẦN NHẤT — chặn kết quả trả về trễ của một truy
+   * vấn cũ ghi đè lên kết quả mới hơn (T-024: quét liên tiếp nhiều mã, mã sau
+   * không được để mã trước — vốn có thể mạng chậm hơn — đến sau ghi đè). Bản
+   * cũ dùng `AbortController` nhưng tạo controller BÊN TRONG callback của
+   * `setTimeout` rồi `return` — giá trị đó không đi đâu cả (`setTimeout`
+   * không dùng return value), nên chưa từng thực sự huỷ được request nào. */
+  const truyVanHienTaiRef = useRef('');
+  /** id của debounce đang chờ — để luồng quét huỷ nó, gọi API ngay thay vì đợi 150ms. */
+  const dinhThoiGianRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const goiY = tim.trim() ? goiYThoBanDau : [];
+
+  /** Gọi API tìm hàng hoá, luôn dùng cho cả debounce (gõ tay) lẫn quét mã (gọi
+   * ngay). `useCallback` rỗng deps — chỉ đóng gói setState (định danh ổn định)
+   * và ref, không phụ thuộc gì đổi theo lần render, để effect debounce bên
+   * dưới không phải liệt kê nó như một dependency đổi mỗi lần render. */
+  const chayTimKiem = useCallback((tuKhoa: string): Promise<GoiYBanHang[] | undefined> => {
+    truyVanHienTaiRef.current = tuKhoa;
+    setDangTai(true);
+    setLoi(undefined);
+
+    return fetch(`/api/hang-hoa?tim=${encodeURIComponent(tuKhoa)}`)
+      .then((res) => res.json())
+      .then((json) => {
+        if (truyVanHienTaiRef.current !== tuKhoa) return undefined;
+        const goiYMoi = layGoiYTimHang(DanhSachHangHoaResSchema.parse(json).duLieu);
+        setGoiYThoBanDau(goiYMoi);
+        setChiSoChon(0);
+        setDangTai(false);
+        return goiYMoi;
+      })
+      .catch((): undefined => {
+        if (truyVanHienTaiRef.current !== tuKhoa) return undefined;
+        setLoi('Không tìm được hàng hoá');
+        setDangTai(false);
+        return undefined;
+      });
+  }, []);
 
   useEffect(() => {
     const tuKhoa = tim.trim();
@@ -360,29 +455,13 @@ export function BanHang() {
       return;
     }
 
-    const dinhThoiGian = setTimeout(() => {
-      const controller = new AbortController();
-      setDangTai(true);
-      setLoi(undefined);
-
-      fetch(`/api/hang-hoa?tim=${encodeURIComponent(tuKhoa)}`, { signal: controller.signal })
-        .then((res) => res.json())
-        .then((json) => {
-          setGoiYThoBanDau(layGoiYTimHang(DanhSachHangHoaResSchema.parse(json).duLieu));
-          setChiSoChon(0);
-          setDangTai(false);
-        })
-        .catch((err: unknown) => {
-          if (err instanceof DOMException && err.name === 'AbortError') return;
-          setLoi('Không tìm được hàng hoá');
-          setDangTai(false);
-        });
-
-      return () => controller.abort();
+    const id = setTimeout(() => {
+      void chayTimKiem(tuKhoa);
     }, 150);
+    dinhThoiGianRef.current = id;
 
-    return () => clearTimeout(dinhThoiGian);
-  }, [tim]);
+    return () => clearTimeout(id);
+  }, [tim, chayTimKiem]);
 
   function chon(g: GoiYBanHang) {
     setGioHang((hienTai) => {
@@ -393,7 +472,24 @@ export function BanHang() {
     setTim('');
     setGoiYThoBanDau([]);
     setChiSoChon(0);
+    nhipGoRef.current = { lanTruocMs: null, khoangCach: [] };
     oTimRef.current?.focus();
+  }
+
+  /** Enter ngay sau một chuỗi gõ nhận diện là máy quét (T-024): không đợi
+   * debounce, không dùng `goiY` đang hiện (có thể còn của một chuỗi con cũ
+   * hơn do debounce chưa kịp chạy) — gọi API ngay cho ĐÚNG mã vừa quét, khớp
+   * đúng một sản phẩm thì thêm thẳng vào giỏ. */
+  function xuLyQuetMa(tuKhoa: string) {
+    if (dinhThoiGianRef.current !== null) {
+      clearTimeout(dinhThoiGianRef.current);
+      dinhThoiGianRef.current = null;
+    }
+    void chayTimKiem(tuKhoa).then((ketQua) => {
+      if (!ketQua) return;
+      const { hanhDong, goiYChon } = quyetDinhSauKhiQuet(ketQua);
+      if (hanhDong === 'them-vao-gio' && goiYChon) chon(goiYChon);
+    });
   }
 
   function doiDonVi(chiSo: number, donViTinhId: string) {
@@ -413,6 +509,24 @@ export function BanHang() {
   }
 
   function xuLyPhimOTim(su: React.KeyboardEvent<HTMLInputElement>) {
+    // Chỉ đếm nhịp cho phím "gõ ký tự" thật sự (key dài 1) — Enter/mũi tên/F...
+    // không thuộc nhịp gõ nội dung (T-024).
+    if (su.key.length === 1) {
+      nhipGoRef.current = capNhatNhipGo(nhipGoRef.current, Date.now());
+    }
+
+    // Enter ngay sau một chuỗi gõ đủ nhanh và đủ dài để coi là máy quét: bỏ
+    // qua `goiY` đang hiện (có thể còn là kết quả của một chuỗi con cũ hơn do
+    // debounce 150ms chưa kịp chạy — UI-FIDELITY.md: "không mất ký tự, phân
+    // biệt được với người gõ tay bằng nhịp phím"), gọi API ngay cho đúng mã.
+    // Gõ tay bình thường (kể cả gõ nhanh nhưng từ khoá ngắn) rơi xuống nhánh
+    // Enter cũ bên dưới, giữ nguyên hành vi đã có (T-020/T-021).
+    if (su.key === 'Enter' && tim.trim() !== '' && phanLoaiNhipGo(nhipGoRef.current.khoangCach) === 'quet') {
+      su.preventDefault();
+      xuLyQuetMa(tim.trim());
+      return;
+    }
+
     if (goiY.length > 0) {
       if (su.key === 'ArrowDown' || su.key === 'ArrowUp') {
         su.preventDefault();

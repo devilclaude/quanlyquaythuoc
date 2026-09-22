@@ -471,3 +471,18 @@ diện); T-023/T-025/T-052 đổi phụ thuộc sang T-022c.
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: T-022a.
+
+## 2026-09-22 — dọn PR + T-024
+Làm: PR#44 (T-010a)/#48 (T-022a) vẫn xanh, không comment, không conflict thật
+(`git merge-tree`) — không sửa, chờ duyệt B. Chọn T-024: ô tìm màn bán hàng
+phân biệt quét mã với gõ tay bằng nhịp phím (nhịp trung bình ≤50ms và ≥5
+khoảng cách coi là quét); khi đó Enter gọi API ngay thay vì đợi debounce
+150ms, khớp đúng một sản phẩm thì thêm thẳng vào giỏ — tái hiện đúng bug "mất
+nhịp" ở debug-co-he-thong trước khi sửa (gõ nhanh + Enter ngay lúc API chưa
+kịp trả về khiến giỏ hàng trống, không báo lỗi). Không cần schema/API mới —
+mã quét/tem tự in dùng thẳng `ma_hang` đã có từ T-009b, tìm `LIKE` đã khớp
+sẵn. Nhân tiện vá `AbortController` chết (tạo trong callback `setTimeout`,
+chưa từng huỷ được request nào) bằng ref chặn kết quả trễ ghi đè kết quả mới.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: T-030 hoặc T-060 khi #44/#48 merge — T-024 không mở khoá task nào mới.
