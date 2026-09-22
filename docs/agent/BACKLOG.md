@@ -254,7 +254,7 @@ Xong khi: in được khổ cuộn K57 và K80; có preview; nội dung khớp t
 Tầng A: chỉ đọc dữ liệu đã ghi, không thay đổi kho hay tiền.
 
 ### T-024 [B] prio:24 — Quét mã vạch tại màn bán hàng
-Trạng thái: TODO · Phụ thuộc: T-020
+Trạng thái: DONE · Phụ thuộc: T-020
 Xong khi: mã nhà sản xuất và mã tem tự in đều tra được; quét liên tiếp nhiều mã
 không mất nhịp và không mất ký tự; phân biệt được luồng quét với gõ tay bằng nhịp
 phím; máy quét hoạt động như bàn phím nên không cần driver.

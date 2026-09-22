@@ -139,3 +139,104 @@ test('bán hàng: gõ "+"/"-" vào ô tìm khi đang có dòng giỏ hàng khôn
   await expect(oTim).toHaveValue('zzz-+');
   await expect(dongGio.locator('input[type="number"]')).toHaveValue('1');
 });
+
+// T-024 — Quét mã vạch. Mã tra được (nhà sản xuất hay tem tự in) chính là
+// `maHang` đã có sẵn từ T-009b, không cần dữ liệu/API mới — bài kiểm chỉ cần
+// mã hàng dạng số giống mã vạch thật (khớp `docs/reference/kiotviet/.../In
+// tem mã sau khi nhập hàng.png`: cột "Mã hàng" hiện thẳng mã vạch dạng số khi
+// người dùng nhập mã đó làm mã hàng).
+const MA_VACH_CEFDINA = '8935022710786';
+const DU_LIEU_CEFDINA: unknown = {
+  duLieu: [
+    {
+      id: 'sp-cefdina',
+      maHang: MA_VACH_CEFDINA,
+      ten: 'Cefdina 125 MG',
+      giaBan: 45000,
+      giaVon: 0,
+      tonKho: 30,
+      ngayTao: '2026-09-01T00:00:00.000Z',
+      donViTinh: [{ id: 'dvt-cefdina', ten: 'hộp', heSo: 1, laCoSo: true, giaBan: 45000 }],
+    },
+  ],
+};
+
+test('quét mã vạch: gõ cực nhanh rồi Enter ngay thêm thẳng vào giỏ dù API trả chậm hơn debounce (T-024)', async ({
+  page,
+}) => {
+  // API cố tình trả CHẬM HƠN 150ms (debounce) — nếu Enter vẫn dùng `goiY` cũ
+  // (bug "mất nhịp" ở debug-co-he-thong) thì lúc Enter bấm goiY còn rỗng và
+  // KHÔNG có gì được thêm vào giỏ. Sửa đúng thì luồng quét gọi API ngay lúc
+  // Enter, không đợi debounce, nên vẫn thêm đúng khi có kết quả.
+  await page.route('**/api/hang-hoa*', async (route) => {
+    await new Promise((r) => setTimeout(r, 300));
+    await route.fulfill({ json: DU_LIEU_CEFDINA });
+  });
+  await page.goto('/');
+
+  const oTim = page.getByPlaceholder('Tìm hàng hóa (F3)');
+  await oTim.pressSequentially(MA_VACH_CEFDINA, { delay: 0 });
+  // Không có bước ArrowDown/chọn tay nào — Enter bấm ngay sau ký tự cuối,
+  // giống hệt máy quét thật (gõ xong tự "gõ" Enter).
+  await page.keyboard.press('Enter');
+
+  const dongGio = page.locator('tbody tr');
+  await expect(dongGio).toHaveCount(1);
+  await expect(dongGio).toContainText(MA_VACH_CEFDINA);
+  await expect(dongGio).toContainText('Cefdina 125 MG');
+  await expect(oTim).toHaveValue('');
+  await expect(oTim).toBeFocused();
+});
+
+test('quét mã vạch: quét mã không khớp hàng nào thì báo không tìm thấy, không thêm nhầm gì vào giỏ (T-024)', async ({
+  page,
+}) => {
+  await page.route('**/api/hang-hoa*', (route) => route.fulfill({ json: { duLieu: [] } }));
+  await page.goto('/');
+
+  const oTim = page.getByPlaceholder('Tìm hàng hóa (F3)');
+  await oTim.pressSequentially('0000000000000', { delay: 0 });
+  await page.keyboard.press('Enter');
+
+  await expect(page.getByText('Không tìm thấy hàng hoá phù hợp')).toBeVisible();
+  await expect(page.locator('tbody tr')).toHaveCount(0);
+});
+
+test('quét mã vạch: quét liên tiếp hai mã không lẫn kết quả dù mã trước phản hồi chậm hơn mã sau (T-024)', async ({
+  page,
+}) => {
+  // Mã đầu (không khớp gì) cố tình trả về SAU mã thứ hai (khớp, trả nhanh) —
+  // tái hiện đúng ca race mà `truyVanHienTaiRef` phải chặn: kết quả trễ của
+  // một lần quét cũ ghi đè lên kết quả mới hơn đã hiển thị đúng.
+  await page.route('**/api/hang-hoa*', async (route) => {
+    const url = new URL(route.request().url());
+    const tuKhoa = url.searchParams.get('tim') ?? '';
+    if (tuKhoa === '1111111111111') {
+      await new Promise((r) => setTimeout(r, 500));
+      await route.fulfill({ json: { duLieu: [] } });
+      return;
+    }
+    await route.fulfill({ json: DU_LIEU_CEFDINA });
+  });
+  await page.goto('/');
+
+  const oTim = page.getByPlaceholder('Tìm hàng hóa (F3)');
+  await oTim.pressSequentially('1111111111111', { delay: 0 });
+  await page.keyboard.press('Enter'); // quét mã KHÔNG khớp — request chậm (500ms) đang bay
+
+  // Quét tiếp mã thứ hai trước khi request đầu kịp trả lời — chọn lại toàn bộ
+  // ô tìm giống nhịp thao tác thật (F3 tự chọn hết chữ cũ) rồi gõ đè.
+  await page.keyboard.press('F3');
+  await oTim.pressSequentially(MA_VACH_CEFDINA, { delay: 0 });
+  await page.keyboard.press('Enter');
+
+  const dongGio = page.locator('tbody tr');
+  await expect(dongGio).toHaveCount(1);
+  await expect(dongGio).toContainText('Cefdina 125 MG');
+
+  // Đợi qua mốc request đầu (500ms) — kết quả trễ của nó KHÔNG được phép xoá
+  // hay đổi dòng giỏ hàng vừa thêm đúng.
+  await page.waitForTimeout(600);
+  await expect(dongGio).toHaveCount(1);
+  await expect(dongGio).toContainText('Cefdina 125 MG');
+});

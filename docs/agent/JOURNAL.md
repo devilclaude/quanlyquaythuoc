@@ -483,3 +483,31 @@ schema, `npm run ci` xanh.
 PR: (xem mô tả PR)
 Tầng: B
 Kế tiếp: T-022b (API) sau khi PR này merge.
+
+## 2026-09-22 — dọn PR + T-024
+Làm: PR#44 (T-010a)/#48 (T-022a) vẫn xanh, không comment, không conflict thật
+(`git merge-tree`) — không sửa, chờ duyệt B. Chọn T-024: ô tìm màn bán hàng
+phân biệt quét mã với gõ tay bằng nhịp phím (nhịp trung bình ≤50ms và ≥5
+khoảng cách coi là quét); khi đó Enter gọi API ngay thay vì đợi debounce
+150ms, khớp đúng một sản phẩm thì thêm thẳng vào giỏ — tái hiện đúng bug "mất
+nhịp" ở debug-co-he-thong trước khi sửa (gõ nhanh + Enter ngay lúc API chưa
+kịp trả về khiến giỏ hàng trống, không báo lỗi). Không cần schema/API mới —
+mã quét/tem tự in dùng thẳng `ma_hang` đã có từ T-009b, tìm `LIKE` đã khớp
+sẵn. Nhân tiện vá `AbortController` chết (tạo trong callback `setTimeout`,
+chưa từng huỷ được request nào) bằng ref chặn kết quả trễ ghi đè kết quả mới.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: T-030 hoặc T-060 khi #44/#48 merge — T-024 không mở khoá task nào mới.
+
+## 2026-09-22 (run kế) — sửa PR#48 conflict, không chọn task mới
+Làm: PR#49 (T-024) đã merge → chuyển DONE. PR#44 (T-010a) vẫn xanh, không
+comment, không conflict — không sửa. PR#48 (T-022a) CI xanh, không comment,
+nhưng `git merge-tree` báo conflict thật với `main`: cả PR#48 và PR#49 cùng
+append entry vào cuối `docs/agent/JOURNAL.md` tại cùng điểm chèn. Merge `main`
+vào nhánh, giữ cả hai entry (2026-09-21 run kế 2, rồi 2026-09-22 run + T-024)
+theo đúng thứ tự thời gian; `BACKLOG.md` tự merge sạch (không cần sửa tay).
+Theo luật "sửa PR cũ và dừng run tại đó" — không chọn task mới.
+PR: https://github.com/devilclaude/quanlyquaythuoc/pull/48
+Tầng: B (giữ nguyên lý do đã khai từ đầu, không đổi)
+Kế tiếp: chờ người duyệt #44/#48 (cả hai đã khai Tầng B); sau khi merge, chọn
+theo prio (T-010b/T-022b khi đủ điều kiện, hoặc T-030/T-060).
