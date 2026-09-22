@@ -5,6 +5,11 @@ import { test, expect } from '@playwright/test';
 // thương lượng ... chỉ được kiểm ở tầng e2e"). `vite preview` chỉ phục vụ
 // client tĩnh, không có server API thật phía sau — chặn `/api/hang-hoa` để
 // giả một kết quả tìm kiếm cố định, không cần dựng CSDL cho e2e.
+//
+// Chặn bằng `context.route` (KHÔNG phải `page.route`) — từ T-030, service
+// worker cache runtime cho `/api/hang-hoa` (vite.config.ts) tự gọi `fetch`
+// bên trong tiến trình SW; `page.route` chỉ chặn được request phát trực
+// tiếp từ trang, `context.route` mới chặn được cả request SW đó.
 const DU_LIEU_TIM: unknown = {
   duLieu: [
     {
@@ -23,8 +28,8 @@ const DU_LIEU_TIM: unknown = {
   ],
 };
 
-test('bán hàng: tìm và thêm hàng vào giỏ hoàn toàn bằng bàn phím (T-020)', async ({ page }) => {
-  await page.route('**/api/hang-hoa*', (route) => route.fulfill({ json: DU_LIEU_TIM }));
+test('bán hàng: tìm và thêm hàng vào giỏ hoàn toàn bằng bàn phím (T-020)', async ({ page, context }) => {
+  await context.route('**/api/hang-hoa*', (route) => route.fulfill({ json: DU_LIEU_TIM }));
   await page.goto('/');
 
   const oTim = page.getByPlaceholder('Tìm hàng hóa (F3)');
@@ -65,8 +70,11 @@ test('bán hàng: tìm và thêm hàng vào giỏ hoàn toàn bằng bàn phím 
   await expect(oTim).toBeFocused();
 });
 
-test('bán hàng: đổi đơn vị và sửa số lượng dòng giỏ hàng hoàn toàn bằng bàn phím (T-021)', async ({ page }) => {
-  await page.route('**/api/hang-hoa*', (route) => route.fulfill({ json: DU_LIEU_TIM }));
+test('bán hàng: đổi đơn vị và sửa số lượng dòng giỏ hàng hoàn toàn bằng bàn phím (T-021)', async ({
+  page,
+  context,
+}) => {
+  await context.route('**/api/hang-hoa*', (route) => route.fulfill({ json: DU_LIEU_TIM }));
   await page.goto('/');
 
   const oTim = page.getByPlaceholder('Tìm hàng hóa (F3)');
@@ -104,7 +112,10 @@ test('bán hàng: đổi đơn vị và sửa số lượng dòng giỏ hàng ho
   await expect(page.getByText('Chưa có hàng trong đơn.')).toBeVisible();
 });
 
-test('bán hàng: gõ "+"/"-" vào ô tìm khi đang có dòng giỏ hàng không bị nuốt ký tự (T-021)', async ({ page }) => {
+test('bán hàng: gõ "+"/"-" vào ô tìm khi đang có dòng giỏ hàng không bị nuốt ký tự (T-021)', async ({
+  page,
+  context,
+}) => {
   // Tái hiện bug doi-chieu-ui phát hiện: phím tắt của dòng giỏ hàng (F2/+/-/
   // Delete) trước đây kích hoạt bất cứ khi nào KHÔNG có gợi ý hiện ra
   // (`goiY.length === 0`) — nhưng gợi ý cũng rỗng khi ô tìm có chữ mà 0 kết
@@ -112,7 +123,7 @@ test('bán hàng: gõ "+"/"-" vào ô tìm khi đang có dòng giỏ hàng khôn
   // khớp) — phải gõ được "+"/"-" bình thường, không được nuốt để tăng/giảm
   // số lượng dòng giỏ hàng (UI-FIDELITY.md: "Ô tìm phải chịu được luồng đó
   // không mất ký tự"; "Không phím tắt nào được phá luồng đang gõ dở").
-  await page.route('**/api/hang-hoa*', (route) => {
+  await context.route('**/api/hang-hoa*', (route) => {
     const url = new URL(route.request().url());
     const tuKhoa = url.searchParams.get('tim') ?? '';
     route.fulfill({ json: tuKhoa.startsWith('zzz') ? { duLieu: [] } : DU_LIEU_TIM });
@@ -163,12 +174,13 @@ const DU_LIEU_CEFDINA: unknown = {
 
 test('quét mã vạch: gõ cực nhanh rồi Enter ngay thêm thẳng vào giỏ dù API trả chậm hơn debounce (T-024)', async ({
   page,
+  context,
 }) => {
   // API cố tình trả CHẬM HƠN 150ms (debounce) — nếu Enter vẫn dùng `goiY` cũ
   // (bug "mất nhịp" ở debug-co-he-thong) thì lúc Enter bấm goiY còn rỗng và
   // KHÔNG có gì được thêm vào giỏ. Sửa đúng thì luồng quét gọi API ngay lúc
   // Enter, không đợi debounce, nên vẫn thêm đúng khi có kết quả.
-  await page.route('**/api/hang-hoa*', async (route) => {
+  await context.route('**/api/hang-hoa*', async (route) => {
     await new Promise((r) => setTimeout(r, 300));
     await route.fulfill({ json: DU_LIEU_CEFDINA });
   });
@@ -190,8 +202,9 @@ test('quét mã vạch: gõ cực nhanh rồi Enter ngay thêm thẳng vào gi�
 
 test('quét mã vạch: quét mã không khớp hàng nào thì báo không tìm thấy, không thêm nhầm gì vào giỏ (T-024)', async ({
   page,
+  context,
 }) => {
-  await page.route('**/api/hang-hoa*', (route) => route.fulfill({ json: { duLieu: [] } }));
+  await context.route('**/api/hang-hoa*', (route) => route.fulfill({ json: { duLieu: [] } }));
   await page.goto('/');
 
   const oTim = page.getByPlaceholder('Tìm hàng hóa (F3)');
@@ -204,11 +217,12 @@ test('quét mã vạch: quét mã không khớp hàng nào thì báo không tìm
 
 test('quét mã vạch: quét liên tiếp hai mã không lẫn kết quả dù mã trước phản hồi chậm hơn mã sau (T-024)', async ({
   page,
+  context,
 }) => {
   // Mã đầu (không khớp gì) cố tình trả về SAU mã thứ hai (khớp, trả nhanh) —
   // tái hiện đúng ca race mà `truyVanHienTaiRef` phải chặn: kết quả trễ của
   // một lần quét cũ ghi đè lên kết quả mới hơn đã hiển thị đúng.
-  await page.route('**/api/hang-hoa*', async (route) => {
+  await context.route('**/api/hang-hoa*', async (route) => {
     const url = new URL(route.request().url());
     const tuKhoa = url.searchParams.get('tim') ?? '';
     if (tuKhoa === '1111111111111') {

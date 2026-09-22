@@ -274,7 +274,7 @@ Kịch bản đã chốt: máy chủ ở xa, quầy qua Internet. **Chỉ bán h
 được khi offline**; nhập hàng, kiểm kê, xuất huỷ yêu cầu online.
 
 ### T-030 [B] prio:30 — Vỏ PWA và chỉ báo trạng thái
-Trạng thái: TODO · Phụ thuộc: T-020
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-020
 Xong khi: service worker cache vỏ app và danh mục tra cứu; màn bán hàng **luôn
 hiện** đang online/offline, số thao tác chờ đồng bộ, thời điểm đồng bộ gần nhất;
 mất mạng giữa lúc bán không popup chặn màn hình và không mất giỏ.

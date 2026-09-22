@@ -486,3 +486,13 @@ chưa từng huỷ được request nào) bằng ref chặn kết quả trễ gh
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: T-030 hoặc T-060 khi #44/#48 merge — T-024 không mở khoá task nào mới.
+
+## 2026-09-22 (run kế) — dọn PR + T-030
+Làm: PR#44/#48 vẫn xanh chờ B, không sửa; chọn T-030. `vite-plugin-pwa` cache
+vỏ app + `/api/hang-hoa`; `ChiBaoTrangThai` trên màn bán hàng dùng
+`navigator.onLine` thật (chờ đồng bộ/mốc đồng bộ cố định 0/null — T-031 chưa
+có). Phát hiện SW tự fetch không bị `page.route` chặn, vỡ 4 e2e cũ — sửa hết
+sang `context.route`.
+PR: (xem mô tả PR)
+Tầng: B — chạm `package.json`.
+Kế tiếp: T-031 khi PR này merge, hoặc T-060.
