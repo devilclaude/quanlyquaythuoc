@@ -1,7 +1,5 @@
 /**
  * Ranh giới module — xem docs/agent/ARCHITECTURE.md §5.
- * Quy tắc "src/server/kho/** không import hàm giải nghĩa cài đặt quản lý lô"
- * được thêm khi module cài đặt đó tồn tại (T-010) — chưa có gì để trỏ tới lúc này.
  */
 module.exports = {
   forbidden: [
@@ -19,6 +17,14 @@ module.exports = {
       severity: 'error',
       from: { path: '^src/client' },
       to: { path: '^src/server' },
+    },
+    {
+      name: 'kho-khong-import-giai-nghia-cai-dat',
+      comment:
+        'src/server/kho/** không được import hàm giải nghĩa cài đặt quản lý lô (SPEC.md §3.2, ARCHITECTURE.md §5) — cài đặt chỉ dùng ở validation form, render UI, và bộ lọc báo cáo cận date; module kho luôn chạy một đường code duy nhất trên mô hình theo lô.',
+      severity: 'error',
+      from: { path: '^src/server/kho' },
+      to: { path: '^src/shared/cai-dat' },
     },
   ],
   options: {

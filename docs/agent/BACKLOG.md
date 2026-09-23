@@ -157,7 +157,7 @@ form sửa tái dùng form tạo (T-009b); nút Xoá/Ngừng hoạt động kh�
 ngừng hoạt động khi đã có thẻ kho.
 
 ### T-010a [B] prio:10.1 — Cài đặt quản lý theo lô: schema + hàm giải nghĩa
-Trạng thái: TODO · Phụ thuộc: T-006, T-009c
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-006, T-009c
 Xong khi: bảng `cai_dat` (cài đặt toàn cục, đúng một dòng, **mặc định TẮT**) và cột
 ghi đè theo sản phẩm (ba trạng thái: kế thừa/bật/tắt) trên `san_pham`; hàm giải
 nghĩa cài đặt (thuần, không chạm CSDL) áp đúng thứ tự ưu tiên "ghi đè sản phẩm >

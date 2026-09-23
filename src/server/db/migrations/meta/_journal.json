@@ -71,6 +71,13 @@
       "when": 1789809284319,
       "tag": "0009_exotic_wiccan",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1789881172344,
+      "tag": "0010_reflective_goliath",
+      "breakpoints": true
     }
   ]
 }
