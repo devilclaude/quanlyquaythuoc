@@ -4,6 +4,7 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
+  caiDat,
   chiNhanh,
   donViTinh,
   loHang,
@@ -88,6 +89,63 @@ describe('san_pham', () => {
         .values({ id: 'sp-1', maHang: 'SP001', ten: 'Paracetamol 500mg', trangThai: trangThaiSai })
         .run(),
     ).toThrow();
+  });
+
+  it('quan_ly_lo_ghi_de mặc định NULL (kế thừa cài đặt toàn cục) khi không khai (T-010a)', () => {
+    db.insert(sanPham).values({ id: 'sp-1', maHang: 'SP001', ten: 'Paracetamol 500mg' }).run();
+
+    const [row] = db.select().from(sanPham).where(eq(sanPham.id, 'sp-1')).all();
+
+    expect(row?.quanLyLoGhiDe).toBeNull();
+  });
+
+  it('quan_ly_lo_ghi_de nhận BAT hoặc TAT', () => {
+    db.insert(sanPham)
+      .values({ id: 'sp-1', maHang: 'SP001', ten: 'Paracetamol 500mg', quanLyLoGhiDe: 'BAT' })
+      .run();
+    db.insert(sanPham)
+      .values({ id: 'sp-2', maHang: 'SP002', ten: 'Nước muối sinh lý', quanLyLoGhiDe: 'TAT' })
+      .run();
+
+    const rows = db.select().from(sanPham).all();
+
+    expect(rows.map((r) => r.quanLyLoGhiDe)).toEqual(['BAT', 'TAT']);
+  });
+
+  it('quan_ly_lo_ghi_de ngoài tập NULL/BAT/TAT bị CHECK chặn', () => {
+    const ghiDeSai = 'KHONG_HOP_LE' as unknown as 'BAT';
+    expect(() =>
+      db
+        .insert(sanPham)
+        .values({ id: 'sp-1', maHang: 'SP001', ten: 'Paracetamol 500mg', quanLyLoGhiDe: ghiDeSai })
+        .run(),
+    ).toThrow();
+  });
+});
+
+describe('cai_dat', () => {
+  it('quan_ly_lo mặc định TẮT (SPEC.md §3.2: "v1 khởi chạy với quản lý theo lô TẮT mặc định")', () => {
+    const [row] = db.select().from(caiDat).all();
+
+    expect(row).toEqual({ id: 1, quanLyLo: false });
+  });
+
+  it('luôn có đúng một dòng — không tự nhân bản khi migrate lại', () => {
+    const rows = db.select().from(caiDat).all();
+
+    expect(rows).toHaveLength(1);
+  });
+
+  it('không cho thêm dòng thứ hai — CHECK id = 1 chặn', () => {
+    expect(() => db.insert(caiDat).values({ id: 2, quanLyLo: true }).run()).toThrow();
+  });
+
+  it('sửa được cài đặt toàn cục bằng UPDATE trên dòng duy nhất', () => {
+    db.update(caiDat).set({ quanLyLo: true }).where(eq(caiDat.id, 1)).run();
+
+    const [row] = db.select().from(caiDat).all();
+
+    expect(row?.quanLyLo).toBe(true);
   });
 });
 
