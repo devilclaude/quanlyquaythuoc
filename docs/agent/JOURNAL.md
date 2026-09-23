@@ -583,3 +583,19 @@ sửa ghi chú T-022b để dùng lại, không viết lại.
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: T-031 khi PR này merge; T-022b/T-010c chờ T-022a/T-010b.
+
+## 2026-09-23 (run kế 4) — dọn PR + T-010c
+Làm: #53 (T-010b) đã merge → DONE (BACKLOG lệch, chưa ai cập nhật). #48
+(T-022a) vẫn xanh chờ B, không sửa. Chọn T-010c: `CongTac` (switch,
+`role="switch"`, `<button>` thật nên Space/Enter bấm được không cần code
+riêng) trong `thanh-phan/`; màn `CaiDat` (chưa có screenshot tham chiếu —
+dựng theo token) đọc/đổi cài đặt toàn cục qua `/api/cai-dat/quan-ly-lo`; thêm
+ô chọn ghi đè riêng sản phẩm (3 giá trị KE_THUA/BAT/TAT) vào `ChiTietHangHoa`,
+hiện lỗi 409 rõ khi bị chặn tắt. Phát hiện bug thật ở PR#53 đã merge: route
+PUT toàn cục không bắt `DoiCheDoBiChanError` nên tắt bị chặn sẽ ném 500 thay
+vì 409 — vá kèm test, cần cho chính màn cài đặt xử lý lỗi đúng. Xác nhận bằng
+Playwright thật (route giả lập, không commit): nav "Cài đặt" hiện, công tắc
+đổi qua bàn phím, ghi đè sản phẩm 409 hiện lỗi rõ.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: T-040 hoặc T-031 sau khi PR này merge (cả hai đều đủ điều kiện).

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { HangHoaChiTietRes } from '../../../shared/hop-dong/hang-hoa';
-import { ChanHangHoa, ThongTinHangHoa } from './ChiTietHangHoa';
+import { ChanHangHoa, DieuKhienGhiDeQuanLyLo, ThongTinHangHoa } from './ChiTietHangHoa';
 
 const chiTietNhieuDonVi: HangHoaChiTietRes = {
   id: 'sp-1',
@@ -101,5 +101,39 @@ describe('ChanHangHoa (T-009c) — vị trí khớp ảnh "xem chi tiết 1 sả
     expect(html).toContain('Đã ngừng hoạt động');
     expect(html).not.toContain('Ngừng hoạt động<');
     expect(html).toContain('Chỉnh sửa');
+  });
+});
+
+describe('DieuKhienGhiDeQuanLyLo (T-010c) — ghi đè quản lý theo lô riêng cho sản phẩm', () => {
+  it('hiện đủ ba lựa chọn, chọn đúng giá trị hiện tại', () => {
+    const html = renderToStaticMarkup(
+      <DieuKhienGhiDeQuanLyLo ghiDe="KE_THUA" dangXuLy={false} loi={undefined} onDoi={() => {}} />,
+    );
+
+    expect(html).toContain('Theo cài đặt chung');
+    expect(html).toContain('Quản lý theo lô');
+    expect(html).toContain('Không quản lý theo lô');
+    expect(html).toContain('value="KE_THUA" selected');
+  });
+
+  it('dangXuLy=true: ô chọn bị disabled, chặn đổi trong lúc chờ phản hồi', () => {
+    const html = renderToStaticMarkup(
+      <DieuKhienGhiDeQuanLyLo ghiDe="BAT" dangXuLy={true} loi={undefined} onDoi={() => {}} />,
+    );
+
+    expect(html).toContain('disabled=""');
+  });
+
+  it('loi có giá trị: hiện lỗi rõ ràng ngay dưới ô chọn (vd. bị chặn tắt vì còn nhiều lô tồn)', () => {
+    const html = renderToStaticMarkup(
+      <DieuKhienGhiDeQuanLyLo
+        ghiDe="BAT"
+        dangXuLy={false}
+        loi="Không thể tắt quản lý theo lô cho sản phẩm sp-1: còn 2 lô có tồn > 0"
+        onDoi={() => {}}
+      />,
+    );
+
+    expect(html).toContain('còn 2 lô có tồn');
   });
 });

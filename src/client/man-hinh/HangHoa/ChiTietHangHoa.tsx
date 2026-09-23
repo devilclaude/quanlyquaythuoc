@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { GhiDeQuanLyLo } from '../../../shared/cai-dat/giai-nghia';
 import {
   HangHoaChiTietResSchema,
   type DonViTinhRes,
@@ -115,6 +116,49 @@ export function ChanHangHoa({
   );
 }
 
+const NHAN_GHI_DE_QUAN_LY_LO: Record<GhiDeQuanLyLo, string> = {
+  KE_THUA: 'Theo cài đặt chung',
+  BAT: 'Quản lý theo lô',
+  TAT: 'Không quản lý theo lô',
+};
+
+interface DieuKhienGhiDeQuanLyLoProps {
+  ghiDe: GhiDeQuanLyLo;
+  dangXuLy: boolean;
+  loi: string | undefined;
+  onDoi: (ghiDeMoi: GhiDeQuanLyLo) => void;
+}
+
+/**
+ * Ghi đè cài đặt "quản lý theo lô" riêng cho một sản phẩm (T-010c). Ba lựa
+ * chọn khớp `GhiDeQuanLyLo` — không phải công tắc hai trạng thái, vì "theo
+ * cài đặt chung" (kế thừa) khác với "tắt tường minh" (SPEC.md §3.2). Đổi
+ * BẬT→TẮT bị chặn khi sản phẩm còn hơn một lô tồn > 0 — lỗi hiện ngay dưới ô
+ * chọn, không phải alert (dễ đọc lại, không chặn thao tác khác trên trang).
+ */
+export function DieuKhienGhiDeQuanLyLo({ ghiDe, dangXuLy, loi, onDoi }: DieuKhienGhiDeQuanLyLoProps) {
+  return (
+    <div className="thong-tin-hang-hoa__quan-ly-lo">
+      <label htmlFor="ghi-de-quan-ly-lo" className="thong-tin-hang-hoa__quan-ly-lo-nhan">
+        Quản lý theo lô
+      </label>
+      <select
+        id="ghi-de-quan-ly-lo"
+        value={ghiDe}
+        disabled={dangXuLy}
+        onChange={(su) => onDoi(su.target.value as GhiDeQuanLyLo)}
+      >
+        {(Object.keys(NHAN_GHI_DE_QUAN_LY_LO) as GhiDeQuanLyLo[]).map((gt) => (
+          <option key={gt} value={gt}>
+            {NHAN_GHI_DE_QUAN_LY_LO[gt]}
+          </option>
+        ))}
+      </select>
+      {loi ? <p className="thong-tin-hang-hoa__loi">{loi}</p> : null}
+    </div>
+  );
+}
+
 interface ChiTietHangHoaProps {
   id: string;
   /** Gọi lại sau khi sửa hoặc ngừng hoạt động thành công, để danh sách làm mới. */
@@ -128,6 +172,8 @@ export function ChiTietHangHoa({ id, onDaSua, onDaXoa }: ChiTietHangHoaProps) {
   const [loi, setLoi] = useState<string | undefined>(undefined);
   const [dangSua, setDangSua] = useState(false);
   const [dangXuLyXoa, setDangXuLyXoa] = useState(false);
+  const [dangXuLyGhiDe, setDangXuLyGhiDe] = useState(false);
+  const [loiGhiDe, setLoiGhiDe] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     setChiTiet(undefined);
@@ -187,12 +233,44 @@ export function ChiTietHangHoa({ id, onDaSua, onDaXoa }: ChiTietHangHoaProps) {
       });
   }
 
+  function doiGhiDeQuanLyLo(ghiDeMoi: GhiDeQuanLyLo) {
+    if (!chiTiet) return;
+    setDangXuLyGhiDe(true);
+    setLoiGhiDe(undefined);
+
+    fetch(`/api/hang-hoa/${id}/quan-ly-lo`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ghiDe: ghiDeMoi }),
+    })
+      .then(async (res) => {
+        const json: unknown = await res.json();
+        if (!res.ok) {
+          const thongBao = (json as { loi?: string } | undefined)?.loi;
+          throw new Error(thongBao ?? 'Không đổi được cài đặt quản lý theo lô');
+        }
+        setChiTiet(HangHoaChiTietResSchema.parse(json));
+        setDangXuLyGhiDe(false);
+        onDaSua?.();
+      })
+      .catch((err: unknown) => {
+        setDangXuLyGhiDe(false);
+        setLoiGhiDe(err instanceof Error ? err.message : 'Không đổi được cài đặt quản lý theo lô');
+      });
+  }
+
   if (loi) return <p className="thong-tin-hang-hoa__loi">{loi}</p>;
   if (!chiTiet) return <p>Đang tải…</p>;
 
   return (
     <>
       <ThongTinHangHoa chiTiet={chiTiet} />
+      <DieuKhienGhiDeQuanLyLo
+        ghiDe={chiTiet.quanLyLoGhiDe}
+        dangXuLy={dangXuLyGhiDe}
+        loi={loiGhiDe}
+        onDoi={doiGhiDeQuanLyLo}
+      />
       <ChanHangHoa
         trangThai={chiTiet.trangThai}
         coTheXoaCung={chiTiet.coTheXoaCung}

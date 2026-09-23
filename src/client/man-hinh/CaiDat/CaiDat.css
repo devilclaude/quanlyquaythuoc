@@ -1,0 +1,37 @@
+.cai-dat {
+  max-width: 640px;
+  padding: var(--kc-5);
+  background: var(--mau-nen-the);
+  border: var(--vien);
+  border-radius: var(--bo-goc);
+}
+
+.cai-dat__tieu-de {
+  margin: 0 0 var(--kc-4);
+  font-size: var(--chu-lg);
+}
+
+.cai-dat__dong {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kc-4);
+}
+
+.cai-dat__nhan {
+  margin: 0;
+  font-weight: 500;
+}
+
+.cai-dat__mo-ta {
+  margin: var(--kc-1) 0 0;
+  color: var(--mau-chu-phu);
+  font-size: var(--chu-sm);
+  max-width: 480px;
+}
+
+.cai-dat__loi {
+  margin: var(--kc-3) 0 0;
+  color: var(--mau-nguy);
+  font-size: var(--chu-sm);
+}

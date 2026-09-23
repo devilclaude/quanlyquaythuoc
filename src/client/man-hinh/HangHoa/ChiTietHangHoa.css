@@ -35,6 +35,19 @@
   color: var(--mau-nguy);
 }
 
+.thong-tin-hang-hoa__quan-ly-lo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kc-1);
+  padding-top: var(--kc-3);
+  border-top: var(--vien);
+}
+
+.thong-tin-hang-hoa__quan-ly-lo-nhan {
+  font-size: var(--chu-xs);
+  color: var(--mau-chu-phu);
+}
+
 .thong-tin-hang-hoa__chan {
   display: flex;
   justify-content: space-between;
