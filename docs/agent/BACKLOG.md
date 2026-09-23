@@ -172,7 +172,7 @@ tính theo ngưỡng CLAUDE.md (không tính migration tự sinh). Slice này ri
 trong ngưỡng.
 
 ### T-010b [B] prio:10.2 — Cài đặt quản lý theo lô: API
-Trạng thái: TODO · Phụ thuộc: T-010a
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-010a
 Xong khi: `GET`/`PUT /api/cai-dat/quan-ly-lo` (cài đặt toàn cục) và
 `PUT /api/hang-hoa/:id/quan-ly-lo` (ghi đè theo sản phẩm, trả 409 kèm lý do khi bị
 chặn); chi tiết hàng hoá (`GET /api/hang-hoa/:id`) trả thêm ghi đè hiện tại của sản
@@ -230,10 +230,14 @@ API+hợp đồng) sẽ vượt hẳn 1000 dòng nếu gộp — huống hồ k�
 Trạng thái: TODO · Phụ thuộc: T-022a
 Xong khi: `POST /api/hoa-don` nhận giỏ hàng qua hợp đồng Zod
 (`src/shared/hop-dong/hoa-don.ts`), gọi `taoHoaDonTuGioHang`; 400 khi dữ liệu
-không hợp lệ, 409 khi tồn không đủ hoặc giảm giá vượt tổng tiền hàng; đảm bảo có
-sẵn một dòng chi nhánh mặc định (v1 chỉ có một chi nhánh, SPEC.md §3.6, chưa có
-UI quản lý chi nhánh nào để tạo dòng này) trước khi ghi chứng từ — đây là API
-đầu tiên thật sự cần `chiNhanhId`. Không có UI.
+không hợp lệ, 409 khi tồn không đủ hoặc giảm giá vượt tổng tiền hàng; lấy
+`chiNhanhId` qua `layChiNhanhMacDinh` (`src/server/db/chi-nhanh.ts`, đã có từ
+T-010b — get-or-create idempotent, ID cố định) trước khi ghi chứng từ, **không
+tự viết lại logic này**. Không có UI.
+Ghi chú: bản gốc của mục "Xong khi" này viết là "đây là API đầu tiên thật sự
+cần chiNhanhId" — sai, đã lỗi thời từ khi T-010b merge (API cài đặt quản lý lô
+cũng ghi thẻ kho `DOI_CHE_DO` nên cần chiNhanhId trước). Sửa lại ở đây để run
+sau không đi lại đường đã có.
 
 ### T-022c [B] prio:22.3 — Thanh toán và tạo hoá đơn: giao diện
 Trạng thái: TODO · Phụ thuộc: T-022b

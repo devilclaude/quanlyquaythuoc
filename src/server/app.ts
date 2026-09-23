@@ -1,5 +1,6 @@
 import type { drizzle } from 'drizzle-orm/better-sqlite3';
 import { Hono } from 'hono';
+import { dangKyCaiDatRoutes } from './api/cai-dat';
 import { dangKyHangHoaRoutes } from './api/hang-hoa';
 
 type Db = ReturnType<typeof drizzle>;
@@ -12,6 +13,10 @@ export function taoApp(db: Db) {
   const hangHoaRouter = new Hono();
   dangKyHangHoaRoutes(hangHoaRouter, db);
   app.route('/api/hang-hoa', hangHoaRouter);
+
+  const caiDatRouter = new Hono();
+  dangKyCaiDatRoutes(caiDatRouter, db);
+  app.route('/api/cai-dat', caiDatRouter);
 
   return app;
 }

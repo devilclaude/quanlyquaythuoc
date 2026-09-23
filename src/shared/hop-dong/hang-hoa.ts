@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { GhiDeQuanLyLoSchema } from './cai-dat';
 
 // Hợp đồng API dùng chung client/server (ARCHITECTURE.md §1) cho T-009a — màn
 // hàng hoá chỉ đọc. Tiền và số lượng đều `z.number().int()`: SPEC.md §3.4/§3.3
@@ -41,6 +42,8 @@ export const HangHoaChiTietResSchema = HangHoaDanhSachItemSchema.extend({
   trangThai: z.enum(['HOAT_DONG', 'NGUNG_HOAT_DONG']),
   /** true khi CHƯA phát sinh dòng thẻ kho nào — quyết định nút Xoá hay Ngừng hoạt động. */
   coTheXoaCung: z.boolean(),
+  /** Ghi đè cài đặt "quản lý theo lô" riêng cho sản phẩm này (T-010b, SPEC.md §3.2). */
+  quanLyLoGhiDe: GhiDeQuanLyLoSchema,
 });
 
 export type DonViTinhRes = z.infer<typeof DonViTinhResSchema>;

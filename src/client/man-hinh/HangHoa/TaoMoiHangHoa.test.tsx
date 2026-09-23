@@ -111,6 +111,7 @@ describe('taoTrangThaiTuChiTiet (T-009c)', () => {
       ngayTao: '2026-09-01T00:00:00.000Z',
       trangThai: 'HOAT_DONG',
       coTheXoaCung: true,
+      quanLyLoGhiDe: 'KE_THUA',
       donViTinh: [
         { id: 'dvt-vien', ten: 'viên', heSo: 1, laCoSo: true, giaBan: 500 },
         { id: 'dvt-vi', ten: 'vỉ', heSo: 12, laCoSo: false, giaBan: 6000 },

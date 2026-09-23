@@ -609,6 +609,17 @@ Tầng: B — không đổi ở cả hai (giữ nguyên lý do gốc đã khai).
 Kế tiếp: chờ người duyệt #44/#48/#50; sau khi merge, chọn theo prio
 (T-010b/T-022b/T-031 tuỳ PR nào merge trước).
 
+## 2026-09-23 (run kế 3) — dọn PR + T-010b
+Làm: #44 (T-010a)/#50 (T-030) đã merge → DONE. #48 (T-022a) vẫn xanh, chờ
+duyệt B, không sửa. Chọn T-010b: `GET`/`PUT /api/cai-dat/quan-ly-lo`, `PUT
+/api/hang-hoa/:id/quan-ly-lo` (409 kèm lý do), chi tiết hàng hoá trả thêm
+`quanLyLoGhiDe`. Thêm `layChiNhanhMacDinh` (get-or-create ID cố định) vì các
+hàm T-010a cần `chiNhanhId` FK thật mà chưa module nào tạo dòng `chi_nhanh` —
+sửa ghi chú T-022b để dùng lại, không viết lại.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: T-031 khi PR này merge; T-022b/T-010c chờ T-022a/T-010b.
+
 ## 2026-09-23 (run kế 3) — #44/#50 merge → DONE; sửa bug thật ở #48, dừng run
 Làm: #44 (T-010a), #50 (T-030) đã merge → chuyển DONE. #48 (T-022a): conflict
 thật với main; merge vào thì CI đỏ thật — `meta/_journal.json` bị một lần
@@ -622,3 +633,19 @@ build, 9 e2e). Push lên #48, không mở PR mới, không chọn task khác.
 PR: https://github.com/devilclaude/quanlyquaythuoc/pull/48
 Tầng: B (giữ nguyên lý do đã khai từ đầu, không đổi)
 Kế tiếp: chờ người duyệt #48; sau khi merge, chọn theo prio (T-010b/T-022b/T-031).
+
+## 2026-09-23 (run kế 4) — sửa PR#48 conflict (lần 4), không chọn task mới
+Làm: PR còn mở duy nhất là #48 (T-022a). CI trên #48 đã xanh (`ci`,
+`cong-tang-a`), không comment chưa xử lý — nhưng `mergeable_state: unknown`/
+`git merge-tree` báo conflict thật với `main`: nguyên nhân giống hệt các lần
+trước — #53 (T-010b) merge trước, chỉ append `JOURNAL.md`, đúng điểm chèn
+nhánh #48 cũng đang chèn entry riêng. Không có migration mới ở #53 (chỉ API)
+nên không lặp lại bug `_journal.json` của lần trước. Merge `origin/main` vào
+nhánh, giữ nguyên văn cả hai entry theo đúng thứ tự thời gian đã có;
+`BACKLOG.md` tự merge sạch. `npm run ci` xanh (typecheck, lint, 378 test,
+build, 9 e2e — chạy e2e với `PLAYWRIGHT_CHROMIUM_PATH` trỏ browser cài sẵn
+trong môi trường, không đụng cấu hình/package đã pin). Push lên #48, không mở
+PR mới, không chọn task khác.
+PR: https://github.com/devilclaude/quanlyquaythuoc/pull/48
+Tầng: B (giữ nguyên lý do đã khai từ đầu, không đổi)
+Kế tiếp: chờ người duyệt #48; sau khi merge, chọn theo prio (T-022b/T-031).

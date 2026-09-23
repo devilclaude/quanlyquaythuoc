@@ -5,7 +5,13 @@ import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { caiDat, chiNhanh, loHang, sanPham, theKho } from '../db/schema';
 import { ghiTheKho } from '../kho/so-cai';
-import { DoiCheDoBiChanError, doiCaiDatToanCuc, doiGhiDeSanPham } from './doi-che-do';
+import {
+  DoiCheDoBiChanError,
+  SanPhamKhongTonTaiError,
+  doiCaiDatToanCuc,
+  doiGhiDeSanPham,
+  layCaiDatToanCuc,
+} from './doi-che-do';
 
 type DbTest = ReturnType<typeof drizzle>;
 
@@ -115,7 +121,19 @@ describe('doiGhiDeSanPham', () => {
   it('sản phẩm không tồn tại thì ném lỗi rõ ràng', () => {
     expect(() =>
       doiGhiDeSanPham(db, { sanPhamId: 'sp-khong-ton-tai', ghiDeMoi: 'BAT', chiNhanhId: 'cn-1', thoiGian: '2026-09-20T08:00:00.000Z' }),
-    ).toThrow();
+    ).toThrow(SanPhamKhongTonTaiError);
+  });
+});
+
+describe('layCaiDatToanCuc', () => {
+  it('đọc đúng giá trị mặc định TẮT khi chưa ai đổi', () => {
+    expect(layCaiDatToanCuc(db)).toBe(false);
+  });
+
+  it('đọc đúng giá trị sau khi đổi toàn cục', () => {
+    doiCaiDatToanCuc(db, { bat: true, chiNhanhId: 'cn-1', thoiGian: '2026-09-20T08:00:00.000Z' });
+
+    expect(layCaiDatToanCuc(db)).toBe(true);
   });
 });
 
