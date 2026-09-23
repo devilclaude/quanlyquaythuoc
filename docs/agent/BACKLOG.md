@@ -157,7 +157,7 @@ form sửa tái dùng form tạo (T-009b); nút Xoá/Ngừng hoạt động kh�
 ngừng hoạt động khi đã có thẻ kho.
 
 ### T-010a [B] prio:10.1 — Cài đặt quản lý theo lô: schema + hàm giải nghĩa
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-006, T-009c
+Trạng thái: DONE · Phụ thuộc: T-006, T-009c
 Xong khi: bảng `cai_dat` (cài đặt toàn cục, đúng một dòng, **mặc định TẮT**) và cột
 ghi đè theo sản phẩm (ba trạng thái: kế thừa/bật/tắt) trên `san_pham`; hàm giải
 nghĩa cài đặt (thuần, không chạm CSDL) áp đúng thứ tự ưu tiên "ghi đè sản phẩm >
@@ -274,7 +274,7 @@ Kịch bản đã chốt: máy chủ ở xa, quầy qua Internet. **Chỉ bán h
 được khi offline**; nhập hàng, kiểm kê, xuất huỷ yêu cầu online.
 
 ### T-030 [B] prio:30 — Vỏ PWA và chỉ báo trạng thái
-Trạng thái: TODO · Phụ thuộc: T-020
+Trạng thái: DONE · Phụ thuộc: T-020
 Xong khi: service worker cache vỏ app và danh mục tra cứu; màn bán hàng **luôn
 hiện** đang online/offline, số thao tác chờ đồng bộ, thời điểm đồng bộ gần nhất;
 mất mạng giữa lúc bán không popup chặn màn hình và không mất giỏ.

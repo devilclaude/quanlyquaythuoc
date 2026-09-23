@@ -1,0 +1,19 @@
+/* Nền trắng riêng (khớp kiểu chip "Hoá đơn 1" cạnh nó): đặt trên thanh trên
+ * xanh dương của màn bán hàng, chữ xám phụ trên nền xanh dương không đủ tương
+ * phản 4.5:1 (design-system luật 4). */
+.chi-bao-trang-thai {
+  display: flex;
+  align-items: center;
+  gap: var(--kc-2);
+  margin-left: auto;
+  background: var(--xam-0);
+  padding: var(--kc-1) var(--kc-3);
+  border-radius: var(--bo-goc);
+  min-height: 40px;
+}
+
+.chi-bao-trang-thai__dong-bo {
+  color: var(--mau-chu-phu);
+  font-size: var(--chu-xs);
+  white-space: nowrap;
+}

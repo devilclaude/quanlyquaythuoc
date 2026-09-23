@@ -528,6 +528,16 @@ Tầng: B (giữ nguyên lý do đã khai từ đầu, không đổi)
 Kế tiếp: chờ người duyệt #44/#48 (cả hai đã khai Tầng B); sau khi merge, chọn
 theo prio (T-010b/T-022b khi đủ điều kiện, hoặc T-030/T-060).
 
+## 2026-09-22 (run kế) — dọn PR + T-030
+Làm: PR#44/#48 vẫn xanh chờ B, không sửa; chọn T-030. `vite-plugin-pwa` cache
+vỏ app + `/api/hang-hoa`; `ChiBaoTrangThai` trên màn bán hàng dùng
+`navigator.onLine` thật (chờ đồng bộ/mốc đồng bộ cố định 0/null — T-031 chưa
+có). Phát hiện SW tự fetch không bị `page.route` chặn, vỡ 4 e2e cũ — sửa hết
+sang `context.route`.
+PR: (xem mô tả PR)
+Tầng: B — chạm `package.json`.
+Kế tiếp: T-031 khi PR này merge, hoặc T-060.
+
 ## 2026-09-22 (run kế) — dọn PR + BLOCKED T-060, không chọn task mới
 Làm: PR#49 (T-024) đã merge → chuyển DONE (BACKLOG lệch, PR#49 merge lúc
 2026-09-22 nhưng chưa ai cập nhật). #44 (T-010a)/#48 (T-022a)/#50 (T-030) vẫn
@@ -556,6 +566,26 @@ PR: https://github.com/devilclaude/quanlyquaythuoc/pull/48
 Tầng: B (giữ nguyên lý do đã khai từ đầu, không đổi)
 Kế tiếp: chờ người duyệt #44/#48/#50; sau khi merge, chọn theo prio.
 
+## 2026-09-23 — dọn PR: sửa conflict PR#50, dừng run
+Làm: #48/#44 vẫn xanh, không comment, chờ B — không sửa. #50 (T-030)
+`mergeable_state: dirty` — conflict thật với main (JOURNAL.md, hai run song
+song cùng append entry vào cuối file). Merge `origin/main` vào nhánh PR, giữ
+cả hai entry cũ theo đúng thứ tự thời gian (T-030 tạo trước khi #50 mở, entry
+"dọn PR + BLOCKED T-060" nhắc tới #50 nên phải sau). BACKLOG.md/BLOCKED.md tự
+merge sạch, không đụng tay. Cài lại `node_modules` (thiếu do máy chạy run này
+chưa cài), chạy lại toàn bộ `npm run ci` sau merge — xanh (typecheck, lint,
+335 test, build, 9 e2e với `PLAYWRIGHT_CHROMIUM_PATH` trỏ browser cài sẵn
+trong môi trường — lần đầu 9 e2e đỏ do thiếu cờ này, không phải lỗi code).
+Push thẳng lên nhánh #50 (không phải task mới, không mở PR mới). Không có PR
+nào merge trong lúc đọc — không có DONE nào để chuyển. Đọc #quaythuoc-admin:
+không có chỉ đạo mới từ 19/9 (kiểm tra PR#32 — đã merge từ trước, không còn
+việc). Dừng run tại đây theo luật "conflict → sửa rồi dừng, không mở task
+mới".
+PR: #50 (đã có, không đổi tầng)
+Tầng: B — không đổi (giữ nguyên lý do gốc: chạm package.json/package-lock.json).
+Kế tiếp: chọn task mới khi #44/#48/#50 đều xanh và chờ duyệt (không còn PR đỏ/
+comment/conflict) — run sau kiểm tra lại từ đầu.
+
 ## 2026-09-23 — dọn PR, không chọn task mới
 Làm: #44 (T-010a)/#48 (T-022a)/#50 (T-030) vẫn xanh, không comment, không
 conflict thật (`git merge-tree` với `origin/main`) — không sửa, chờ duyệt B.
@@ -578,3 +608,17 @@ PR: #48, #50 (không đổi mô tả/tầng)
 Tầng: B — không đổi ở cả hai (giữ nguyên lý do gốc đã khai).
 Kế tiếp: chờ người duyệt #44/#48/#50; sau khi merge, chọn theo prio
 (T-010b/T-022b/T-031 tuỳ PR nào merge trước).
+
+## 2026-09-23 (run kế 3) — #44/#50 merge → DONE; sửa bug thật ở #48, dừng run
+Làm: #44 (T-010a), #50 (T-030) đã merge → chuyển DONE. #48 (T-022a): conflict
+thật với main; merge vào thì CI đỏ thật — `meta/_journal.json` bị một lần
+merge dòng-theo-dòng trước đây gộp nhầm hai entry idx 10 (của #48 và #44)
+thành một object trùng khoá `when`/`tag`, nên migration tạo `hoa_don` không
+bao giờ chạy ("no such table: hoa_don", 19 test đỏ). Khôi phục journal/snapshot
+0010 đúng bản đã merge của main, chạy lại `npm run db:generate` sinh
+`0011_last_unicorn.sql` (nội dung y hệt bản cũ, chỉ đổi số) — không sửa tay
+file migration đã merge. `npm run ci` xanh lại (typecheck, lint, 378 test,
+build, 9 e2e). Push lên #48, không mở PR mới, không chọn task khác.
+PR: https://github.com/devilclaude/quanlyquaythuoc/pull/48
+Tầng: B (giữ nguyên lý do đã khai từ đầu, không đổi)
+Kế tiếp: chờ người duyệt #48; sau khi merge, chọn theo prio (T-010b/T-022b/T-031).

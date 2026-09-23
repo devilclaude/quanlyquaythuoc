@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "4931d8e8-cf3c-4d88-825f-884536d5c8f2",
-  "prevId": "30a9ba6e-76ea-47c7-b081-05200ee92baf",
+  "id": "b6285137-9bda-414b-9b39-00e3bb7e4e58",
+  "prevId": "4931d8e8-cf3c-4d88-825f-884536d5c8f2",
   "tables": {
     "cai_dat": {
       "name": "cai_dat",
@@ -148,6 +148,337 @@
         "don_vi_tinh_gia_ban_khong_am": {
           "name": "don_vi_tinh_gia_ban_khong_am",
           "value": "\"don_vi_tinh\".\"gia_ban\" >= 0"
+        }
+      }
+    },
+    "hoa_don": {
+      "name": "hoa_don",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chi_nhanh_id": {
+          "name": "chi_nhanh_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "ma": {
+          "name": "ma",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "phuong_thuc_thanh_toan": {
+          "name": "phuong_thuc_thanh_toan",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tong_tien_hang": {
+          "name": "tong_tien_hang",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "giam_gia": {
+          "name": "giam_gia",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "thu_khac": {
+          "name": "thu_khac",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "lam_tron": {
+          "name": "lam_tron",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "khach_can_tra": {
+          "name": "khach_can_tra",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "thoi_gian": {
+          "name": "thoi_gian",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "thoi_gian_may_chu": {
+          "name": "thoi_gian_may_chu",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))"
+        }
+      },
+      "indexes": {
+        "hoa_don_ma_unique": {
+          "name": "hoa_don_ma_unique",
+          "columns": [
+            "ma"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "hoa_don_chi_nhanh_id_chi_nhanh_id_fk": {
+          "name": "hoa_don_chi_nhanh_id_chi_nhanh_id_fk",
+          "tableFrom": "hoa_don",
+          "tableTo": "chi_nhanh",
+          "columnsFrom": [
+            "chi_nhanh_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "hoa_don_phuong_thuc_thanh_toan_hop_le": {
+          "name": "hoa_don_phuong_thuc_thanh_toan_hop_le",
+          "value": "\"hoa_don\".\"phuong_thuc_thanh_toan\" IN ('TIEN_MAT', 'CHUYEN_KHOAN', 'THE', 'VI')"
+        },
+        "hoa_don_tong_tien_hang_khong_am": {
+          "name": "hoa_don_tong_tien_hang_khong_am",
+          "value": "\"hoa_don\".\"tong_tien_hang\" >= 0"
+        },
+        "hoa_don_giam_gia_khong_am": {
+          "name": "hoa_don_giam_gia_khong_am",
+          "value": "\"hoa_don\".\"giam_gia\" >= 0"
+        },
+        "hoa_don_giam_gia_khong_vuot_tong": {
+          "name": "hoa_don_giam_gia_khong_vuot_tong",
+          "value": "\"hoa_don\".\"giam_gia\" <= \"hoa_don\".\"tong_tien_hang\""
+        }
+      }
+    },
+    "hoa_don_dong": {
+      "name": "hoa_don_dong",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "hoa_don_id": {
+          "name": "hoa_don_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "san_pham_id": {
+          "name": "san_pham_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "don_vi_ten": {
+          "name": "don_vi_ten",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "he_so": {
+          "name": "he_so",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "don_gia": {
+          "name": "don_gia",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "so_luong": {
+          "name": "so_luong",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "thanh_tien": {
+          "name": "thanh_tien",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "giam_gia_phan_bo": {
+          "name": "giam_gia_phan_bo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "hoa_don_dong_hoa_don_id_hoa_don_id_fk": {
+          "name": "hoa_don_dong_hoa_don_id_hoa_don_id_fk",
+          "tableFrom": "hoa_don_dong",
+          "tableTo": "hoa_don",
+          "columnsFrom": [
+            "hoa_don_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "hoa_don_dong_san_pham_id_san_pham_id_fk": {
+          "name": "hoa_don_dong_san_pham_id_san_pham_id_fk",
+          "tableFrom": "hoa_don_dong",
+          "tableTo": "san_pham",
+          "columnsFrom": [
+            "san_pham_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "hoa_don_dong_he_so_toi_thieu": {
+          "name": "hoa_don_dong_he_so_toi_thieu",
+          "value": "\"hoa_don_dong\".\"he_so\" >= 1"
+        },
+        "hoa_don_dong_don_gia_khong_am": {
+          "name": "hoa_don_dong_don_gia_khong_am",
+          "value": "\"hoa_don_dong\".\"don_gia\" >= 0"
+        },
+        "hoa_don_dong_so_luong_duong": {
+          "name": "hoa_don_dong_so_luong_duong",
+          "value": "\"hoa_don_dong\".\"so_luong\" > 0"
+        },
+        "hoa_don_dong_thanh_tien_khong_am": {
+          "name": "hoa_don_dong_thanh_tien_khong_am",
+          "value": "\"hoa_don_dong\".\"thanh_tien\" >= 0"
+        },
+        "hoa_don_dong_giam_gia_phan_bo_khong_am": {
+          "name": "hoa_don_dong_giam_gia_phan_bo_khong_am",
+          "value": "\"hoa_don_dong\".\"giam_gia_phan_bo\" >= 0"
+        }
+      }
+    },
+    "hoa_don_dong_lo": {
+      "name": "hoa_don_dong_lo",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "hoa_don_dong_id": {
+          "name": "hoa_don_dong_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "lo_id": {
+          "name": "lo_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "so_luong": {
+          "name": "so_luong",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "hoa_don_dong_lo_dong_lo_unique": {
+          "name": "hoa_don_dong_lo_dong_lo_unique",
+          "columns": [
+            "hoa_don_dong_id",
+            "lo_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "hoa_don_dong_lo_hoa_don_dong_id_hoa_don_dong_id_fk": {
+          "name": "hoa_don_dong_lo_hoa_don_dong_id_hoa_don_dong_id_fk",
+          "tableFrom": "hoa_don_dong_lo",
+          "tableTo": "hoa_don_dong",
+          "columnsFrom": [
+            "hoa_don_dong_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "hoa_don_dong_lo_lo_id_lo_hang_id_fk": {
+          "name": "hoa_don_dong_lo_lo_id_lo_hang_id_fk",
+          "tableFrom": "hoa_don_dong_lo",
+          "tableTo": "lo_hang",
+          "columnsFrom": [
+            "lo_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "hoa_don_dong_lo_so_luong_duong": {
+          "name": "hoa_don_dong_lo_so_luong_duong",
+          "value": "\"hoa_don_dong_lo\".\"so_luong\" > 0"
         }
       }
     },

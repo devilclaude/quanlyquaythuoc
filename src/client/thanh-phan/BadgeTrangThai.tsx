@@ -1,7 +1,7 @@
 import type { HTMLAttributes } from 'react';
 import './BadgeTrangThai.css';
 
-type MauBadge = 'tot' | 'nguy' | 'canh-bao' | 'trung-tinh';
+export type MauBadge = 'tot' | 'nguy' | 'canh-bao' | 'trung-tinh';
 
 interface BadgeTrangThaiProps extends HTMLAttributes<HTMLSpanElement> {
   mau: MauBadge;
