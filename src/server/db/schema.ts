@@ -27,10 +27,32 @@ export const sanPham = sqliteTable(
     // "Ngừng hoạt động" thay cho xoá cứng khi sản phẩm đã phát sinh thẻ kho
     // (SPEC.md §3.5, T-009c) — xoá cứng chỉ hợp lệ khi CHƯA có dòng thẻ kho nào.
     trangThai: text('trang_thai').notNull().default('HOAT_DONG').$type<'HOAT_DONG' | 'NGUNG_HOAT_DONG'>(),
+    // Ghi đè cài đặt "quản lý theo lô" riêng cho sản phẩm này (T-010a, SPEC.md
+    // §3.2/§4.3). NULL nghĩa là "kế thừa" cài đặt toàn cục ở bảng `cai_dat` —
+    // ba trạng thái, không phải hai, nên không dùng boolean. Ưu tiên giải nghĩa
+    // (`src/shared/cai-dat/`): ghi đè sản phẩm > cài đặt toàn cục.
+    quanLyLoGhiDe: text('quan_ly_lo_ghi_de').$type<'BAT' | 'TAT' | null>(),
   },
   (t) => [
     check('san_pham_trang_thai_hop_le', sql`${t.trangThai} IN ('HOAT_DONG', 'NGUNG_HOAT_DONG')`),
+    check(
+      'san_pham_quan_ly_lo_ghi_de_hop_le',
+      sql`${t.quanLyLoGhiDe} IS NULL OR ${t.quanLyLoGhiDe} IN ('BAT', 'TAT')`,
+    ),
   ],
+);
+
+// Cài đặt toàn cục "quản lý theo lô" (T-010a, SPEC.md §3.2). Đúng một dòng
+// (`id` cố định = 1, CHECK chặn dòng thứ hai) — CSDL không có khái niệm "cài
+// đặt hệ thống" nào khác trong v1 nên không cần bảng khoá-giá-trị tổng quát.
+// Mặc định TẮT: "v1 khởi chạy với quản lý theo lô TẮT mặc định" (SPEC.md §3.2).
+export const caiDat = sqliteTable(
+  'cai_dat',
+  {
+    id: integer('id').primaryKey(),
+    quanLyLo: integer('quan_ly_lo', { mode: 'boolean' }).notNull().default(false),
+  },
+  (t) => [check('cai_dat_mot_dong_duy_nhat', sql`${t.id} = 1`)],
 );
 
 export const donViTinh = sqliteTable(

@@ -4,6 +4,39 @@
   "id": "b3957ad2-ea1f-4359-afae-b03654183635",
   "prevId": "30a9ba6e-76ea-47c7-b081-05200ee92baf",
   "tables": {
+  "id": "4931d8e8-cf3c-4d88-825f-884536d5c8f2",
+  "prevId": "30a9ba6e-76ea-47c7-b081-05200ee92baf",
+  "tables": {
+    "cai_dat": {
+      "name": "cai_dat",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "integer",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "quan_ly_lo": {
+          "name": "quan_ly_lo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {
+        "cai_dat_mot_dong_duy_nhat": {
+          "name": "cai_dat_mot_dong_duy_nhat",
+          "value": "\"cai_dat\".\"id\" = 1"
+        }
+      }
+    },
     "chi_nhanh": {
       "name": "chi_nhanh",
       "columns": {
@@ -883,6 +916,13 @@
           "notNull": true,
           "autoincrement": false,
           "default": "'HOAT_DONG'"
+        },
+        "quan_ly_lo_ghi_de": {
+          "name": "quan_ly_lo_ghi_de",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {
@@ -901,6 +941,10 @@
         "san_pham_trang_thai_hop_le": {
           "name": "san_pham_trang_thai_hop_le",
           "value": "\"san_pham\".\"trang_thai\" IN ('HOAT_DONG', 'NGUNG_HOAT_DONG')"
+        },
+        "san_pham_quan_ly_lo_ghi_de_hop_le": {
+          "name": "san_pham_quan_ly_lo_ghi_de_hop_le",
+          "value": "\"san_pham\".\"quan_ly_lo_ghi_de\" IS NULL OR \"san_pham\".\"quan_ly_lo_ghi_de\" IN ('BAT', 'TAT')"
         }
       }
     },
