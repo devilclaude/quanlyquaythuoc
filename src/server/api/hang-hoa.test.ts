@@ -158,6 +158,7 @@ describe('layChiTietHangHoa', () => {
       ngayTao: '2026-09-01T00:00:00.000Z',
       trangThai: 'HOAT_DONG',
       coTheXoaCung: false,
+      quanLyLoGhiDe: 'KE_THUA',
       donViTinh: [
         { id: 'dvt-vien', ten: 'viên', heSo: 1, laCoSo: true, giaBan: 500 },
         { id: 'dvt-vi', ten: 'vỉ', heSo: 12, laCoSo: false, giaBan: 6000 },
@@ -471,5 +472,66 @@ describe('dangKyHangHoaRoutes', () => {
     const res = await taoRouter().request('/khong-ton-tai/ngung-hoat-dong', { method: 'POST' });
 
     expect(res.status).toBe(404);
+  });
+
+  function guiDoiQuanLyLo(id: string, body: unknown) {
+    return taoRouter().request(`/${id}/quan-ly-lo`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  }
+
+  it('PUT /:id/quan-ly-lo đổi ghi đè thành công, trả về 200 kèm chi tiết mới (T-010b)', async () => {
+    taoSanPham('sp-1', 'SP001', 'Paracetamol 500mg', '2026-09-01T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 500);
+
+    const res = await guiDoiQuanLyLo('sp-1', { ghiDe: 'BAT' });
+
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { quanLyLoGhiDe: string }).quanLyLoGhiDe).toBe('BAT');
+  });
+
+  it('PUT /:id/quan-ly-lo trả về 400 khi ghiDe ngoài ba trạng thái', async () => {
+    taoSanPham('sp-1', 'SP001', 'Paracetamol 500mg', '2026-09-01T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 500);
+
+    const res = await guiDoiQuanLyLo('sp-1', { ghiDe: 'khong-hop-le' });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('PUT /:id/quan-ly-lo trả về 404 khi sản phẩm không tồn tại', async () => {
+    const res = await guiDoiQuanLyLo('khong-ton-tai', { ghiDe: 'BAT' });
+
+    expect(res.status).toBe(404);
+  });
+
+  it('PUT /:id/quan-ly-lo trả về 409 kèm lý do khi bật→tắt bị chặn (còn hơn một lô có tồn > 0)', async () => {
+    taoSanPham('sp-1', 'SP001', 'Paracetamol 500mg', '2026-09-01T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 500);
+    await guiDoiQuanLyLo('sp-1', { ghiDe: 'BAT' });
+    db.insert(loHang).values({ id: 'lo-2', sanPhamId: 'sp-1', soLo: 'L001', hsd: '2027-01-01' }).run();
+    db.insert(theKho)
+      .values({ id: 'tk-lo2', chiNhanhId: 'cn-1', loId: 'lo-2', loai: 'NHAP', soLuong: 10, thoiGian: '2026-09-01T00:00:00.000Z' })
+      .run();
+    db.insert(tonKhoLo).values({ loId: 'lo-2', chiNhanhId: 'cn-1', ton: 10 }).run();
+    nhapVaoLoNgamDinh('sp-1', 10);
+
+    const res = await guiDoiQuanLyLo('sp-1', { ghiDe: 'TAT' });
+
+    expect(res.status).toBe(409);
+    expect(((await res.json()) as { loi: string }).loi).toContain('còn 2 lô có tồn > 0');
+  });
+
+  it('PUT /:id/quan-ly-lo gọi hai lần liên tiếp không đụng ràng buộc FK chi nhánh mặc định (T-010b)', async () => {
+    taoSanPham('sp-1', 'SP001', 'Paracetamol 500mg', '2026-09-01T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 500);
+
+    const res1 = await guiDoiQuanLyLo('sp-1', { ghiDe: 'BAT' });
+    const res2 = await guiDoiQuanLyLo('sp-1', { ghiDe: 'TAT' });
+
+    expect(res1.status).toBe(200);
+    expect(res2.status).toBe(200);
   });
 });
