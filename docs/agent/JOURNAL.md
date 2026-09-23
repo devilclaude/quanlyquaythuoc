@@ -503,3 +503,11 @@ PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: cần chủ dự án gửi file xuất KiotViet thật hoặc chốt cột/định dạng
 (BLOCKED.md T-060); ngoài ra chọn theo prio khi #44/#48/#50 merge.
+
+## 2026-09-23 — dọn PR, không chọn task mới
+Làm: #44 (T-010a)/#48 (T-022a)/#50 (T-030) vẫn xanh, không comment, không
+conflict thật (`git merge-tree` với `origin/main`) — không sửa, chờ duyệt B.
+Không còn TODO nào đủ điều kiện: mọi TODO còn lại phụ thuộc trực tiếp/gián
+tiếp vào ba task trên (CHỜ MERGE, chưa DONE) hoặc đã BLOCKED (T-054/T-060/
+T-061/T-062). Không chọn task khác, không tạo commit nào.
+Kế tiếp: chọn theo prio khi #44/#48/#50 merge (mở khoá T-010b/T-022b/T-031).
