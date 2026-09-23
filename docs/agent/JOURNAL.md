@@ -466,3 +466,64 @@ người mới đọc được ý nghĩa từng cột, không đổi thứ tự 
 "Bán hàng"/"Hàng hoá" ở trên cùng là lối đi tạm, không bám sidebar KiotViet —
 chưa có task dựng nav thật trong BACKLOG.md.
 Kế tiếp: T-021 (chọn đơn vị và số lượng) sau khi PR này merge.
+
+## 2026-09-21 — dọn PR + T-021
+Làm: PR#45 (T-020) đã merge → DONE. PR#44 (T-010a) vẫn xanh chờ duyệt B — không
+sửa. Chọn T-021: đổi đơn vị (dropdown/F2, giá lấy thẳng đơn vị mới, không nhân
+hệ số) và sửa số lượng (+/-/ô nhập/Delete) dòng giỏ hàng. doi-chieu-ui bắt được
+bug thật: điều kiện bật phím tắt dùng `goiY.length===0` thay vì ô tìm thực sự
+rỗng, có thể nuốt ký tự đang gõ dở — sửa thành `tim.trim() === ''`, kèm e2e tái
+hiện trước khi sửa.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: T-022 (thanh toán, tạo hoá đơn) sau khi PR này merge.
+
+## 2026-09-21 (run kế) — dọn PR + T-022 (chẻ task, không code)
+Làm: PR#46 (T-021) đã merge → DONE. PR#44 (T-010a) vẫn xanh chờ B, không sửa.
+Chọn T-022, dựng schema+lõi `taoHoaDonTuGioHang` theo TDD (xanh) rồi đo trước
+khi mở PR: riêng phần này (chưa API/UI/hợp đồng Zod) đã ~1005 dòng theo ngưỡng
+CLAUDE.md. Bỏ toàn bộ code, chẻ T-022a (schema+lõi)/T-022b (API)/T-022c (giao
+diện); T-023/T-025/T-052 đổi phụ thuộc sang T-022c.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: T-022a.
+
+## 2026-09-22 — dọn PR + T-024
+Làm: PR#44 (T-010a)/#48 (T-022a) vẫn xanh, không comment, không conflict thật
+(`git merge-tree`) — không sửa, chờ duyệt B. Chọn T-024: ô tìm màn bán hàng
+phân biệt quét mã với gõ tay bằng nhịp phím (nhịp trung bình ≤50ms và ≥5
+khoảng cách coi là quét); khi đó Enter gọi API ngay thay vì đợi debounce
+150ms, khớp đúng một sản phẩm thì thêm thẳng vào giỏ — tái hiện đúng bug "mất
+nhịp" ở debug-co-he-thong trước khi sửa (gõ nhanh + Enter ngay lúc API chưa
+kịp trả về khiến giỏ hàng trống, không báo lỗi). Không cần schema/API mới —
+mã quét/tem tự in dùng thẳng `ma_hang` đã có từ T-009b, tìm `LIKE` đã khớp
+sẵn. Nhân tiện vá `AbortController` chết (tạo trong callback `setTimeout`,
+chưa từng huỷ được request nào) bằng ref chặn kết quả trễ ghi đè kết quả mới.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: T-030 hoặc T-060 khi #44/#48 merge — T-024 không mở khoá task nào mới.
+
+## 2026-09-22 (run kế) — dọn PR + BLOCKED T-060, không chọn task mới
+Làm: PR#49 (T-024) đã merge → chuyển DONE (BACKLOG lệch, PR#49 merge lúc
+2026-09-22 nhưng chưa ai cập nhật). #44 (T-010a)/#48 (T-022a)/#50 (T-030) vẫn
+xanh, không comment, không conflict thật (`git merge-tree` với `origin/main`)
+— không sửa, chờ duyệt B. PR#32 (T-051) mà Dương yêu cầu kiểm tra ở Slack
+19/9 đã merge từ trước (không còn việc gì). T-060 là TODO duy nhất còn đủ
+điều kiện phụ thuộc (T-009c/T-005 đã DONE, ba PR kia đều đã có), nhưng SPEC.md
+§8 yêu cầu đọc đúng **bản xuất KiotViet thật** mà không có file mẫu hay cột/
+định dạng nào được ghi ở bất kỳ đâu trong repo — khác T-043 (dùng file mẫu do
+app định nghĩa). Đoán cột để dựng parser rủi ro đọc sai tồn đầu kỳ thật của
+quầy. Ghi BLOCKED.md, chuyển T-060 sang BLOCKED, không chọn task khác (không
+còn TODO nào đủ điều kiện).
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: cần chủ dự án gửi file xuất KiotViet thật hoặc chốt cột/định dạng
+(BLOCKED.md T-060); ngoài ra chọn theo prio khi #44/#48/#50 merge.
+
+## 2026-09-23 — dọn PR, không chọn task mới
+Làm: #44 (T-010a)/#48 (T-022a)/#50 (T-030) vẫn xanh, không comment, không
+conflict thật (`git merge-tree` với `origin/main`) — không sửa, chờ duyệt B.
+Không còn TODO nào đủ điều kiện: mọi TODO còn lại phụ thuộc trực tiếp/gián
+tiếp vào ba task trên (CHỜ MERGE, chưa DONE) hoặc đã BLOCKED (T-054/T-060/
+T-061/T-062). Không chọn task khác, không tạo commit nào.
+Kế tiếp: chọn theo prio khi #44/#48/#50 merge (mở khoá T-010b/T-022b/T-031).
