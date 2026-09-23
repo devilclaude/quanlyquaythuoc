@@ -539,3 +539,26 @@ Theo luật "sửa PR cũ và dừng run tại đó" — không chọn task mớ
 PR: https://github.com/devilclaude/quanlyquaythuoc/pull/48
 Tầng: B (giữ nguyên lý do đã khai từ đầu, không đổi)
 Kế tiếp: chờ người duyệt #44/#48/#50; sau khi merge, chọn theo prio.
+
+## 2026-09-23 — dọn PR, không chọn task mới
+Làm: #44 (T-010a)/#48 (T-022a)/#50 (T-030) vẫn xanh, không comment, không
+conflict thật (`git merge-tree` với `origin/main`) — không sửa, chờ duyệt B.
+Không còn TODO nào đủ điều kiện: mọi TODO còn lại phụ thuộc trực tiếp/gián
+tiếp vào ba task trên (CHỜ MERGE, chưa DONE) hoặc đã BLOCKED (T-054/T-060/
+T-061/T-062). Không chọn task khác, không tạo commit nào.
+Kế tiếp: chọn theo prio khi #44/#48/#50 merge (mở khoá T-010b/T-022b/T-031).
+
+## 2026-09-23 (run kế 2) — sửa PR#48 conflict (lần 3) + PR#50 conflict, dừng run
+Làm: #44 (T-010a) vẫn xanh, không comment, `mergeable_state: behind` (không
+phải conflict thật) — không sửa. #48 (T-022a) và #50 (T-030) CI xanh, không
+comment, nhưng cả hai `mergeable_state: dirty` — conflict thật với `main`:
+nguyên nhân giống hệt lần trước, commit dọn-PR mới nhất của main (#52) chỉ
+append `JOURNAL.md`, đúng điểm chèn hai nhánh cũng đang chèn entry riêng của
+mình. Đây là xung đột cơ học lặp lại mỗi khi có PR dọn-PR nào merge trước một
+PR nghiệp vụ đang mở — không phải lỗi nghiệp vụ. Merge `origin/main` vào cả
+hai nhánh, giữ nguyên văn cả hai entry theo đúng thứ tự thời gian đã có,
+không đụng `BACKLOG.md`/code (tự merge sạch, không có gì để sửa tay).
+PR: #48, #50 (không đổi mô tả/tầng)
+Tầng: B — không đổi ở cả hai (giữ nguyên lý do gốc đã khai).
+Kế tiếp: chờ người duyệt #44/#48/#50; sau khi merge, chọn theo prio
+(T-010b/T-022b/T-031 tuỳ PR nào merge trước).
