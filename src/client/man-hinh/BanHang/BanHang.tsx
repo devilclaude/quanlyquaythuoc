@@ -7,13 +7,14 @@ import {
 import { dong } from '../../../shared/kieu/dong';
 import { dinhDangTien } from '../../../shared/tien/dinh-dang';
 import { Bang, OSo, TruongNhap } from '../../thanh-phan';
+import { ChiBaoTrangThai } from '../../offline/ChiBaoTrangThai';
 import './BanHang.css';
 
 // T-020 — Màn bán hàng: tìm và thêm hàng. T-021 — chọn đơn vị và số lượng
 // của dòng đã có trong giỏ (đổi đơn vị bằng dropdown/F2, sửa số lượng bằng
-// ô nhập/+/-, xoá dòng bằng nút/Delete — UI-FIDELITY.md nhóm 2). Thanh toán
-// (T-022), nhiều hoá đơn (T-025), chỉ báo online/offline (T-030) đều KHÔNG
-// thuộc phạm vi.
+// ô nhập/+/-, xoá dòng bằng nút/Delete — UI-FIDELITY.md nhóm 2). T-030 —
+// chỉ báo online/offline (`ChiBaoTrangThai`, xem src/client/offline/). Thanh
+// toán (T-022), nhiều hoá đơn (T-025) đều KHÔNG thuộc phạm vi.
 
 /** Tối đa số dòng gợi ý hiện cùng lúc — khớp bản thử `docs/reference/prototype/man-ban-hang.html`. */
 const SO_DONG_GOI_Y_TOI_DA = 12;
@@ -609,6 +610,7 @@ export function BanHang() {
           <DanhSachGoiY tuKhoa={tim} goiY={goiY} dangTai={dangTai} loi={loi} chiSoChon={chiSoChon} onChon={chon} />
         </div>
         <div className="ban-hang__hoa-don-hien-tai">Hoá đơn 1</div>
+        <ChiBaoTrangThai />
       </div>
 
       <div className="ban-hang__than">
