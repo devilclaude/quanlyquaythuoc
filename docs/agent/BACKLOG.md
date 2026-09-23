@@ -375,7 +375,9 @@ nằm ở lô ngầm định nên báo cáo sẽ rỗng — đó là đúng, kh�
 ## Milestone 6 — Chuyển dữ liệu và không mất dữ liệu
 
 ### T-060 [B] prio:60 — Nhập tồn đầu kỳ từ KiotViet
-Trạng thái: TODO · Phụ thuộc: T-009c, T-005
+Trạng thái: BLOCKED · Phụ thuộc: T-009c, T-005
+Ghi chú: BLOCKED 2026-09-22 — thiếu file mẫu thật (hoặc cột/định dạng đã chốt)
+của "bản xuất KiotViet" để dựng parser; xem `BLOCKED.md`.
 Xong khi: đọc bản xuất KiotViet; **gộp các mã hàng cùng thuốc khác đơn vị thành một
 sản phẩm nhiều đơn vị**; nếu bản xuất không mang hệ số thì suy từ tên hàng và **bắt
 người dùng xác nhận từng nhóm**, mặc định không gộp khi không chắc; tồn vào bằng
