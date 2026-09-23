@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, inArray, like, or, sql } from 'drizzle-orm';
 import type { drizzle } from 'drizzle-orm/better-sqlite3';
 import type { Hono } from 'hono';
+import { DoiGhiDeSanPhamReqSchema } from '../../shared/hop-dong/cai-dat';
 import {
   DanhSachHangHoaResSchema,
   HangHoaChiTietResSchema,
@@ -11,7 +12,10 @@ import {
   type SuaHangHoaReq,
   type TaoHangHoaReq,
 } from '../../shared/hop-dong/hang-hoa';
+import type { GhiDeQuanLyLo } from '../../shared/cai-dat/giai-nghia';
 import { taoUlid } from '../../shared/kieu/ulid';
+import { DoiCheDoBiChanError, SanPhamKhongTonTaiError, doiGhiDeSanPham } from '../cai-dat/doi-che-do';
+import { layChiNhanhMacDinh } from '../db/chi-nhanh';
 import { donViTinh, loHang, sanPham, theKho, tonKhoLo } from '../db/schema';
 
 type Db = ReturnType<typeof drizzle>;
@@ -114,6 +118,8 @@ export interface HangHoaChiTiet extends HangHoaDanhSachItem {
   /** true khi CHƯA phát sinh dòng thẻ kho nào — quyết định Xoá hay Ngừng hoạt động (T-009c). */
   coTheXoaCung: boolean;
   donViTinh: { id: string; ten: string; heSo: number; laCoSo: boolean; giaBan: number }[];
+  /** Ghi đè cài đặt "quản lý theo lô" riêng cho sản phẩm này (T-010b). */
+  quanLyLoGhiDe: GhiDeQuanLyLo;
 }
 
 /**
@@ -160,6 +166,7 @@ export function layChiTietHangHoa(db: Db, id: string): HangHoaChiTiet | undefine
     tonKho,
     trangThai: sp.trangThai,
     coTheXoaCung: !daPhatSinhTheKho(db, id),
+    quanLyLoGhiDe: sp.quanLyLoGhiDe ?? 'KE_THUA',
     donViTinh: cacDonVi.map((d) => ({
       id: d.id,
       ten: d.ten,
@@ -398,6 +405,29 @@ export function dangKyHangHoaRoutes(app: Hono, db: Db): void {
       return c.json(HangHoaChiTietResSchema.parse(chiTiet));
     } catch (loi) {
       if (loi instanceof HangHoaKhongTonTaiError) return c.json({ loi: loi.message }, 404);
+      throw loi;
+    }
+  });
+
+  app.put('/:id/quan-ly-lo', async (c) => {
+    const than = DoiGhiDeSanPhamReqSchema.safeParse(await c.req.json());
+    if (!than.success) {
+      return c.json({ loi: 'Dữ liệu không hợp lệ', chiTiet: than.error.flatten() }, 400);
+    }
+
+    try {
+      doiGhiDeSanPham(db, {
+        sanPhamId: c.req.param('id'),
+        ghiDeMoi: than.data.ghiDe,
+        chiNhanhId: layChiNhanhMacDinh(db),
+        thoiGian: new Date().toISOString(),
+      });
+      const chiTiet = layChiTietHangHoa(db, c.req.param('id'));
+      if (!chiTiet) throw new Error('không đọc lại được hàng hoá vừa đổi cài đặt quản lý lô');
+      return c.json(HangHoaChiTietResSchema.parse(chiTiet));
+    } catch (loi) {
+      if (loi instanceof SanPhamKhongTonTaiError) return c.json({ loi: loi.message }, 404);
+      if (loi instanceof DoiCheDoBiChanError) return c.json({ loi: loi.message }, 409);
       throw loi;
     }
   });

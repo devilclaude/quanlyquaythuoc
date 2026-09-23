@@ -13,6 +13,7 @@ const chiTiet: HangHoaChiTietRes = {
   ngayTao: '2026-09-01T00:00:00.000Z',
   trangThai: 'HOAT_DONG',
   coTheXoaCung: true,
+  quanLyLoGhiDe: 'KE_THUA',
   donViTinh: [{ id: 'dvt-vien', ten: 'viên', heSo: 1, laCoSo: true, giaBan: 500 }],
 };
 

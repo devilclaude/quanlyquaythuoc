@@ -572,3 +572,14 @@ PR: #48, #50 (không đổi mô tả/tầng)
 Tầng: B — không đổi ở cả hai (giữ nguyên lý do gốc đã khai).
 Kế tiếp: chờ người duyệt #44/#48/#50; sau khi merge, chọn theo prio
 (T-010b/T-022b/T-031 tuỳ PR nào merge trước).
+
+## 2026-09-23 (run kế 3) — dọn PR + T-010b
+Làm: #44 (T-010a)/#50 (T-030) đã merge → DONE. #48 (T-022a) vẫn xanh, chờ
+duyệt B, không sửa. Chọn T-010b: `GET`/`PUT /api/cai-dat/quan-ly-lo`, `PUT
+/api/hang-hoa/:id/quan-ly-lo` (409 kèm lý do), chi tiết hàng hoá trả thêm
+`quanLyLoGhiDe`. Thêm `layChiNhanhMacDinh` (get-or-create ID cố định) vì các
+hàm T-010a cần `chiNhanhId` FK thật mà chưa module nào tạo dòng `chi_nhanh` —
+sửa ghi chú T-022b để dùng lại, không viết lại.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: T-031 khi PR này merge; T-022b/T-010c chờ T-022a/T-010b.

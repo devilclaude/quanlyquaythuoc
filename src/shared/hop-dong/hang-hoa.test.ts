@@ -59,6 +59,7 @@ const mucChiTiet = {
   donViTinh: [mucDonVi],
   trangThai: 'HOAT_DONG' as const,
   coTheXoaCung: true,
+  quanLyLoGhiDe: 'KE_THUA' as const,
 };
 
 describe('HangHoaChiTietResSchema', () => {
@@ -77,6 +78,18 @@ describe('HangHoaChiTietResSchema', () => {
 
   it('từ chối trạng thái ngoài HOAT_DONG/NGUNG_HOAT_DONG (T-009c)', () => {
     expect(() => HangHoaChiTietResSchema.parse({ ...mucChiTiet, trangThai: 'KHONG_HOP_LE' })).toThrow();
+  });
+
+  it('chấp nhận cả ba trạng thái ghi đè quản lý lô (T-010b)', () => {
+    expect(() => HangHoaChiTietResSchema.parse({ ...mucChiTiet, quanLyLoGhiDe: 'BAT' })).not.toThrow();
+    expect(() => HangHoaChiTietResSchema.parse({ ...mucChiTiet, quanLyLoGhiDe: 'TAT' })).not.toThrow();
+  });
+
+  it('từ chối thiếu quanLyLoGhiDe hoặc giá trị ngoài ba trạng thái (T-010b)', () => {
+    const thieu: Record<string, unknown> = { ...mucChiTiet };
+    delete thieu['quanLyLoGhiDe'];
+    expect(() => HangHoaChiTietResSchema.parse(thieu)).toThrow();
+    expect(() => HangHoaChiTietResSchema.parse({ ...mucChiTiet, quanLyLoGhiDe: 'KHONG_HOP_LE' })).toThrow();
   });
 });
 

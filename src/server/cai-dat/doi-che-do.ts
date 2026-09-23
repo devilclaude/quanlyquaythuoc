@@ -11,6 +11,13 @@ type Db = ReturnType<typeof drizzle>;
 // import hàm giải nghĩa) — module này chính là nơi quản lý cài đặt, nên gọi
 // `giaiNghiaCaiDatQuanLyLo` ở đây là hợp lệ, tránh chép lại cùng một logic ưu
 // tiên "ghi đè sản phẩm > toàn cục" ở hai chỗ.
+export class SanPhamKhongTonTaiError extends Error {
+  constructor(public readonly sanPhamId: string) {
+    super(`Không tìm thấy sản phẩm ${sanPhamId}`);
+    this.name = 'SanPhamKhongTonTaiError';
+  }
+}
+
 export class DoiCheDoBiChanError extends Error {
   constructor(
     public readonly sanPhamId: string,
@@ -69,6 +76,12 @@ function docToanCuc(tx: TxTheKho): boolean {
   return row?.quanLyLo ?? false;
 }
 
+/** Đọc cài đặt toàn cục hiện tại (T-010b — GET /api/cai-dat/quan-ly-lo). */
+export function layCaiDatToanCuc(db: Db): boolean {
+  const [row] = db.select({ quanLyLo: caiDat.quanLyLo }).from(caiDat).all();
+  return row?.quanLyLo ?? false;
+}
+
 export interface DoiGhiDeSanPhamInput {
   sanPhamId: string;
   ghiDeMoi: GhiDeQuanLyLo;
@@ -82,7 +95,7 @@ export interface DoiGhiDeSanPhamInput {
 export function doiGhiDeSanPham(db: Db, input: DoiGhiDeSanPhamInput): void {
   db.transaction((tx) => {
     const [spRow] = tx.select().from(sanPham).where(eq(sanPham.id, input.sanPhamId)).all();
-    if (!spRow) throw new Error(`Không tìm thấy sản phẩm ${input.sanPhamId}`);
+    if (!spRow) throw new SanPhamKhongTonTaiError(input.sanPhamId);
 
     const toanCuc = docToanCuc(tx);
     const ghiDeHienTai: GhiDeQuanLyLo = spRow.quanLyLoGhiDe ?? 'KE_THUA';

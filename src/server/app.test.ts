@@ -41,3 +41,14 @@ describe('GET /api/hang-hoa', () => {
     await expect(res.json()).resolves.toEqual({ duLieu: [] });
   });
 });
+
+describe('GET /api/cai-dat/quan-ly-lo', () => {
+  it('mount đúng route con của cai-dat (T-010b)', async () => {
+    const app = taoApp(db);
+
+    const res = await app.request('/api/cai-dat/quan-ly-lo');
+
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toEqual({ bat: false });
+  });
+});
