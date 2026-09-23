@@ -513,3 +513,23 @@ PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: cần chủ dự án gửi file xuất KiotViet thật hoặc chốt cột/định dạng
 (BLOCKED.md T-060); ngoài ra chọn theo prio khi #44/#48/#50 merge.
+
+## 2026-09-23 — dọn PR: sửa conflict PR#50, dừng run
+Làm: #48/#44 vẫn xanh, không comment, chờ B — không sửa. #50 (T-030)
+`mergeable_state: dirty` — conflict thật với main (JOURNAL.md, hai run song
+song cùng append entry vào cuối file). Merge `origin/main` vào nhánh PR, giữ
+cả hai entry cũ theo đúng thứ tự thời gian (T-030 tạo trước khi #50 mở, entry
+"dọn PR + BLOCKED T-060" nhắc tới #50 nên phải sau). BACKLOG.md/BLOCKED.md tự
+merge sạch, không đụng tay. Cài lại `node_modules` (thiếu do máy chạy run này
+chưa cài), chạy lại toàn bộ `npm run ci` sau merge — xanh (typecheck, lint,
+335 test, build, 9 e2e với `PLAYWRIGHT_CHROMIUM_PATH` trỏ browser cài sẵn
+trong môi trường — lần đầu 9 e2e đỏ do thiếu cờ này, không phải lỗi code).
+Push thẳng lên nhánh #50 (không phải task mới, không mở PR mới). Không có PR
+nào merge trong lúc đọc — không có DONE nào để chuyển. Đọc #quaythuoc-admin:
+không có chỉ đạo mới từ 19/9 (kiểm tra PR#32 — đã merge từ trước, không còn
+việc). Dừng run tại đây theo luật "conflict → sửa rồi dừng, không mở task
+mới".
+PR: #50 (đã có, không đổi tầng)
+Tầng: B — không đổi (giữ nguyên lý do gốc: chạm package.json/package-lock.json).
+Kế tiếp: chọn task mới khi #44/#48/#50 đều xanh và chờ duyệt (không còn PR đỏ/
+comment/conflict) — run sau kiểm tra lại từ đầu.
