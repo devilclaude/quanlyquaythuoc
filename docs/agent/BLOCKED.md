@@ -92,3 +92,29 @@ một chuỗi số chứng từ hiển thị được (kiểu `PN002215`) lưu t
 ghi dòng? Chọn một khuôn để mọi module ghi sổ cái sau này theo cùng.
 Chặn: T-054
 
+## T-060 — Thiếu mẫu thật của "bản xuất KiotViet" để dựng parser
+Ngày: 2026-09-22
+Loại: kỹ thuật
+Tình huống: SPEC.md §8 yêu cầu đọc **bản xuất KiotViet thật** (không phải file
+mẫu do app tự định nghĩa như T-043) để nhập tồn đầu kỳ — gộp mã hàng theo đơn
+vị, suy hệ số từ tên hàng khi thiếu, đưa tồn vào đúng một phiếu `KIEM_KE`.
+Không có file xuất mẫu nào trong `docs/reference/kiotviet/` (thư mục này chỉ
+có screenshot màn hình, không có file dữ liệu) và không nơi nào trong
+SPEC.md/ARCHITECTURE.md/DOMAIN-NOTES.md ghi tên cột, sheet, định dạng số/đơn
+vị, hay encoding của file KiotViet xuất ra thật.
+Phương án:
+  1. Đoán cấu trúc cột dựa trên hiểu biết chung về giao diện KiotViet rồi dựng
+     parser — rủi ro cao: đoán sai tên cột/đơn vị/định dạng số thì tính năng
+     "chạy xanh" trên dữ liệu tự bịa nhưng đọc sai hoặc đọc thiếu tồn đầu kỳ
+     thật của quầy lúc chuyển đổi thật — đúng loại lỗi CLAUDE.md coi là
+     nghiêm trọng dù test xanh, và đây là số tồn kho gốc, sai một lần là kéo
+     lệch mọi phép tính tồn sau đó.
+  2. Đợi chủ dự án gửi một file xuất "Danh sách hàng hóa" (kèm tồn kho) thật
+     từ tài khoản KiotViet đang dùng (ẩn danh giá/số lượng nếu cần) vào
+     `docs/reference/kiotviet/`, hoặc chốt sẵn bằng văn bản tên cột/định dạng
+     — chậm hơn nhưng loại được rủi ro đoán sai trên tồn kho thật.
+Cần trả lời: Chủ dự án gửi được một file xuất thật (hoặc đã ẩn danh) từ
+KiotViet vào repo, hay tên cột/định dạng đã biết sẵn để ghi thẳng vào
+SPEC.md §8?
+Chặn: T-060
+

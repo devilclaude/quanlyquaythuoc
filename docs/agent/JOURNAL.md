@@ -496,3 +496,20 @@ sang `context.route`.
 PR: (xem mô tả PR)
 Tầng: B — chạm `package.json`.
 Kế tiếp: T-031 khi PR này merge, hoặc T-060.
+
+## 2026-09-22 (run kế) — dọn PR + BLOCKED T-060, không chọn task mới
+Làm: PR#49 (T-024) đã merge → chuyển DONE (BACKLOG lệch, PR#49 merge lúc
+2026-09-22 nhưng chưa ai cập nhật). #44 (T-010a)/#48 (T-022a)/#50 (T-030) vẫn
+xanh, không comment, không conflict thật (`git merge-tree` với `origin/main`)
+— không sửa, chờ duyệt B. PR#32 (T-051) mà Dương yêu cầu kiểm tra ở Slack
+19/9 đã merge từ trước (không còn việc gì). T-060 là TODO duy nhất còn đủ
+điều kiện phụ thuộc (T-009c/T-005 đã DONE, ba PR kia đều đã có), nhưng SPEC.md
+§8 yêu cầu đọc đúng **bản xuất KiotViet thật** mà không có file mẫu hay cột/
+định dạng nào được ghi ở bất kỳ đâu trong repo — khác T-043 (dùng file mẫu do
+app định nghĩa). Đoán cột để dựng parser rủi ro đọc sai tồn đầu kỳ thật của
+quầy. Ghi BLOCKED.md, chuyển T-060 sang BLOCKED, không chọn task khác (không
+còn TODO nào đủ điều kiện).
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: cần chủ dự án gửi file xuất KiotViet thật hoặc chốt cột/định dạng
+(BLOCKED.md T-060); ngoài ra chọn theo prio khi #44/#48/#50 merge.

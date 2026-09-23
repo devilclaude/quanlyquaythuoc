@@ -254,7 +254,7 @@ Xong khi: in được khổ cuộn K57 và K80; có preview; nội dung khớp t
 Tầng A: chỉ đọc dữ liệu đã ghi, không thay đổi kho hay tiền.
 
 ### T-024 [B] prio:24 — Quét mã vạch tại màn bán hàng
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-020
+Trạng thái: DONE · Phụ thuộc: T-020
 Xong khi: mã nhà sản xuất và mã tem tự in đều tra được; quét liên tiếp nhiều mã
 không mất nhịp và không mất ký tự; phân biệt được luồng quét với gõ tay bằng nhịp
 phím; máy quét hoạt động như bàn phím nên không cần driver.
@@ -375,7 +375,9 @@ nằm ở lô ngầm định nên báo cáo sẽ rỗng — đó là đúng, kh�
 ## Milestone 6 — Chuyển dữ liệu và không mất dữ liệu
 
 ### T-060 [B] prio:60 — Nhập tồn đầu kỳ từ KiotViet
-Trạng thái: TODO · Phụ thuộc: T-009c, T-005
+Trạng thái: BLOCKED · Phụ thuộc: T-009c, T-005
+Ghi chú: BLOCKED 2026-09-22 — thiếu file mẫu thật (hoặc cột/định dạng đã chốt)
+của "bản xuất KiotViet" để dựng parser; xem `BLOCKED.md`.
 Xong khi: đọc bản xuất KiotViet; **gộp các mã hàng cùng thuốc khác đơn vị thành một
 sản phẩm nhiều đơn vị**; nếu bản xuất không mang hệ số thì suy từ tên hàng và **bắt
 người dùng xác nhận từng nhóm**, mặc định không gộp khi không chắc; tồn vào bằng
