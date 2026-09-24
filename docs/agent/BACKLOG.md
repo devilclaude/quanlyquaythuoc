@@ -247,17 +247,12 @@ khách cần trả và tiền thừa hiển thị; gọi `POST /api/hoa-don`, th
 giỏ hàng và báo mã hoá đơn vừa tạo; **F9** chuyển sang khu vực thanh toán,
 **Enter** xác nhận (UI-FIDELITY.md nhóm 2, cần chủ dự án xác nhận với người
 dùng thật — xem BLOCKED.md mục T-020); toàn bộ luồng làm được bằng bàn phím.
-Ghi chú: **Sửa lúc làm** — dòng gốc ở đây ghi "không có screenshot cho màn
-thanh toán" là SAI (chỉ nhìn tên file, chưa mở ảnh); `docs/reference/kiotviet/
-Bán hàng/Chọn 1 món hàng để bán - có chức năng chọn đơn vị và số lượng để
-bán.png` và `Giao diện bán hàng chưa có sản phẩm.png` đều hiện đầy đủ panel
-này (đối chiếu qua `doi-chieu-ui`, xem JOURNAL.md entry T-022c). Đã dựng lại
-đúng theo hai ảnh đó: radio 4 phương thức luôn hiện đồng thời (không phải
-dropdown), thứ tự Khách cần trả → Khách thanh toán → radio → mệnh giá nhanh,
-mệnh giá nhanh làm tròn theo mệnh giá tiền giấy VND. In hoá đơn thuộc T-023,
-không làm ở đây. Đổi nhãn từ [B] gốc sang [A] lúc làm: chỉ nối giao diện gọi
-`POST /api/hoa-don` (T-022b) đã duyệt, không thêm quyết định kiến trúc mới —
-cùng tiền lệ T-022a[B]→T-022b[A].
+Ghi chú: **Sửa lúc làm** — dòng gốc ở đây ("không có screenshot cho màn thanh
+toán") SAI, chỉ nhìn tên file chưa mở ảnh; `Bán hàng/Chọn 1 món hàng để
+bán...png`/`Giao diện bán hàng chưa có sản phẩm.png` đều hiện đầy đủ panel
+này — xem JOURNAL.md entry T-022c. In hoá đơn thuộc T-023. Đổi nhãn [B] gốc
+sang [A]: chỉ nối `POST /api/hoa-don` (T-022b) đã duyệt, không thêm kiến trúc
+mới — tiền lệ T-022a[B]→T-022b[A].
 
 ### T-023 [A] prio:23 — In hoá đơn
 Trạng thái: TODO · Phụ thuộc: T-022c
