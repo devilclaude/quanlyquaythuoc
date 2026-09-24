@@ -739,8 +739,29 @@ describe('ThanhTabHoaDon', () => {
     expect(html).toContain('Đóng Hoá đơn 2');
   });
 
-  it('luôn có nút mở tab mới (F7)', () => {
+  it('luôn có nút mở tab mới, phím F7 hiện thật trên giao diện (không chỉ trong aria-label)', () => {
     const html = veThanhTabHoaDon();
-    expect(html).toContain('Mở hoá đơn mới (F7)');
+    expect(html).toContain('Mở hoá đơn mới (F7)'); // aria-label — mô tả cho trình đọc màn hình
+    expect(html).toContain('<kbd>F7</kbd>'); // NỘI DUNG HIỂN THỊ thật — UI-FIDELITY.md cấm giấu phím tắt trong aria-label
+  });
+
+  it('mỗi tab hiện phím Alt+N tương ứng THEO VỊ TRÍ hiển thị (UI-FIDELITY.md nhóm 2), không phải theo nhãn "Hoá đơn N"', () => {
+    // Mô phỏng đúng ca đã đóng bớt tab: tab còn lại mang nhãn "Hoá đơn 3"
+    // nhưng đang đứng ở VỊ TRÍ THỨ HAI — phím thật sự chạy nó là Alt+2
+    // (`tabTheoViTri`), nên gợi ý hiện trên giao diện phải là Alt+2, không
+    // phải Alt+3, nếu không sẽ dạy sai phím cho người dùng.
+    const html = veThanhTabHoaDon({ tabs: [taoTabRong('a', 1), taoTabRong('c', 3)], tabDangChonId: 'a' });
+
+    expect(html).toContain('<kbd>Alt+1</kbd>');
+    expect(html).toContain('<kbd>Alt+2</kbd>');
+    expect(html).not.toContain('<kbd>Alt+3</kbd>');
+  });
+
+  it('quá 9 tab thì tab thứ 10 trở đi không hiện gợi ý Alt+N — Alt+1..9 không vươn tới được nó', () => {
+    const tabs = Array.from({ length: 10 }, (_v, i) => taoTabRong(`t${i}`, i + 1));
+    const html = veThanhTabHoaDon({ tabs, tabDangChonId: 't0' });
+
+    expect(html).toContain('<kbd>Alt+9</kbd>');
+    expect(html).not.toContain('<kbd>Alt+10</kbd>');
   });
 });

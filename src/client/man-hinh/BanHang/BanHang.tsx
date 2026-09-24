@@ -503,36 +503,49 @@ interface ThanhTabHoaDonProps {
 
 /** Thanh tab hoá đơn — khớp ảnh "Giao diện bán hàng chưa có sản phẩm" (nhiều
  * tab "Hoá đơn N" cạnh nhau, nút "+" mở tab mới, "×" đóng tab — ẩn khi chỉ
- * còn một tab, không có gì để đóng về). */
+ * còn một tab, không có gì để đóng về). Phím Alt+1..9/F7 hiện thẳng bằng
+ * `<kbd>` NGAY CẠNH việc nó làm — UI-FIDELITY.md: "Mọi phím tắt phải hiện
+ * trên giao diện… Không bắt nhớ, không giấu trong trang trợ giúp"; nhét vào
+ * `aria-label` (chỉ đọc được bởi trình đọc màn hình) KHÔNG tính là hiện trên
+ * giao diện với người dùng thấy bằng mắt — cùng khuôn `<kbd>F9</kbd>` đã có
+ * sẵn ở `ThanhToan.tsx`. */
 export function ThanhTabHoaDon({ tabs, tabDangChonId, onChonTab, onDongTab, onMoTabMoi }: ThanhTabHoaDonProps) {
   return (
     <div className="ban-hang__tabs" role="tablist" aria-label="Hoá đơn">
-      {tabs.map((tab) => (
-        <div
-          key={tab.id}
-          role="tab"
-          aria-selected={tab.id === tabDangChonId}
-          className={['ban-hang__tab', tab.id === tabDangChonId ? 'ban-hang__tab--chon' : ''].filter(Boolean).join(' ')}
-          onClick={() => onChonTab(tab.id)}
-        >
-          <span className="ban-hang__tab-nhan">Hoá đơn {tab.soThuTu}</span>
-          {tabs.length > 1 ? (
-            <button
-              type="button"
-              className="ban-hang__tab-dong"
-              aria-label={`Đóng Hoá đơn ${tab.soThuTu}`}
-              onClick={(su) => {
-                su.stopPropagation();
-                onDongTab(tab.id);
-              }}
-            >
-              ✕
-            </button>
-          ) : null}
-        </div>
-      ))}
+      {tabs.map((tab, chiSo) => {
+        // Alt+1..9 chuyển theo VỊ TRÍ hiển thị (xem `tabTheoViTri`), không
+        // phải theo `soThuTu` trên nhãn — số hiện đúng phím sẽ đổi cho một
+        // tab nếu tab đứng trước nó bị đóng, đó là hành vi ĐÚNG (khớp phím
+        // thật sự chạy), không phải lỗi hiển thị.
+        const viTri = chiSo + 1;
+        return (
+          <div
+            key={tab.id}
+            role="tab"
+            aria-selected={tab.id === tabDangChonId}
+            className={['ban-hang__tab', tab.id === tabDangChonId ? 'ban-hang__tab--chon' : ''].filter(Boolean).join(' ')}
+            onClick={() => onChonTab(tab.id)}
+          >
+            <span className="ban-hang__tab-nhan">Hoá đơn {tab.soThuTu}</span>
+            {viTri <= 9 ? <kbd>Alt+{viTri}</kbd> : null}
+            {tabs.length > 1 ? (
+              <button
+                type="button"
+                className="ban-hang__tab-dong"
+                aria-label={`Đóng Hoá đơn ${tab.soThuTu}`}
+                onClick={(su) => {
+                  su.stopPropagation();
+                  onDongTab(tab.id);
+                }}
+              >
+                ✕
+              </button>
+            ) : null}
+          </div>
+        );
+      })}
       <button type="button" className="ban-hang__tab-them" aria-label="Mở hoá đơn mới (F7)" onClick={onMoTabMoi}>
-        +
+        +<kbd>F7</kbd>
       </button>
     </div>
   );
