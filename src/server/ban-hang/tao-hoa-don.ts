@@ -71,6 +71,8 @@ export interface HoaDonDaTao {
   thuKhac: number;
   lamTron: number;
   khachCanTra: number;
+  /** Giờ thiết bị lúc bán (ISO) — trả lại để T-023 in đúng giờ đã ghi, không phải giờ lúc in. */
+  thoiGian: string;
 }
 
 function laLoiTrungMaHoaDon(loi: unknown): boolean {
@@ -186,7 +188,7 @@ export function taoHoaDonTuGioHang(db: Db, input: TaoHoaDonInput): HoaDonDaTao {
         });
       });
 
-      return { id: input.id, ma, tongTienHang, giamGia, thuKhac, lamTron, khachCanTra };
+      return { id: input.id, ma, tongTienHang, giamGia, thuKhac, lamTron, khachCanTra, thoiGian: input.thoiGian };
     } catch (loi) {
       if (!laLoiTrungMaHoaDon(loi)) throw loi;
       // Mã tự sinh đụng UNIQUE do đua giữa hai lần tạo gần nhau — thử mã kế tiếp.

@@ -1,0 +1,152 @@
+.in-hoa-don__man-phu {
+  position: fixed;
+  inset: 0;
+  background: rgb(15 23 42 / 50%);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: var(--kc-6) var(--kc-4);
+  overflow-y: auto;
+  z-index: 20;
+}
+
+.in-hoa-don {
+  background: var(--mau-nen-the);
+  border-radius: var(--bo-goc);
+  box-shadow: 0 8px 24px rgb(15 23 42 / 20%);
+  width: min(420px, 100%);
+  padding: var(--kc-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--kc-4);
+}
+
+.in-hoa-don__dau {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.in-hoa-don__tieu-de {
+  font-size: var(--chu-lg);
+  margin: 0;
+}
+
+.in-hoa-don__dong {
+  border: none;
+  background: transparent;
+  font-size: var(--chu-lg);
+  line-height: 1;
+  color: var(--mau-chu-phu);
+}
+
+.in-hoa-don__kho-giay {
+  display: flex;
+  gap: var(--kc-4);
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.in-hoa-don__radio-kho {
+  display: flex;
+  align-items: center;
+  gap: var(--kc-1);
+  font-size: var(--chu-sm);
+}
+
+.in-hoa-don__khung-xem-truoc {
+  display: flex;
+  justify-content: center;
+  background: var(--xam-100);
+  padding: var(--kc-4);
+  border-radius: var(--bo-goc);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* Xem trước trên màn hình dùng đúng bề rộng vật lý (mm) của khổ giấy đang
+ * chọn — trình duyệt render đơn vị mm ổn định ở cả màn hình lẫn khi in. */
+.in-hoa-don__to-giay {
+  background: var(--xam-0);
+  padding: var(--kc-3);
+  font-size: var(--chu-xs);
+  line-height: var(--cao-dong-chat);
+  color: var(--xam-900);
+}
+
+.in-hoa-don__quay {
+  text-align: center;
+  font-weight: 600;
+  margin: 0 0 var(--kc-1);
+}
+
+.in-hoa-don__hoa-don-de {
+  text-align: center;
+  font-size: var(--chu-sm);
+  margin: 0 0 var(--kc-2);
+}
+
+.in-hoa-don__bang {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--kc-2) 0;
+}
+
+.in-hoa-don__bang th,
+.in-hoa-don__bang td {
+  text-align: left;
+  padding: 2px 0;
+  border-bottom: 1px dashed var(--xam-300);
+}
+
+.in-hoa-don__bang th:nth-child(2),
+.in-hoa-don__bang th:nth-child(3),
+.in-hoa-don__bang th:nth-child(4),
+.in-hoa-don__bang td:nth-child(2),
+.in-hoa-don__bang td:nth-child(3),
+.in-hoa-don__bang td:nth-child(4) {
+  text-align: right;
+}
+
+.in-hoa-don__dong-tong {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--kc-2);
+}
+
+.in-hoa-don__dong-tong--chinh {
+  font-weight: 700;
+  font-size: var(--chu-sm);
+  border-top: 1px dashed var(--xam-300);
+  margin-top: var(--kc-1);
+  padding-top: var(--kc-1);
+}
+
+.in-hoa-don__cam-on {
+  text-align: center;
+  margin-top: var(--kc-3);
+}
+
+.in-hoa-don__hanh-dong {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--kc-3);
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .in-hoa-don__to-giay,
+  .in-hoa-don__to-giay * {
+    visibility: visible;
+  }
+
+  .in-hoa-don__to-giay {
+    position: fixed;
+    inset: 0;
+    padding: 0;
+  }
+}

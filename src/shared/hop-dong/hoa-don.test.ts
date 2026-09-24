@@ -85,6 +85,7 @@ describe('HoaDonResSchema', () => {
         thuKhac: 0,
         lamTron: 0,
         khachCanTra: 51_000,
+        thoiGian: '2026-09-21T08:00:00.000Z',
       }),
     ).not.toThrow();
   });
@@ -99,6 +100,7 @@ describe('HoaDonResSchema', () => {
         thuKhac: 0,
         lamTron: 0,
         khachCanTra: 51_000.5,
+        thoiGian: '2026-09-21T08:00:00.000Z',
       }),
     ).toThrow();
   });

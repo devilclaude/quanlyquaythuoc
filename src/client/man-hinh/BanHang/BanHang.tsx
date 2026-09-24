@@ -9,6 +9,7 @@ import { dong } from '../../../shared/kieu/dong';
 import { dinhDangTien } from '../../../shared/tien/dinh-dang';
 import { Bang, OSo, TruongNhap } from '../../thanh-phan';
 import { ChiBaoTrangThai } from '../../offline/ChiBaoTrangThai';
+import { InHoaDon, docKhoGiayDaLuu, luuKhoGiayDaChon, xayDungHoaDonDeIn, type HoaDonDeIn, type KhoGiayIn } from './InHoaDon';
 import {
   PanelThanhToan,
   kiemTraThanhToanHopLe,
@@ -25,7 +26,8 @@ import './BanHang.css';
 // ô nhập/+/-, xoá dòng bằng nút/Delete — UI-FIDELITY.md nhóm 2). T-030 —
 // chỉ báo online/offline (`ChiBaoTrangThai`, xem src/client/offline/). T-022c
 // — panel thanh toán (`ThanhToan.tsx`), F9 sang khu vực thanh toán, Enter xác
-// nhận. Nhiều hoá đơn (T-025), in hoá đơn (T-023) đều KHÔNG thuộc phạm vi.
+// nhận. T-023 — preview + in hoá đơn (`InHoaDon.tsx`) mở ngay sau khi thanh
+// toán thành công. Nhiều hoá đơn (T-025) KHÔNG thuộc phạm vi.
 
 /** Tối đa số dòng gợi ý hiện cùng lúc — khớp bản thử `docs/reference/prototype/man-ban-hang.html`. */
 const SO_DONG_GOI_Y_TOI_DA = 12;
@@ -422,6 +424,9 @@ export function BanHang() {
   const [dangThanhToan, setDangThanhToan] = useState(false);
   const [loiThanhToan, setLoiThanhToan] = useState<string | undefined>(undefined);
   const [thongBaoThanhToan, setThongBaoThanhToan] = useState<string | undefined>(undefined);
+  /** Hoá đơn vừa tạo cần in (T-023) — `undefined` = không hiện preview. */
+  const [hoaDonDeIn, setHoaDonDeIn] = useState<HoaDonDeIn | undefined>(undefined);
+  const [khoGiay, setKhoGiay] = useState<KhoGiayIn>(() => docKhoGiayDaLuu());
   const oTimRef = useRef<HTMLInputElement>(null);
   /** F9 (UI-FIDELITY.md nhóm 2) focus vào đây — đích đầu tiên của khu vực thanh toán. */
   const phuongThucRef = useRef<HTMLFieldSetElement>(null);
@@ -527,6 +532,18 @@ export function BanHang() {
     setChiSoDongChon((v) => (gioHang.length <= 1 ? -1 : Math.min(v, gioHang.length - 2)));
   }
 
+  function doiKhoGiay(khoGiayMoi: KhoGiayIn) {
+    setKhoGiay(khoGiayMoi);
+    luuKhoGiayDaChon(khoGiayMoi);
+  }
+
+  /** Đóng preview in hoá đơn (Esc, nút Đóng, hoặc sau khi đã in) — lấy lại
+   * focus ô tìm cho đơn tiếp theo (T-020: vào màn là bán ngay). */
+  function dongPreviewInHoaDon() {
+    setHoaDonDeIn(undefined);
+    oTimRef.current?.focus();
+  }
+
   /** Enter ở bất kỳ ô nào trong panel thanh toán (submit form — T-022c). Validate
    * phía client trước (phản hồi ngay, không đợi round-trip cho hai lỗi gõ tay
    * phổ biến nhất), gọi `POST /api/hoa-don` (T-022b) — không viết lại logic
@@ -576,11 +593,19 @@ export function BanHang() {
       })
       .then((hoaDon) => {
         setDangThanhToan(false);
+        setHoaDonDeIn(
+          xayDungHoaDonDeIn(gioHang, hoaDon, {
+            phuongThucThanhToan: thanhToan.phuongThucThanhToan,
+            khachThanhToan: khachThanhToanSo,
+          }),
+        );
         setGioHang([]);
         setChiSoDongChon(-1);
         setThanhToan(trangThaiThanhToanRong());
         setThongBaoThanhToan(`Đã tạo hoá đơn ${hoaDon.ma}`);
-        oTimRef.current?.focus();
+        // Không focus lại ô tìm ở đây — preview in hoá đơn mở ngay và tự
+        // focus nút "In", khớp "Enter xác nhận thanh toán và in"
+        // (UI-FIDELITY.md nhóm 2). Ô tìm lấy lại focus khi đóng preview.
       })
       .catch((err: unknown) => {
         setDangThanhToan(false);
@@ -724,6 +749,8 @@ export function BanHang() {
           />
         </aside>
       </div>
+
+      <InHoaDon hoaDon={hoaDonDeIn} khoGiay={khoGiay} onDoiKhoGiay={doiKhoGiay} onDong={dongPreviewInHoaDon} />
     </div>
   );
 }

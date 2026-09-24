@@ -691,3 +691,14 @@ Tầng: A — chỉ nối `POST /api/hoa-don` (T-022b) đã duyệt, không thê
 Khác KiotViet: bỏ "Tìm khách hàng"/"Bán thuốc theo đơn" thấy trong ảnh — ngoài
 phạm vi "Xong khi" T-022c.
 Kế tiếp: T-023 hoặc T-031, đủ điều kiện sau khi PR này merge.
+
+## 2026-09-24 (run kế 3) — dọn PR + T-023
+Làm: #56 (T-022c) đã merge → DONE. Chọn T-023: preview + in hoá đơn K57/K80
+(`InHoaDon.tsx`), dựng từ giỏ hàng + `HoaDonRes`, không gọi API mới. Không có
+ảnh "hoá đơn KiotViet" để đối chiếu — theo tiền lệ T-010c, không BLOCKED (chỉ
+trình bày lại dữ liệu đã đúng, rủi ro thấp hơn T-054/T-060). Enter xác nhận
+thanh toán mở preview, nút "In" tự focus, Enter lần hai in (UI-FIDELITY.md
+nhóm 2). Khổ giấy nhớ theo máy qua `localStorage`.
+PR: (xem mô tả PR)
+Tầng: A — chỉ trình bày lại dữ liệu đã ghi, không đổi kho/tiền.
+Kế tiếp: T-025 hoặc T-031, đủ điều kiện sau khi PR này merge.

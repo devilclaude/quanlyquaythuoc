@@ -280,6 +280,7 @@ test('thanh toán: F9 sang khu vực thanh toán, Enter xác nhận, thành côn
         thuKhac: 0,
         lamTron: 0,
         khachCanTra: 17_000,
+        thoiGian: '2026-09-24T03:00:00.000Z',
       },
     });
   });
@@ -287,11 +288,14 @@ test('thanh toán: F9 sang khu vực thanh toán, Enter xác nhận, thành côn
 
   const oTim = page.getByPlaceholder('Tìm hàng hóa (F3)');
   const goiYOption = page.getByRole('listbox', { name: 'Gợi ý hàng hoá' }).getByRole('option');
+  // Khoanh vùng vào đúng bảng giỏ hàng — từ T-023, preview in hoá đơn cũng có
+  // bảng riêng (dòng hàng) nên `tbody tr` trần khớp cả hai khi preview đang mở.
+  const dongGioHang = page.locator('.ban-hang__gio tbody tr');
   await oTim.pressSequentially('pana');
   await expect(goiYOption).toHaveCount(2);
   await page.keyboard.press('Enter'); // dòng đầu (vỉ, 17.000đ) đang chọn sẵn — thêm vào giỏ
 
-  await expect(page.locator('tbody tr')).toHaveCount(1);
+  await expect(dongGioHang).toHaveCount(1);
 
   // F9 chuyển focus sang khu vực thanh toán (UI-FIDELITY.md nhóm 2) — không
   // chạm chuột từ đầu tới cuối luồng bán hàng. Đích là radio đang chọn (mặc
@@ -300,12 +304,94 @@ test('thanh toán: F9 sang khu vực thanh toán, Enter xác nhận, thành côn
   await expect(page.getByRole('radio', { name: 'Tiền mặt' })).toBeFocused();
 
   // Enter ngay (mặc định Tiền mặt, ô "Khách thanh toán" để trống nghĩa là
-  // khách đưa vừa đủ) xác nhận thanh toán và gọi POST /api/hoa-don.
+  // khách đưa vừa đủ) xác nhận thanh toán và gọi POST /api/hoa-don — mở luôn
+  // preview in hoá đơn (T-023), nút "In" tự focus (xem ban-hang.spec.ts test
+  // "in hoá đơn" bên dưới cho luồng in đầy đủ).
   await page.keyboard.press('Enter');
 
   await expect(page.getByText('Đã tạo hoá đơn HD000123')).toBeVisible();
-  await expect(page.locator('tbody tr')).toHaveCount(0);
+  await expect(dongGioHang).toHaveCount(0);
+  await expect(page.getByRole('dialog', { name: 'In hoá đơn' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'In (Enter)' })).toBeFocused();
+
+  // Đóng preview (Esc) không in gì — ô tìm lấy lại focus cho đơn tiếp theo.
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog', { name: 'In hoá đơn' })).not.toBeVisible();
   await expect(oTim).toBeFocused();
+});
+
+// T-023 — In hoá đơn. Preview mở ngay sau thanh toán (test trên), nội dung
+// khớp giỏ hàng + kết quả server, khổ giấy chọn được và nhớ lại giữa các lần
+// mở (localStorage — chỉ kiểm được ở e2e, không phải Vitest môi trường
+// `node`). Enter (nút "In" đã tự focus) gọi `window.print()` — stub hàm này
+// vì Playwright không thực sự in được, chỉ xác nhận nó được gọi.
+test('in hoá đơn: preview khớp nội dung, đổi khổ giấy nhớ lại sau khi tải lại trang, Enter gọi in (T-023)', async ({
+  page,
+  context,
+}) => {
+  await context.route('**/api/hang-hoa*', (route) => route.fulfill({ json: DU_LIEU_TIM }));
+  await context.route('**/api/hoa-don', async (route) => {
+    await route.fulfill({
+      status: 201,
+      json: {
+        id: 'hd-1',
+        ma: 'HD000456',
+        tongTienHang: 520_000,
+        giamGia: 20_000,
+        thuKhac: 0,
+        lamTron: 0,
+        khachCanTra: 500_000,
+        thoiGian: '2026-09-24T03:00:00.000Z',
+      },
+    });
+  });
+  await page.addInitScript(() => {
+    (window as unknown as { __soLanIn: number }).__soLanIn = 0;
+    window.print = () => {
+      (window as unknown as { __soLanIn: number }).__soLanIn += 1;
+    };
+  });
+  await page.goto('/');
+
+  const oTim = page.getByPlaceholder('Tìm hàng hóa (F3)');
+  const goiYOption = page.getByRole('listbox', { name: 'Gợi ý hàng hoá' }).getByRole('option');
+  await oTim.pressSequentially('pana');
+  await expect(goiYOption).toHaveCount(2);
+  await page.keyboard.press('ArrowDown'); // hộp, 260.000đ
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('+'); // 2 hộp = 520.000đ — dòng vừa thêm tự động là dòng đang chọn
+
+  await page.keyboard.press('F9');
+  await page.getByLabel('Giảm giá').fill('20000');
+  await page.keyboard.press('Enter');
+
+  const preview = page.getByRole('dialog', { name: 'In hoá đơn' });
+  await expect(preview).toBeVisible();
+  await expect(preview).toContainText('HD000456');
+  await expect(preview).toContainText('Panadol Extra');
+  await expect(preview).toContainText('520,000'); // tổng tiền hàng trước giảm giá
+  await expect(preview).toContainText('500,000'); // khách cần trả sau giảm giá
+
+  // Mặc định K80 (chưa từng chọn trên máy này).
+  await expect(page.getByRole('radio', { name: 'K80 (80mm)' })).toBeChecked();
+
+  // Đổi sang K57, đóng preview, tải lại trang — lựa chọn phải còn nguyên.
+  await page.getByRole('radio', { name: 'K57 (57mm)' }).check();
+  await page.keyboard.press('Escape');
+  await page.reload(); // context.route đã đăng ký ở trên vẫn áp dụng sau khi tải lại
+  await oTim.pressSequentially('pana');
+  await expect(goiYOption).toHaveCount(2);
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('F9');
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('radio', { name: 'K57 (57mm)' })).toBeChecked();
+
+  // Enter khi nút "In" đang focus (autofocus lúc mở preview) gọi window.print().
+  await expect(page.getByRole('button', { name: 'In (Enter)' })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as { __soLanIn: number }).__soLanIn))
+    .toBe(1);
 });
 
 test('thanh toán: tiền mặt đưa chưa đủ thì báo lỗi ngay, không gọi API và không xoá giỏ hàng (T-022c)', async ({
