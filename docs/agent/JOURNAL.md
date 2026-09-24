@@ -677,3 +677,17 @@ PR: (xem mô tả PR)
 Tầng: A — chỉ nối tầng API cho lõi nghiệp vụ đã được duyệt B ở T-022a, không
 thêm quyết định kiến trúc mới (giống tiền lệ T-010a[B]→T-010b[A]).
 Kế tiếp: T-022c (giao diện thanh toán) hoặc T-031 khi PR này merge.
+
+## 2026-09-24 (run kế 2) — dọn PR + T-022c
+Làm: #55 (T-022b) đã merge → DONE. Chọn T-022c: panel thanh toán
+(`ThanhToan.tsx`). Bản đầu tưởng thiếu screenshot (chỉ nhìn tên file) —
+`doi-chieu-ui` phát hiện ảnh có sẵn (`Bán hàng/Chọn 1 món hàng để bán...` và
+`Giao diện bán hàng chưa có sản phẩm`), đã mở ảnh và dựng lại đúng: radio 4
+phương thức luôn hiện (không dropdown), thứ tự Khách cần trả→Khách thanh
+toán→radio→mệnh giá nhanh (làm tròn theo mệnh giá VND, khớp ví dụ ảnh
+17k→18k/20k/50k/100k/200k/500k)→Tiền thừa trả khách (luôn hiện).
+PR: (xem mô tả PR)
+Tầng: A — chỉ nối `POST /api/hoa-don` (T-022b) đã duyệt, không thêm kiến trúc mới.
+Khác KiotViet: bỏ "Tìm khách hàng"/"Bán thuốc theo đơn" thấy trong ảnh — ngoài
+phạm vi "Xong khi" T-022c.
+Kế tiếp: T-023 hoặc T-031, đủ điều kiện sau khi PR này merge.
