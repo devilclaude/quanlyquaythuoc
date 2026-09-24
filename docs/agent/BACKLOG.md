@@ -240,7 +240,7 @@ cũng ghi thẻ kho `DOI_CHE_DO` nên cần chiNhanhId trước). Sửa lại �
 sau không đi lại đường đã có.
 
 ### T-022c [A] prio:22.3 — Thanh toán và tạo hoá đơn: giao diện
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-022b
+Trạng thái: DONE · Phụ thuộc: T-022b
 Xong khi: panel thanh toán trong màn bán hàng — giảm giá/thu khác nhập được,
 chọn phương thức thanh toán tiền mặt/chuyển khoản/thẻ/ví, nút tiền mặt nhanh,
 khách cần trả và tiền thừa hiển thị; gọi `POST /api/hoa-don`, thành công thì xoá
@@ -255,10 +255,15 @@ sang [A]: chỉ nối `POST /api/hoa-don` (T-022b) đã duyệt, không thêm ki
 mới — tiền lệ T-022a[B]→T-022b[A].
 
 ### T-023 [A] prio:23 — In hoá đơn
-Trạng thái: TODO · Phụ thuộc: T-022c
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-022c
 Xong khi: in được khổ cuộn K57 và K80; có preview; nội dung khớp thông tin trong
 ảnh hoá đơn KiotViet.
 Tầng A: chỉ đọc dữ liệu đã ghi, không thay đổi kho hay tiền.
+Ghi chú: không có ảnh "hoá đơn KiotViet" nào trong `docs/reference/kiotviet/`
+(chỉ có ảnh tem mã/nhập hàng) — đã tìm kỹ, xem JOURNAL.md. Theo tiền lệ T-010c
+(màn không có ảnh tham chiếu): dựng theo token + khuôn hoá đơn bán lẻ phổ
+thông, không BLOCKED vì đây chỉ là trình bày lại dữ liệu đã đúng, không phải
+quyết định kiến trúc hay dữ liệu tồn kho thật như T-054/T-060.
 
 ### T-024 [B] prio:24 — Quét mã vạch tại màn bán hàng
 Trạng thái: DONE · Phụ thuộc: T-020

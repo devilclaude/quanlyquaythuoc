@@ -39,6 +39,8 @@ export const HoaDonResSchema = z.object({
   thuKhac: z.number().int(),
   lamTron: z.number().int(),
   khachCanTra: z.number().int(),
+  /** Giờ thiết bị lúc bán (ISO) — T-023 dùng để in đúng giờ đã ghi trên hoá đơn. */
+  thoiGian: z.string(),
 });
 
 export type PhuongThucThanhToan = z.infer<typeof PhuongThucThanhToanSchema>;

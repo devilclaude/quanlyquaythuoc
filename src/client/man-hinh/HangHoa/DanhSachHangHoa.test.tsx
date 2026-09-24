@@ -2,17 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { ComponentProps } from 'react';
 import type { HangHoaDanhSachItem } from '../../../shared/hop-dong/hang-hoa';
-import { BangDanhSachHangHoa, chonDongTiepTheo, dinhDangThoiGianVN } from './DanhSachHangHoa';
+import { BangDanhSachHangHoa, chonDongTiepTheo } from './DanhSachHangHoa';
 
-describe('dinhDangThoiGianVN', () => {
-  it('quy đổi giờ UTC sang giờ Việt Nam (UTC+7), định dạng dd/MM/yyyy HH:mm', () => {
-    expect(dinhDangThoiGianVN('2026-09-01T02:00:00.000Z')).toBe('01/09/2026 09:00');
-  });
-
-  it('cộng giờ tràn sang ngày hôm sau vẫn ra đúng ngày giờ Việt Nam', () => {
-    expect(dinhDangThoiGianVN('2026-09-01T18:00:00.000Z')).toBe('02/09/2026 01:00');
-  });
-});
+// dinhDangThoiGianVN chuyển sang src/shared/thoi-gian/dinh-dang.ts (T-023, dùng
+// chung với màn in hoá đơn) — test đi theo, xem dinh-dang.test.ts.
 
 describe('chonDongTiepTheo', () => {
   it('bấm dòng đang đóng thì mở dòng đó', () => {

@@ -2,30 +2,12 @@ import type { ReactNode } from 'react';
 import { Fragment, useEffect, useState } from 'react';
 import { DanhSachHangHoaResSchema, type HangHoaDanhSachItem } from '../../../shared/hop-dong/hang-hoa';
 import { dong } from '../../../shared/kieu/dong';
+import { dinhDangThoiGianVN } from '../../../shared/thoi-gian/dinh-dang';
 import { dinhDangSo, dinhDangTien } from '../../../shared/tien/dinh-dang';
 import { Bang, Nut, OSo, TruongNhap } from '../../thanh-phan';
 import { ChiTietHangHoa } from './ChiTietHangHoa';
 import { TaoMoiHangHoa } from './TaoMoiHangHoa';
 import './DanhSachHangHoa.css';
-
-/** SPEC.md §3.6: lưu UTC, hiển thị giờ Việt Nam — dd/MM/yyyy HH:mm. */
-export function dinhDangThoiGianVN(iso: string): string {
-  const thoiDiem = new Date(iso);
-  const tuyChonChung = { timeZone: 'Asia/Ho_Chi_Minh' } as const;
-  const ngayThang = new Intl.DateTimeFormat('en-GB', {
-    ...tuyChonChung,
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  }).format(thoiDiem);
-  const gioPhut = new Intl.DateTimeFormat('en-GB', {
-    ...tuyChonChung,
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
-  }).format(thoiDiem);
-  return `${ngayThang} ${gioPhut}`;
-}
 
 /** Bấm lại dòng đang mở thì đóng; bấm dòng khác thì chuyển sang dòng đó. */
 export function chonDongTiepTheo(

@@ -111,7 +111,8 @@ export function xayDungYeuCauTaoHoaDon(
   };
 }
 
-const CAC_PHUONG_THUC: ReadonlyArray<{ gia: PhuongThucThanhToan; nhan: string }> = [
+/** Nhãn hiển thị từng phương thức — T-023 (in hoá đơn) dùng lại, không lặp danh sách. */
+export const CAC_PHUONG_THUC: ReadonlyArray<{ gia: PhuongThucThanhToan; nhan: string }> = [
   { gia: 'TIEN_MAT', nhan: 'Tiền mặt' },
   { gia: 'CHUYEN_KHOAN', nhan: 'Chuyển khoản' },
   { gia: 'THE', nhan: 'Thẻ' },
