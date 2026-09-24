@@ -172,7 +172,7 @@ tính theo ngưỡng CLAUDE.md (không tính migration tự sinh). Slice này ri
 trong ngưỡng.
 
 ### T-010b [B] prio:10.2 — Cài đặt quản lý theo lô: API
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-010a
+Trạng thái: DONE · Phụ thuộc: T-010a
 Xong khi: `GET`/`PUT /api/cai-dat/quan-ly-lo` (cài đặt toàn cục) và
 `PUT /api/hang-hoa/:id/quan-ly-lo` (ghi đè theo sản phẩm, trả 409 kèm lý do khi bị
 chặn); chi tiết hàng hoá (`GET /api/hang-hoa/:id`) trả thêm ghi đè hiện tại của sản
@@ -182,7 +182,7 @@ form nhập hàng tự đọc cài đặt qua API, không phụ thuộc màn cà
 không.
 
 ### T-010c [A] prio:10.3 — Cài đặt quản lý theo lô: giao diện
-Trạng thái: TODO · Phụ thuộc: T-010b
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-010b
 Xong khi: màn cài đặt có công tắc bật/tắt toàn cục (chưa có screenshot KiotViet
 tham chiếu cho màn này trong `docs/reference/kiotviet/` — dựng theo token trong
 `.claude/skills/design-system/`, ghi rõ trong PR); chi tiết hàng hoá (T-009c) có

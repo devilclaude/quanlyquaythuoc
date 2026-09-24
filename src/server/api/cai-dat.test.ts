@@ -1,9 +1,11 @@
 import Database from 'better-sqlite3';
+import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { Hono } from 'hono';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { chiNhanh } from '../db/schema';
+import { chiNhanh, loHang, sanPham } from '../db/schema';
+import { ghiTheKho } from '../kho/so-cai';
 import { dangKyCaiDatRoutes } from './cai-dat';
 
 type DbTest = ReturnType<typeof drizzle>;
@@ -74,5 +76,41 @@ describe('dangKyCaiDatRoutes', () => {
     await guiDoiToanCuc({ bat: false });
 
     expect(db.select().from(chiNhanh).all()).toHaveLength(1);
+  });
+
+  it('PUT /quan-ly-lo trả 409 kèm lý do khi tắt bị chặn (sản phẩm kế thừa còn >1 lô tồn > 0) — không đổi toàn cục', async () => {
+    await guiDoiToanCuc({ bat: true });
+
+    db.insert(sanPham).values({ id: 'sp-1', maHang: 'SP001', ten: 'Paracetamol 500mg' }).run();
+    db.insert(loHang).values({ id: 'lo-2', sanPhamId: 'sp-1', soLo: 'L001', hsd: '2027-01-01' }).run();
+    const [loNgamDinh] = db.select().from(loHang).where(eq(loHang.sanPhamId, 'sp-1')).all();
+    if (!loNgamDinh) throw new Error('trigger lô ngầm định không chạy');
+    ghiTheKho(db, [
+      {
+        id: 'tk-1',
+        chiNhanhId: 'chi-nhanh-mac-dinh',
+        loId: loNgamDinh.id,
+        loai: 'NHAP',
+        soLuong: 5,
+        thoiGian: '2026-09-23T00:00:00.000Z',
+      },
+      {
+        id: 'tk-2',
+        chiNhanhId: 'chi-nhanh-mac-dinh',
+        loId: 'lo-2',
+        loai: 'NHAP',
+        soLuong: 5,
+        thoiGian: '2026-09-23T00:00:00.000Z',
+      },
+    ]);
+
+    const res = await guiDoiToanCuc({ bat: false });
+
+    expect(res.status).toBe(409);
+    const json = (await res.json()) as { loi: string };
+    expect(json.loi).toMatch(/sp-1/);
+
+    const resSau = await taoRouter().request('/quan-ly-lo');
+    await expect(resSau.json()).resolves.toEqual({ bat: true });
   });
 });

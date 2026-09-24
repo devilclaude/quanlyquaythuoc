@@ -1,0 +1,36 @@
+/* CongTac — dùng biến tầng 2 trong design/tokens.css. */
+
+.cong-tac {
+  position: relative;
+  width: 44px;
+  padding: 0;
+  border: var(--vien);
+  border-radius: 999px;
+  background: var(--xam-200);
+}
+
+.cong-tac--bat {
+  background: var(--mau-chinh);
+  border-color: var(--mau-chinh);
+}
+
+.cong-tac__nut {
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--mau-nen-the);
+  transform: translateY(-50%);
+  transition: left 150ms ease;
+}
+
+.cong-tac--bat .cong-tac__nut {
+  left: calc(100% - 23px);
+}
+
+.cong-tac:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
