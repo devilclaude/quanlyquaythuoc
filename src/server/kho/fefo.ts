@@ -1,8 +1,14 @@
 import { and, eq } from 'drizzle-orm';
 import type { drizzle } from 'drizzle-orm/better-sqlite3';
 import { loHang, tonKhoLo } from '../db/schema';
+import type { TxTheKho } from './so-cai';
 
 type Db = ReturnType<typeof drizzle>;
+// Đọc tồn theo lô cần chạy được cả bên ngoài transaction (db) lẫn bên trong một
+// transaction đã mở sẵn của module khác (vd. src/server/ban-hang/, gọi bằng
+// `tx` để chọn lô và ghi thẻ kho BAN trong CÙNG một giao dịch nguyên tử) — cùng
+// lý do `ghiMotDongTheKho` nhận `TxTheKho` ở src/server/kho/so-cai.ts.
+type DbHoacTx = Db | TxTheKho;
 
 export interface LoTonKho {
   loId: string;
@@ -82,7 +88,7 @@ export function phanBoTheoThuTu(danhSachLoDaSapXep: readonly LoTonKho[], soLuong
   return ketQua;
 }
 
-export function layDanhSachLoTonKho(db: Db, sanPhamId: string, chiNhanhId: string): LoTonKho[] {
+export function layDanhSachLoTonKho(db: DbHoacTx, sanPhamId: string, chiNhanhId: string): LoTonKho[] {
   return db
     .select({ loId: loHang.id, hsd: loHang.hsd, ngayTao: loHang.ngayTao, ton: tonKhoLo.ton })
     .from(loHang)
@@ -97,7 +103,7 @@ export function layDanhSachLoTonKho(db: Db, sanPhamId: string, chiNhanhId: strin
 // (chế độ phẳng) lẫn sản phẩm nhiều lô thật — không có nhánh `if` nào theo cài
 // đặt quản lý lô (ARCHITECTURE.md §5).
 export function chonLoXuatKho(
-  db: Db,
+  db: DbHoacTx,
   sanPhamId: string,
   chiNhanhId: string,
   soLuongCanXuat: number,
