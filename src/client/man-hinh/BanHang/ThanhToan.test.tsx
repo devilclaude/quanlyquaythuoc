@@ -7,10 +7,27 @@ import {
   soNguyenKhongAmTuChuoi,
   soTienKhachThanhToanTuChuoi,
   tinhKhachCanTraXemTruoc,
+  tinhMenhGiaNhanh,
   tinhTienThua,
   trangThaiThanhToanRong,
   xayDungYeuCauTaoHoaDon,
 } from './ThanhToan';
+
+describe('tinhMenhGiaNhanh', () => {
+  it('khớp đúng ảnh KiotViet "Chọn 1 món hàng để bán...": khách cần trả 17.000đ ra dãy 17.000/18.000/20.000/50.000/100.000/200.000/500.000', () => {
+    expect(tinhMenhGiaNhanh(17_000)).toEqual([17_000, 18_000, 20_000, 50_000, 100_000, 200_000, 500_000]);
+  });
+
+  it('luôn tăng dần, không trùng lặp, kể cả khi việc làm tròn lên các mệnh giá không đơn điệu', () => {
+    // 41.000: làm tròn lên 2k=42k, 5k=45k, 10k=50k, 20k=60k, 50k=50k (NHỎ HƠN
+    // 60k của bước trước) — nếu chỉ so với phần tử cuối cùng thì dãy sẽ không
+    // tăng dần đúng; phải gom rồi sắp lại toàn bộ.
+    const ketQua = tinhMenhGiaNhanh(41_000);
+    expect(ketQua).toEqual([...ketQua].sort((a, b) => a - b));
+    expect(new Set(ketQua).size).toBe(ketQua.length);
+    expect(ketQua[0]).toBe(41_000);
+  });
+});
 
 describe('tinhKhachCanTraXemTruoc', () => {
   it('khách cần trả = tổng tiền hàng − giảm giá + thu khác (SPEC.md §3.4, làm tròn luôn 0 ở slice này)', () => {
@@ -172,7 +189,7 @@ describe('PanelThanhToan', () => {
     expect(html).toContain('Tiền thừa trả khách');
   });
 
-  it('chọn chuyển khoản thì ẩn nút tiền nhanh và khách thanh toán/tiền thừa', () => {
+  it('chọn chuyển khoản thì ẩn nút tiền nhanh và ô khách thanh toán, vẫn hiện tiền thừa trả khách', () => {
     const html = renderToStaticMarkup(
       <PanelThanhToan
         soMon={1}
@@ -189,7 +206,56 @@ describe('PanelThanhToan', () => {
     );
 
     expect(html).not.toContain('Khách thanh toán');
-    expect(html).not.toContain('Tiền thừa trả khách');
+    // "Tiền thừa trả khách" luôn hiện (khớp ảnh "Giao diện bán hàng chưa có
+    // sản phẩm" — dòng này có mặt kể cả khi giỏ rỗng), chỉ ô nhập/nút tiền
+    // nhanh gắn riêng với Tiền mặt mới bị ẩn.
+    expect(html).toContain('Tiền thừa trả khách');
+  });
+
+  it('nhóm phương thức thanh toán là radio LUÔN hiện đồng thời cả 4 lựa chọn, không phải dropdown (ảnh KiotViet)', () => {
+    const html = renderToStaticMarkup(
+      <PanelThanhToan
+        soMon={1}
+        tongTien={50_000}
+        trangThai={trangThaiCoBan}
+        dangGui={false}
+        loi={undefined}
+        thongBao={undefined}
+        gioHangRong={false}
+        phuongThucRef={{ current: null }}
+        onDoi={() => undefined}
+        onSubmit={() => undefined}
+      />,
+    );
+
+    expect(html).not.toContain('<select');
+    expect((html.match(/type="radio"/g) ?? []).length).toBe(4);
+    expect(html).toContain('Tiền mặt');
+    expect(html).toContain('Chuyển khoản');
+    expect(html).toContain('Thẻ');
+    expect(html).toContain('Ví');
+  });
+
+  it('giỏ hàng rỗng thì ẩn cả khu vực thanh toán (radio, khách thanh toán, mệnh giá nhanh) — khớp ảnh "Giao diện bán hàng chưa có sản phẩm"', () => {
+    const html = renderToStaticMarkup(
+      <PanelThanhToan
+        soMon={0}
+        tongTien={0}
+        trangThai={trangThaiCoBan}
+        dangGui={false}
+        loi={undefined}
+        thongBao={undefined}
+        gioHangRong={true}
+        phuongThucRef={{ current: null }}
+        onDoi={() => undefined}
+        onSubmit={() => undefined}
+      />,
+    );
+
+    expect(html).not.toContain('type="radio"');
+    expect(html).not.toContain('Khách thanh toán');
+    expect(html).toContain('Khách cần trả');
+    expect(html).toContain('Tiền thừa trả khách');
   });
 
   it('giỏ hàng rỗng thì nút Thanh toán bị disabled', () => {

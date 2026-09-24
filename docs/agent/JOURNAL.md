@@ -682,20 +682,30 @@ Kế tiếp: T-022c (giao diện thanh toán) hoặc T-031 khi PR này merge.
 Làm: #55 (T-022b) đã merge (field `merged` của `list_pull_requests` báo sai
 `false`, `get` xác nhận `merged: true`, auto-merge) → chuyển DONE. Không có PR
 nào mở. Chọn T-022c: `ThanhToan.tsx` (pure functions + `PanelThanhToan` thuần
-theo props, cùng khuôn `FormTaoHangHoa`/`KhoiCaiDatToanCuc`) — giảm giá/thu
-khác nhập được, phương thức thanh toán (select, khớp mẫu đơn vị dòng giỏ
-hàng), nút tiền mặt nhanh (50k/100k/200k/500k/Đủ tiền) + "Khách thanh toán"/
-"Tiền thừa trả khách" chỉ hiện khi Tiền mặt; F9 focus vào select phương thức,
-Enter xác nhận (bắt thêm `onKeyDown` cho riêng `<select>` — Chromium KHÔNG
-submit form khi Enter trên select như với input, phát hiện qua e2e đỏ thật).
-Ô "Khách thanh toán" để trống nghĩa là khách đưa vừa đủ (không phải 0) — nếu
-không, mặc định 0 sẽ luôn báo "chưa đủ tiền" ngay từ ca dùng phổ biến nhất.
+theo props, cùng khuôn `FormTaoHangHoa`/`KhoiCaiDatToanCuc`).
+**Sửa sai lúc làm**: bản đầu tưởng `docs/reference/kiotviet/Bán hàng/` không
+có ảnh cho panel thanh toán (chỉ nhìn tên file, không mở ảnh) — agent
+`doi-chieu-ui` phát hiện ẢNH CÓ SẴN: `Chọn 1 món hàng để bán - có chức năng
+chọn đơn vị và số lượng để bán.png` (giỏ có hàng) và `Giao diện bán hàng chưa
+có sản phẩm.png` (giỏ rỗng) đều hiện đầy đủ panel này. Đã mở ảnh xác nhận trực
+tiếp rồi dựng lại đúng theo ảnh: thứ tự Tổng tiền hàng/Giảm giá/Thu khác/
+Khách cần trả/Khách thanh toán/[radio phương thức]/[mệnh giá nhanh]/Tiền thừa
+trả khách; **radio 4 lựa chọn luôn hiện đồng thời** (không phải dropdown như
+bản đầu); mệnh giá nhanh tính bằng làm tròn `khachCanTra` lên từng mệnh giá
+tiền giấy VND (2k/5k/10k/20k/50k/100k/200k/500k, gộp trùng, sắp tăng dần) —
+khớp đúng ví dụ ảnh (17.000đ → 17k/18k/20k/50k/100k/200k/500k), nút đầu luôn
+là số tiền đúng bằng khách cần trả (bỏ nút chữ "Đủ tiền" riêng). Cả nhóm radio
++ Khách thanh toán + mệnh giá nhanh chỉ hiện khi giỏ hàng không rỗng (khớp ảnh
+giỏ rỗng); "Tiền thừa trả khách" luôn hiện. F9 focus vào radio đang chọn
+(Chromium không tự submit form khi Enter trên radio như input — bắt riêng ở
+`onKeyDown`, phát hiện qua e2e đỏ thật). Ô "Khách thanh toán" để trống nghĩa
+là khách đưa vừa đủ, không phải 0.
 PR: (xem mô tả PR)
 Tầng: A — chỉ nối giao diện gọi `POST /api/hoa-don` (T-022b) đã duyệt, không
 thêm quyết định kiến trúc mới (cùng tiền lệ T-022a[B]→T-022b[A]).
-Khác KiotViet: không có screenshot tham chiếu cho màn thanh toán (như T-010c)
-— dựng theo token; nút tiền mặt nhanh/khách thanh toán/tiền thừa là suy đoán
-hợp lý (không lưu server, chỉ tính hiển thị), cần chủ dự án xác nhận với
-người dùng thật nếu KiotViet có luồng khác.
+Khác KiotViet: "Tìm khách hàng (F4)" và "Bán thuốc theo đơn" xuất hiện trong
+panel này ở ảnh gốc nhưng KHÔNG làm ở đây — khách hàng là v1.1
+(UI-FIDELITY.md dòng 80), "Bán thuốc theo đơn" ngoài phạm vi "Xong khi"
+T-022c, cần chủ dự án xác nhận có nằm trong T-022c hay tách task riêng.
 Kế tiếp: T-023 (in hoá đơn) hoặc T-031 (hàng đợi Dexie), đủ điều kiện sau khi
 PR này merge.

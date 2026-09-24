@@ -294,9 +294,10 @@ test('thanh toán: F9 sang khu vực thanh toán, Enter xác nhận, thành côn
   await expect(page.locator('tbody tr')).toHaveCount(1);
 
   // F9 chuyển focus sang khu vực thanh toán (UI-FIDELITY.md nhóm 2) — không
-  // chạm chuột từ đầu tới cuối luồng bán hàng.
+  // chạm chuột từ đầu tới cuối luồng bán hàng. Đích là radio đang chọn (mặc
+  // định Tiền mặt) trong nhóm phương thức thanh toán.
   await page.keyboard.press('F9');
-  await expect(page.getByLabel('Phương thức thanh toán')).toBeFocused();
+  await expect(page.getByRole('radio', { name: 'Tiền mặt' })).toBeFocused();
 
   // Enter ngay (mặc định Tiền mặt, ô "Khách thanh toán" để trống nghĩa là
   // khách đưa vừa đủ) xác nhận thanh toán và gọi POST /api/hoa-don.

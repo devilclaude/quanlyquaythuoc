@@ -424,7 +424,7 @@ export function BanHang() {
   const [thongBaoThanhToan, setThongBaoThanhToan] = useState<string | undefined>(undefined);
   const oTimRef = useRef<HTMLInputElement>(null);
   /** F9 (UI-FIDELITY.md nhóm 2) focus vào đây — đích đầu tiên của khu vực thanh toán. */
-  const phuongThucRef = useRef<HTMLSelectElement>(null);
+  const phuongThucRef = useRef<HTMLFieldSetElement>(null);
   /** Nhịp phím đang gõ ở ô tìm — T-024, xem `capNhatNhipGo`/`phanLoaiNhipGo`. */
   const nhipGoRef = useRef<NhipGoTrangThai>({ lanTruocMs: null, khoangCach: [] });
   /** Từ khoá của lần gọi API GẦN NHẤT — chặn kết quả trả về trễ của một truy
@@ -668,7 +668,8 @@ export function BanHang() {
       }
       if (su.key === 'F9') {
         su.preventDefault();
-        phuongThucRef.current?.focus();
+        const daChon = phuongThucRef.current?.querySelector<HTMLInputElement>('input[type="radio"]:checked');
+        (daChon ?? phuongThucRef.current?.querySelector('input[type="radio"]'))?.focus();
       }
     }
     document.addEventListener('keydown', xuLyPhimToanCuc);

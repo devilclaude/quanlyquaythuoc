@@ -2,17 +2,33 @@ import type { Ref } from 'react';
 import type { PhuongThucThanhToan, TaoHoaDonReq } from '../../../shared/hop-dong/hoa-don';
 import { dong } from '../../../shared/kieu/dong';
 import { dinhDangSo, dinhDangTien } from '../../../shared/tien/dinh-dang';
-import { Nut, TruongNhap } from '../../thanh-phan';
+import { Nut } from '../../thanh-phan';
 import type { DongGioHang } from './BanHang';
 
-// T-022c — panel thanh toán màn bán hàng. Không có screenshot KiotViet tham
-// chiếu cho màn/khu vực này trong `docs/reference/kiotviet/` (như T-010c) —
-// dựng theo token `.claude/skills/design-system/`, ghi rõ trong PR. Gọi
-// `POST /api/hoa-don` (T-022b) đã có sẵn — không viết lại logic nghiệp vụ nào
-// ở đây, chỉ tính preview và validate phía client trước khi gửi.
+// T-022c — panel thanh toán màn bán hàng. Đối chiếu với
+// `docs/reference/kiotviet/Bán hàng/Chọn 1 món hàng để bán - có chức năng
+// chọn đơn vị và số lượng để bán.png` (giỏ có hàng, Tiền mặt đang chọn) và
+// `docs/reference/kiotviet/Bán hàng/Giao diện bán hàng chưa có sản phẩm.png`
+// (giỏ rỗng) — bố cục, thứ tự trường, loại control (radio, không phải
+// dropdown) và dãy mệnh giá nhanh đều lấy từ hai ảnh này, không phải suy đoán.
+// Gọi `POST /api/hoa-don` (T-022b) đã có sẵn — không viết lại logic nghiệp vụ
+// nào ở đây, chỉ tính preview và validate phía client trước khi gửi.
 
-/** Mệnh giá tiền mặt phổ biến cho nút "tiền mặt nhanh" (Xong khi T-022c). */
-export const MENH_GIA_NHANH = [50_000, 100_000, 200_000, 500_000];
+/** Mệnh giá tiền giấy VND dùng để làm tròn lên gợi ý "tiền mặt nhanh". */
+const MENH_GIA_LAM_TRON = [2_000, 5_000, 10_000, 20_000, 50_000, 100_000, 200_000, 500_000];
+
+/** Dãy nút tiền mặt nhanh — khớp ảnh "Chọn 1 món hàng để bán...": khách cần
+ * trả 17.000đ ra đúng dãy 17.000/18.000/20.000/50.000/100.000/200.000/500.000
+ * (làm tròn `khachCanTra` lên từng mệnh giá tiền giấy, gộp trùng, sắp tăng
+ * dần). Nút đầu tiên luôn là số tiền đúng bằng khách cần trả — không có nút
+ * chữ "Đủ tiền" riêng như bản cũ. */
+export function tinhMenhGiaNhanh(khachCanTra: number): number[] {
+  const ketQua = new Set<number>([khachCanTra]);
+  for (const mg of MENH_GIA_LAM_TRON) {
+    ketQua.add(Math.ceil(khachCanTra / mg) * mg);
+  }
+  return [...ketQua].sort((a, b) => a - b);
+}
 
 /** Khách cần trả xem trước ở client — CÙNG công thức SPEC.md §3.4, nhưng chỉ
  * để hiển thị ngay khi gõ; số thật do server tính lúc `POST /api/hoa-don` trả
@@ -95,6 +111,42 @@ export function xayDungYeuCauTaoHoaDon(
   };
 }
 
+const CAC_PHUONG_THUC: ReadonlyArray<{ gia: PhuongThucThanhToan; nhan: string }> = [
+  { gia: 'TIEN_MAT', nhan: 'Tiền mặt' },
+  { gia: 'CHUYEN_KHOAN', nhan: 'Chuyển khoản' },
+  { gia: 'THE', nhan: 'Thẻ' },
+  { gia: 'VI', nhan: 'Ví' },
+];
+
+interface DongTienNhapProps {
+  id: string;
+  nhan: string;
+  value: string;
+  disabled: boolean;
+  onChange: (giaTri: string) => void;
+}
+
+/** Một dòng nhãn-trái/ô-nhập-phải — khớp cách "Tổng tiền hàng"/"Khách cần trả"
+ * xếp hàng trong ảnh KiotViet (khác `TruongNhap` dùng chỗ khác trong dự án,
+ * vốn xếp nhãn TRÊN ô nhập — không khớp panel này). */
+function DongTienNhap({ id, nhan, value, disabled, onChange }: DongTienNhapProps) {
+  return (
+    <div className="thanh-toan__dong-tien">
+      <label htmlFor={id}>{nhan}</label>
+      <input
+        id={id}
+        type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
+        className="thanh-toan__o-tien"
+        value={value}
+        disabled={disabled}
+        onChange={(su) => onChange(su.target.value)}
+      />
+    </div>
+  );
+}
+
 interface PanelThanhToanProps {
   soMon: number;
   tongTien: number;
@@ -104,18 +156,19 @@ interface PanelThanhToanProps {
   loi: string | undefined;
   thongBao: string | undefined;
   gioHangRong: boolean;
-  /** F9 (UI-FIDELITY.md nhóm 2) focus vào đây — đích đầu tiên của "khu vực thanh toán". */
-  phuongThucRef: Ref<HTMLSelectElement>;
+  /** F9 (UI-FIDELITY.md nhóm 2) focus vào radio đang chọn bên trong đây. */
+  phuongThucRef: Ref<HTMLFieldSetElement>;
   onDoi: (trangThai: TrangThaiPanelThanhToan) => void;
   onSubmit: () => void;
 }
 
 /**
  * Thuần theo props (cùng khuôn `FormTaoHangHoa`/`KhoiCaiDatToanCuc`) — form
- * HTML thật để Enter ở bất kỳ ô nào trong panel cũng xác nhận thanh toán
- * (hành vi submit ngầm định của trình duyệt khi có nút submit), không cần bắt
- * phím Enter thủ công. Nút tiền mặt nhanh là `type="button"` nên Enter trên
- * chúng chỉ kích hoạt chính nó, không submit form.
+ * HTML thật để Enter ở bất kỳ ô nào trong panel cũng xác nhận thanh toán.
+ * Enter trên `<input>` submit form theo hành vi ngầm định của trình duyệt;
+ * Enter trên radio KHÔNG tự submit trong Chromium nên bắt tay ở `onKeyDown`.
+ * Nút tiền mặt nhanh là `type="button"` nên Enter trên chúng chỉ kích hoạt
+ * chính nó, không submit form.
  */
 export function PanelThanhToan({
   soMon,
@@ -144,13 +197,7 @@ export function PanelThanhToan({
         onSubmit();
       }}
       onKeyDown={(su) => {
-        // Enter trên <input> submit form theo hành vi ngầm định của trình
-        // duyệt (bắt ở `onSubmit` trên) — nhưng Enter trên <select> (phương
-        // thức thanh toán) KHÔNG submit form trong Chromium, nên bắt tay ở
-        // đây để F9 → Enter luôn xác nhận được dù đang đứng ở select. Bỏ qua
-        // <button> (nút tiền nhanh, nút Thanh toán) để mỗi nút tự xử lý click
-        // của chính nó.
-        if (su.key === 'Enter' && (su.target as HTMLElement).tagName === 'SELECT') {
+        if (su.key === 'Enter' && su.target instanceof HTMLInputElement && su.target.type === 'radio') {
           su.preventDefault();
           onSubmit();
         }
@@ -167,19 +214,19 @@ export function PanelThanhToan({
         <span className="so">{dinhDangTien(dong(tongTien))}</span>
       </div>
 
-      <TruongNhap
+      <DongTienNhap
+        id="thanh-toan-giam-gia"
         nhan="Giảm giá"
-        kieu="so"
         value={trangThai.giamGia}
         disabled={dangGui}
-        onChange={(su) => onDoi({ ...trangThai, giamGia: su.target.value })}
+        onChange={(giaTri) => onDoi({ ...trangThai, giamGia: giaTri })}
       />
-      <TruongNhap
+      <DongTienNhap
+        id="thanh-toan-thu-khac"
         nhan="Thu khác"
-        kieu="so"
         value={trangThai.thuKhac}
         disabled={dangGui}
-        onChange={(su) => onDoi({ ...trangThai, thuKhac: su.target.value })}
+        onChange={(giaTri) => onDoi({ ...trangThai, thuKhac: giaTri })}
       />
 
       <div className="ban-hang__hang ban-hang__hang--can-tra">
@@ -187,59 +234,55 @@ export function PanelThanhToan({
         <span className="so">{dinhDangTien(dong(khachCanTra))}</span>
       </div>
 
-      <div className="thanh-toan__truong">
-        <label htmlFor="thanh-toan-phuong-thuc">Phương thức thanh toán</label>
-        <select
-          id="thanh-toan-phuong-thuc"
-          ref={phuongThucRef}
-          value={trangThai.phuongThucThanhToan}
-          disabled={dangGui}
-          onChange={(su) => onDoi({ ...trangThai, phuongThucThanhToan: su.target.value as PhuongThucThanhToan })}
-        >
-          <option value="TIEN_MAT">Tiền mặt</option>
-          <option value="CHUYEN_KHOAN">Chuyển khoản</option>
-          <option value="THE">Thẻ</option>
-          <option value="VI">Ví</option>
-        </select>
-      </div>
-
-      {laTienMat ? (
+      {!gioHangRong ? (
         <>
-          <div className="thanh-toan__tien-nhanh">
-            {MENH_GIA_NHANH.map((mc) => (
-              <button
-                type="button"
-                key={mc}
-                disabled={dangGui}
-                onClick={() => onDoi({ ...trangThai, khachThanhToan: String(mc) })}
-              >
-                {dinhDangSo(mc)}
-              </button>
-            ))}
-            <button
-              type="button"
+          {laTienMat ? (
+            <DongTienNhap
+              id="thanh-toan-khach-thanh-toan"
+              nhan="Khách thanh toán"
+              value={trangThai.khachThanhToan}
               disabled={dangGui}
-              onClick={() => onDoi({ ...trangThai, khachThanhToan: String(khachCanTra) })}
-            >
-              Đủ tiền
-            </button>
-          </div>
+              onChange={(giaTri) => onDoi({ ...trangThai, khachThanhToan: giaTri })}
+            />
+          ) : null}
 
-          <TruongNhap
-            nhan="Khách thanh toán"
-            kieu="so"
-            placeholder={dinhDangSo(khachCanTra)}
-            value={trangThai.khachThanhToan}
-            disabled={dangGui}
-            onChange={(su) => onDoi({ ...trangThai, khachThanhToan: su.target.value })}
-          />
+          <fieldset className="thanh-toan__phuong-thuc" ref={phuongThucRef} aria-label="Phương thức thanh toán">
+            {CAC_PHUONG_THUC.map(({ gia, nhan }) => (
+              <label key={gia} className="thanh-toan__radio">
+                <input
+                  type="radio"
+                  name="thanh-toan-phuong-thuc"
+                  value={gia}
+                  checked={trangThai.phuongThucThanhToan === gia}
+                  disabled={dangGui}
+                  onChange={() => onDoi({ ...trangThai, phuongThucThanhToan: gia })}
+                />
+                {nhan}
+              </label>
+            ))}
+          </fieldset>
 
-          <div className="ban-hang__hang">
-            <span>Tiền thừa trả khách</span>
-            <span className="so">{dinhDangTien(dong(tienThua))}</span>
-          </div>
+          {laTienMat ? (
+            <div className="thanh-toan__tien-nhanh">
+              {tinhMenhGiaNhanh(khachCanTra).map((mc) => (
+                <button
+                  type="button"
+                  key={mc}
+                  disabled={dangGui}
+                  onClick={() => onDoi({ ...trangThai, khachThanhToan: String(mc) })}
+                >
+                  {dinhDangSo(mc)}
+                </button>
+              ))}
+            </div>
+          ) : null}
         </>
       ) : null}
+
+      <div className="ban-hang__hang">
+        <span>Tiền thừa trả khách</span>
+        <span className="so">{dinhDangTien(dong(tienThua))}</span>
+      </div>
 
       {loi ? (
         <p className="thanh-toan__loi" role="alert">
