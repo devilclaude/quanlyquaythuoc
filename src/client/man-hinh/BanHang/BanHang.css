@@ -22,16 +22,52 @@
   min-width: 240px;
 }
 
-.ban-hang__hoa-don-hien-tai {
-  background: var(--xam-0);
-  color: var(--mau-chu);
-  font-weight: 600;
-  font-size: var(--chu-sm);
-  padding: var(--kc-2) var(--kc-3);
-  border-radius: var(--bo-goc);
-  min-height: 40px;
+/* ---------- tab hoá đơn (T-025) ---------- */
+.ban-hang__tabs {
   display: flex;
   align-items: center;
+  gap: var(--kc-1);
+  overflow-x: auto;
+}
+
+.ban-hang__tab {
+  display: flex;
+  align-items: center;
+  gap: var(--kc-1);
+  background: var(--duong-800);
+  color: var(--mau-tren-chinh);
+  font-weight: 500;
+  font-size: var(--chu-sm);
+  padding: 0 var(--kc-1) 0 var(--kc-3);
+  border-radius: var(--bo-goc);
+  min-height: 44px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ban-hang__tab--chon {
+  background: var(--xam-0);
+  color: var(--mau-chu);
+}
+
+.ban-hang__tab-dong {
+  border: none;
+  background: transparent;
+  font-size: var(--chu-lg);
+  line-height: 1;
+  color: inherit;
+}
+
+.ban-hang__tab-them {
+  border: none;
+  background: var(--duong-800);
+  color: var(--mau-tren-chinh);
+  font-size: var(--chu-lg);
+  line-height: 1;
+}
+
+.ban-hang__tab-them:hover {
+  background: var(--mau-chinh-hover);
 }
 
 /* ---------- gợi ý tìm ---------- */
