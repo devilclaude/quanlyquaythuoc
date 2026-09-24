@@ -677,3 +677,25 @@ PR: (xem mô tả PR)
 Tầng: A — chỉ nối tầng API cho lõi nghiệp vụ đã được duyệt B ở T-022a, không
 thêm quyết định kiến trúc mới (giống tiền lệ T-010a[B]→T-010b[A]).
 Kế tiếp: T-022c (giao diện thanh toán) hoặc T-031 khi PR này merge.
+
+## 2026-09-24 (run kế 2) — dọn PR + T-022c
+Làm: #55 (T-022b) đã merge (field `merged` của `list_pull_requests` báo sai
+`false`, `get` xác nhận `merged: true`, auto-merge) → chuyển DONE. Không có PR
+nào mở. Chọn T-022c: `ThanhToan.tsx` (pure functions + `PanelThanhToan` thuần
+theo props, cùng khuôn `FormTaoHangHoa`/`KhoiCaiDatToanCuc`) — giảm giá/thu
+khác nhập được, phương thức thanh toán (select, khớp mẫu đơn vị dòng giỏ
+hàng), nút tiền mặt nhanh (50k/100k/200k/500k/Đủ tiền) + "Khách thanh toán"/
+"Tiền thừa trả khách" chỉ hiện khi Tiền mặt; F9 focus vào select phương thức,
+Enter xác nhận (bắt thêm `onKeyDown` cho riêng `<select>` — Chromium KHÔNG
+submit form khi Enter trên select như với input, phát hiện qua e2e đỏ thật).
+Ô "Khách thanh toán" để trống nghĩa là khách đưa vừa đủ (không phải 0) — nếu
+không, mặc định 0 sẽ luôn báo "chưa đủ tiền" ngay từ ca dùng phổ biến nhất.
+PR: (xem mô tả PR)
+Tầng: A — chỉ nối giao diện gọi `POST /api/hoa-don` (T-022b) đã duyệt, không
+thêm quyết định kiến trúc mới (cùng tiền lệ T-022a[B]→T-022b[A]).
+Khác KiotViet: không có screenshot tham chiếu cho màn thanh toán (như T-010c)
+— dựng theo token; nút tiền mặt nhanh/khách thanh toán/tiền thừa là suy đoán
+hợp lý (không lưu server, chỉ tính hiển thị), cần chủ dự án xác nhận với
+người dùng thật nếu KiotViet có luồng khác.
+Kế tiếp: T-023 (in hoá đơn) hoặc T-031 (hàng đợi Dexie), đủ điều kiện sau khi
+PR này merge.

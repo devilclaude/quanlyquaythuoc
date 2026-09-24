@@ -254,3 +254,84 @@ test('quét mã vạch: quét liên tiếp hai mã không lẫn kết quả dù 
   await expect(dongGio).toHaveCount(1);
   await expect(dongGio).toContainText('Cefdina 125 MG');
 });
+
+// T-022c — panel thanh toán. Luồng bán hàng đầy đủ (tìm → giỏ → thanh toán →
+// tạo hoá đơn) chỉ được kiểm ở tầng e2e (ARCHITECTURE.md §8: bắt buộc có ít
+// nhất một luồng bán hàng hoàn toàn bằng bàn phím). Không dựng CSDL thật —
+// chặn `POST /api/hoa-don` (T-022b, đã có test tích hợp DB riêng ở
+// `tao-hoa-don.test.ts`/`hoa-don.test.ts`), chỉ kiểm hành vi UI.
+test('thanh toán: F9 sang khu vực thanh toán, Enter xác nhận, thành công thì xoá giỏ và báo mã hoá đơn (T-022c)', async ({
+  page,
+  context,
+}) => {
+  await context.route('**/api/hang-hoa*', (route) => route.fulfill({ json: DU_LIEU_TIM }));
+  await context.route('**/api/hoa-don', async (route) => {
+    expect(route.request().method()).toBe('POST');
+    const than = route.request().postDataJSON() as { phuongThucThanhToan: string; dong: unknown[] };
+    expect(than.phuongThucThanhToan).toBe('TIEN_MAT');
+    expect(than.dong).toHaveLength(1);
+    await route.fulfill({
+      status: 201,
+      json: {
+        id: 'hd-1',
+        ma: 'HD000123',
+        tongTienHang: 17_000,
+        giamGia: 0,
+        thuKhac: 0,
+        lamTron: 0,
+        khachCanTra: 17_000,
+      },
+    });
+  });
+  await page.goto('/');
+
+  const oTim = page.getByPlaceholder('Tìm hàng hóa (F3)');
+  const goiYOption = page.getByRole('listbox', { name: 'Gợi ý hàng hoá' }).getByRole('option');
+  await oTim.pressSequentially('pana');
+  await expect(goiYOption).toHaveCount(2);
+  await page.keyboard.press('Enter'); // dòng đầu (vỉ, 17.000đ) đang chọn sẵn — thêm vào giỏ
+
+  await expect(page.locator('tbody tr')).toHaveCount(1);
+
+  // F9 chuyển focus sang khu vực thanh toán (UI-FIDELITY.md nhóm 2) — không
+  // chạm chuột từ đầu tới cuối luồng bán hàng.
+  await page.keyboard.press('F9');
+  await expect(page.getByLabel('Phương thức thanh toán')).toBeFocused();
+
+  // Enter ngay (mặc định Tiền mặt, ô "Khách thanh toán" để trống nghĩa là
+  // khách đưa vừa đủ) xác nhận thanh toán và gọi POST /api/hoa-don.
+  await page.keyboard.press('Enter');
+
+  await expect(page.getByText('Đã tạo hoá đơn HD000123')).toBeVisible();
+  await expect(page.locator('tbody tr')).toHaveCount(0);
+  await expect(oTim).toBeFocused();
+});
+
+test('thanh toán: tiền mặt đưa chưa đủ thì báo lỗi ngay, không gọi API và không xoá giỏ hàng (T-022c)', async ({
+  page,
+  context,
+}) => {
+  await context.route('**/api/hang-hoa*', (route) => route.fulfill({ json: DU_LIEU_TIM }));
+  let goiApi = false;
+  await context.route('**/api/hoa-don', (route) => {
+    goiApi = true;
+    return route.fulfill({ status: 201, json: {} });
+  });
+  await page.goto('/');
+
+  const oTim = page.getByPlaceholder('Tìm hàng hóa (F3)');
+  const goiYOption = page.getByRole('listbox', { name: 'Gợi ý hàng hoá' }).getByRole('option');
+  await oTim.pressSequentially('pana');
+  await expect(goiYOption).toHaveCount(2);
+  await page.keyboard.press('Enter'); // dòng đầu (vỉ, 17.000đ) đang chọn sẵn — thêm vào giỏ
+  await expect(page.locator('tbody tr')).toHaveCount(1);
+
+  await page.keyboard.press('F9');
+  const oKhachThanhToan = page.getByLabel('Khách thanh toán');
+  await oKhachThanhToan.fill('1000');
+  await page.keyboard.press('Enter');
+
+  await expect(page.getByText('Khách thanh toán chưa đủ')).toBeVisible();
+  await expect(page.locator('tbody tr')).toHaveCount(1);
+  expect(goiApi).toBe(false);
+});

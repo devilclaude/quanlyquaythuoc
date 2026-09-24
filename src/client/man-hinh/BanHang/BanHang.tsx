@@ -4,17 +4,28 @@ import {
   type DonViTinhRes,
   type HangHoaDanhSachItem,
 } from '../../../shared/hop-dong/hang-hoa';
+import { HoaDonResSchema } from '../../../shared/hop-dong/hoa-don';
 import { dong } from '../../../shared/kieu/dong';
 import { dinhDangTien } from '../../../shared/tien/dinh-dang';
 import { Bang, OSo, TruongNhap } from '../../thanh-phan';
 import { ChiBaoTrangThai } from '../../offline/ChiBaoTrangThai';
+import {
+  PanelThanhToan,
+  kiemTraThanhToanHopLe,
+  soNguyenKhongAmTuChuoi,
+  soTienKhachThanhToanTuChuoi,
+  tinhKhachCanTraXemTruoc,
+  trangThaiThanhToanRong,
+  xayDungYeuCauTaoHoaDon,
+} from './ThanhToan';
 import './BanHang.css';
 
 // T-020 — Màn bán hàng: tìm và thêm hàng. T-021 — chọn đơn vị và số lượng
 // của dòng đã có trong giỏ (đổi đơn vị bằng dropdown/F2, sửa số lượng bằng
 // ô nhập/+/-, xoá dòng bằng nút/Delete — UI-FIDELITY.md nhóm 2). T-030 —
-// chỉ báo online/offline (`ChiBaoTrangThai`, xem src/client/offline/). Thanh
-// toán (T-022), nhiều hoá đơn (T-025) đều KHÔNG thuộc phạm vi.
+// chỉ báo online/offline (`ChiBaoTrangThai`, xem src/client/offline/). T-022c
+// — panel thanh toán (`ThanhToan.tsx`), F9 sang khu vực thanh toán, Enter xác
+// nhận. Nhiều hoá đơn (T-025), in hoá đơn (T-023) đều KHÔNG thuộc phạm vi.
 
 /** Tối đa số dòng gợi ý hiện cùng lúc — khớp bản thử `docs/reference/prototype/man-ban-hang.html`. */
 const SO_DONG_GOI_Y_TOI_DA = 12;
@@ -406,7 +417,14 @@ export function BanHang() {
   const [gioHang, setGioHang] = useState<DongGioHang[]>([]);
   /** Dòng giỏ hàng đang chọn — đích của F2/+/-/Delete (T-021). -1 = chưa có dòng nào. */
   const [chiSoDongChon, setChiSoDongChon] = useState(-1);
+  /** Trạng thái panel thanh toán (T-022c). */
+  const [thanhToan, setThanhToan] = useState(trangThaiThanhToanRong());
+  const [dangThanhToan, setDangThanhToan] = useState(false);
+  const [loiThanhToan, setLoiThanhToan] = useState<string | undefined>(undefined);
+  const [thongBaoThanhToan, setThongBaoThanhToan] = useState<string | undefined>(undefined);
   const oTimRef = useRef<HTMLInputElement>(null);
+  /** F9 (UI-FIDELITY.md nhóm 2) focus vào đây — đích đầu tiên của khu vực thanh toán. */
+  const phuongThucRef = useRef<HTMLSelectElement>(null);
   /** Nhịp phím đang gõ ở ô tìm — T-024, xem `capNhatNhipGo`/`phanLoaiNhipGo`. */
   const nhipGoRef = useRef<NhipGoTrangThai>({ lanTruocMs: null, khoangCach: [] });
   /** Từ khoá của lần gọi API GẦN NHẤT — chặn kết quả trả về trễ của một truy
@@ -509,6 +527,67 @@ export function BanHang() {
     setChiSoDongChon((v) => (gioHang.length <= 1 ? -1 : Math.min(v, gioHang.length - 2)));
   }
 
+  /** Enter ở bất kỳ ô nào trong panel thanh toán (submit form — T-022c). Validate
+   * phía client trước (phản hồi ngay, không đợi round-trip cho hai lỗi gõ tay
+   * phổ biến nhất), gọi `POST /api/hoa-don` (T-022b) — không viết lại logic
+   * nghiệp vụ nào ở đây. Thành công thì xoá giỏ hàng, báo mã hoá đơn, focus lại
+   * ô tìm cho đơn tiếp theo. */
+  function xuLyThanhToan() {
+    if (gioHang.length === 0 || dangThanhToan) return;
+
+    const giamGiaSo = soNguyenKhongAmTuChuoi(thanhToan.giamGia);
+    const thuKhacSo = soNguyenKhongAmTuChuoi(thanhToan.thuKhac);
+    if (giamGiaSo === undefined) return setLoiThanhToan('Giảm giá không hợp lệ');
+    if (thuKhacSo === undefined) return setLoiThanhToan('Thu khác không hợp lệ');
+
+    const khachCanTra = tinhKhachCanTraXemTruoc(tongTien, giamGiaSo, thuKhacSo);
+    const khachThanhToanSo = soTienKhachThanhToanTuChuoi(thanhToan.khachThanhToan, khachCanTra);
+    if (khachThanhToanSo === undefined) return setLoiThanhToan('Khách thanh toán không hợp lệ');
+
+    const loiHopLe = kiemTraThanhToanHopLe({
+      phuongThucThanhToan: thanhToan.phuongThucThanhToan,
+      khachThanhToan: khachThanhToanSo,
+      khachCanTra,
+    });
+    if (loiHopLe) return setLoiThanhToan(loiHopLe);
+
+    setLoiThanhToan(undefined);
+    setThongBaoThanhToan(undefined);
+    setDangThanhToan(true);
+
+    const yeuCau = xayDungYeuCauTaoHoaDon(gioHang, {
+      phuongThucThanhToan: thanhToan.phuongThucThanhToan,
+      giamGia: giamGiaSo,
+      thuKhac: thuKhacSo,
+    });
+
+    fetch('/api/hoa-don', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(yeuCau),
+    })
+      .then(async (res) => {
+        const json: unknown = await res.json();
+        if (!res.ok) {
+          const thongBao = (json as { loi?: string } | undefined)?.loi;
+          throw new Error(thongBao ?? 'Không tạo được hoá đơn');
+        }
+        return HoaDonResSchema.parse(json);
+      })
+      .then((hoaDon) => {
+        setDangThanhToan(false);
+        setGioHang([]);
+        setChiSoDongChon(-1);
+        setThanhToan(trangThaiThanhToanRong());
+        setThongBaoThanhToan(`Đã tạo hoá đơn ${hoaDon.ma}`);
+        oTimRef.current?.focus();
+      })
+      .catch((err: unknown) => {
+        setDangThanhToan(false);
+        setLoiThanhToan(err instanceof Error ? err.message : 'Không tạo được hoá đơn');
+      });
+  }
+
   function xuLyPhimOTim(su: React.KeyboardEvent<HTMLInputElement>) {
     // Chỉ đếm nhịp cho phím "gõ ký tự" thật sự (key dài 1) — Enter/mũi tên/F...
     // không thuộc nhịp gõ nội dung (T-024).
@@ -587,6 +666,10 @@ export function BanHang() {
         oTimRef.current?.focus();
         oTimRef.current?.select();
       }
+      if (su.key === 'F9') {
+        su.preventDefault();
+        phuongThucRef.current?.focus();
+      }
     }
     document.addEventListener('keydown', xuLyPhimToanCuc);
     return () => document.removeEventListener('keydown', xuLyPhimToanCuc);
@@ -626,24 +709,18 @@ export function BanHang() {
         </div>
 
         <aside className="ban-hang__panel">
-          <div className="ban-hang__hang">
-            <span>
-              Tổng tiền hàng <span className="so">{tinhSoMon(gioHang)}</span>
-            </span>
-            <span className="so">{dinhDangTien(dong(tongTien))}</span>
-          </div>
-          <div className="ban-hang__hang">
-            <span>Giảm giá</span>
-            <span className="so">0</span>
-          </div>
-          <div className="ban-hang__hang">
-            <span>Thu khác</span>
-            <span className="so">0</span>
-          </div>
-          <div className="ban-hang__hang ban-hang__hang--can-tra">
-            <span>Khách cần trả</span>
-            <span className="so">{dinhDangTien(dong(tongTien))}</span>
-          </div>
+          <PanelThanhToan
+            soMon={tinhSoMon(gioHang)}
+            tongTien={tongTien}
+            trangThai={thanhToan}
+            dangGui={dangThanhToan}
+            loi={loiThanhToan}
+            thongBao={thongBaoThanhToan}
+            gioHangRong={gioHang.length === 0}
+            phuongThucRef={phuongThucRef}
+            onDoi={setThanhToan}
+            onSubmit={xuLyThanhToan}
+          />
         </aside>
       </div>
     </div>

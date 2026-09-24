@@ -227,7 +227,7 @@ API+hợp đồng) sẽ vượt hẳn 1000 dòng nếu gộp — huống hồ k�
 (chỉ schema+lõi, không API không UI) còn trong ngưỡng.
 
 ### T-022b [B] prio:22.2 — Thanh toán và tạo hoá đơn: API
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-022a
+Trạng thái: DONE · Phụ thuộc: T-022a
 Xong khi: `POST /api/hoa-don` nhận giỏ hàng qua hợp đồng Zod
 (`src/shared/hop-dong/hoa-don.ts`), gọi `taoHoaDonTuGioHang`; 400 khi dữ liệu
 không hợp lệ, 409 khi tồn không đủ hoặc giảm giá vượt tổng tiền hàng; lấy
@@ -239,8 +239,8 @@ cần chiNhanhId" — sai, đã lỗi thời từ khi T-010b merge (API cài đ�
 cũng ghi thẻ kho `DOI_CHE_DO` nên cần chiNhanhId trước). Sửa lại ở đây để run
 sau không đi lại đường đã có.
 
-### T-022c [B] prio:22.3 — Thanh toán và tạo hoá đơn: giao diện
-Trạng thái: TODO · Phụ thuộc: T-022b
+### T-022c [A] prio:22.3 — Thanh toán và tạo hoá đơn: giao diện
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-022b
 Xong khi: panel thanh toán trong màn bán hàng — giảm giá/thu khác nhập được,
 chọn phương thức thanh toán tiền mặt/chuyển khoản/thẻ/ví, nút tiền mặt nhanh,
 khách cần trả và tiền thừa hiển thị; gọi `POST /api/hoa-don`, thành công thì xoá
@@ -249,7 +249,9 @@ giỏ hàng và báo mã hoá đơn vừa tạo; **F9** chuyển sang khu vực 
 dùng thật — xem BLOCKED.md mục T-020); toàn bộ luồng làm được bằng bàn phím.
 Ghi chú: `docs/reference/kiotviet/` không có screenshot cho màn thanh toán —
 dựng theo token trong `.claude/skills/design-system/`, ghi rõ trong PR (tiền lệ
-T-010c). In hoá đơn thuộc T-023, không làm ở đây.
+T-010c). In hoá đơn thuộc T-023, không làm ở đây. Đổi nhãn từ [B] gốc sang [A]
+lúc làm: chỉ nối giao diện gọi `POST /api/hoa-don` (T-022b) đã duyệt, không
+thêm quyết định kiến trúc mới — cùng tiền lệ T-022a[B]→T-022b[A].
 
 ### T-023 [A] prio:23 — In hoá đơn
 Trạng thái: TODO · Phụ thuộc: T-022c

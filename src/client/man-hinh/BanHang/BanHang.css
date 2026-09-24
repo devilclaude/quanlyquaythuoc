@@ -236,3 +236,86 @@
   border: var(--vien);
   border-radius: var(--bo-goc);
 }
+
+/* ---------- panel thanh toán (T-022c) — không có screenshot tham chiếu,
+   dựng theo token .claude/skills/design-system/ ---------- */
+.thanh-toan {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kc-2);
+}
+
+.thanh-toan__tieu-de {
+  font-size: var(--chu-lg);
+  margin: 0 0 var(--kc-1) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--kc-2);
+}
+
+.thanh-toan__tieu-de kbd {
+  font-size: var(--chu-xs);
+  font-family: var(--font-chinh);
+  color: var(--mau-chu-phu);
+  background: var(--mau-nen);
+  border: var(--vien);
+  border-radius: var(--bo-goc);
+  padding: 1px 6px;
+}
+
+.thanh-toan__truong {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kc-1);
+  font-size: var(--chu-sm);
+}
+
+.thanh-toan__truong select {
+  font-family: var(--font-chinh);
+  font-size: var(--chu-base);
+  min-height: 44px;
+  padding: var(--kc-1) var(--kc-2);
+  border: var(--vien);
+  border-radius: var(--bo-goc);
+  background: var(--mau-nen-the);
+  color: var(--mau-chu);
+}
+
+.thanh-toan__tien-nhanh {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kc-1);
+}
+
+.thanh-toan__tien-nhanh button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--kc-2);
+  border: var(--vien);
+  border-radius: var(--bo-goc);
+  background: var(--mau-nen-the);
+  color: var(--mau-chu);
+  font-size: var(--chu-sm);
+  cursor: pointer;
+}
+
+.thanh-toan__tien-nhanh button:hover:not(:disabled) {
+  background: var(--xam-100);
+}
+
+.thanh-toan__tien-nhanh button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.thanh-toan__loi {
+  color: var(--mau-nguy);
+  font-size: var(--chu-sm);
+  margin: 0;
+}
+
+.thanh-toan__thong-bao {
+  color: var(--mau-tot);
+  font-size: var(--chu-sm);
+  margin: 0;
+}
