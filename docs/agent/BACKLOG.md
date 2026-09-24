@@ -182,7 +182,7 @@ form nhập hàng tự đọc cài đặt qua API, không phụ thuộc màn cà
 không.
 
 ### T-010c [A] prio:10.3 — Cài đặt quản lý theo lô: giao diện
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-010b
+Trạng thái: DONE · Phụ thuộc: T-010b
 Xong khi: màn cài đặt có công tắc bật/tắt toàn cục (chưa có screenshot KiotViet
 tham chiếu cho màn này trong `docs/reference/kiotviet/` — dựng theo token trong
 `.claude/skills/design-system/`, ghi rõ trong PR); chi tiết hàng hoá (T-009c) có
@@ -206,7 +206,7 @@ Xong khi: khớp screenshot "Chọn 1 món hàng để bán"; đổi đơn vị 
 cơ sở; sửa số lượng bằng bàn phím; giá lấy theo đơn vị đã chọn, không nhân hệ số.
 
 ### T-022a [B] prio:22.1 — Thanh toán và tạo hoá đơn: schema + lõi nghiệp vụ
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-021, T-007
+Trạng thái: DONE · Phụ thuộc: T-021, T-007
 Xong khi: bảng `hoa_don`/`hoa_don_dong` (chứng từ giao dịch, không xoá cứng —
 SPEC.md §3.5); hàm `taoHoaDonTuGioHang` trừ kho theo FEFO cho từng dòng trong
 **một transaction nguyên tử** (bán vượt tồn ở bất kỳ dòng nào rollback toàn bộ,
@@ -227,7 +227,7 @@ API+hợp đồng) sẽ vượt hẳn 1000 dòng nếu gộp — huống hồ k�
 (chỉ schema+lõi, không API không UI) còn trong ngưỡng.
 
 ### T-022b [B] prio:22.2 — Thanh toán và tạo hoá đơn: API
-Trạng thái: TODO · Phụ thuộc: T-022a
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-022a
 Xong khi: `POST /api/hoa-don` nhận giỏ hàng qua hợp đồng Zod
 (`src/shared/hop-dong/hoa-don.ts`), gọi `taoHoaDonTuGioHang`; 400 khi dữ liệu
 không hợp lệ, 409 khi tồn không đủ hoặc giảm giá vượt tổng tiền hàng; lấy

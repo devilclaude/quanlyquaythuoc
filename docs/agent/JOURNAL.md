@@ -664,3 +664,16 @@ Playwright thật (route giả lập, không commit): nav "Cài đặt" hiện, 
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: T-040 hoặc T-031 sau khi PR này merge (cả hai đều đủ điều kiện).
+
+## 2026-09-24 (run kế) — dọn PR + T-022b
+Làm: #48 (T-022a) và #54 (T-010c) đã merge → chuyển DONE (BACKLOG lệch, chưa
+ai cập nhật). Không còn PR mở nào. Chọn T-022b: `POST /api/hoa-don`
+(`src/server/api/hoa-don.ts`) nhận hợp đồng Zod mới
+(`src/shared/hop-dong/hoa-don.ts`, không có `lamTron` — chưa có giao diện
+bật), gọi thẳng `taoHoaDonTuGioHang` (T-022a) không viết lại logic; sinh ULID
+cho hoá đơn + từng dòng; lấy `chiNhanhId` qua `layChiNhanhMacDinh`; 400 khi
+Zod từ chối, 409 khi `KhongDuTonKhoError`/`GiamGiaVuotTongError`.
+PR: (xem mô tả PR)
+Tầng: A — chỉ nối tầng API cho lõi nghiệp vụ đã được duyệt B ở T-022a, không
+thêm quyết định kiến trúc mới (giống tiền lệ T-010a[B]→T-010b[A]).
+Kế tiếp: T-022c (giao diện thanh toán) hoặc T-031 khi PR này merge.
