@@ -318,26 +318,69 @@ khi offline.
 
 ## Milestone 4 — Nhập hàng
 
-### T-040 [B] prio:40 — Phiếu nhập kèm lô và hạn dùng
+### T-040a [B] prio:40.1 — Phiếu nhập: schema + lõi nghiệp vụ
 Trạng thái: TODO · Phụ thuộc: T-007, T-010b
-Xong khi: khớp luồng trong screenshots nhập hàng; **tạo hàng mới ngay trong màn
-nhập**, không rời màn; bắt buộc lô + HSD khi sản phẩm bật quản lý lô, không hỏi khi
-tắt; lưu tạm (phiếu tạm) và hoàn thành là hai trạng thái; hoàn thành mới ghi kho.
+Xong khi: migration `phieu_nhap` (chứng từ, trạng thái `PHIEU_TAM`/`HOAN_THANH`,
+mã tự sinh tuần tự, không xoá cứng) + `phieu_nhap_dong` (dòng nhập: sản phẩm, đơn
+vị, số lượng theo đơn vị đã chọn, đơn giá, lô mong muốn `so_lo`/`hsd` — cho phép
+rỗng khi sản phẩm tắt quản lý lô); hàm nghiệp vụ `taoPhieuNhap` (tạo ở trạng thái
+tạm hoặc hoàn thành ngay) và `hoanThanhPhieuNhap`: với mỗi dòng quy đổi số lượng
+về đơn vị cơ sở, **get-or-create đúng một lô** theo `(san_pham_id, so_lo, hsd)`
+(dùng lô ngầm định khi không nhập lô), ghi thẻ kho `NHAP` dương bằng số lượng cơ
+sở với `gia_tri = đơn giá × số lượng cơ sở` (không phép chia — SPEC.md §3.4),
+toàn bộ một phiếu chạy trong **một transaction**; bắt buộc lô + HSD khi sản phẩm
+bật quản lý lô (dùng `giaiNghiaCaiDatQuanLyLo` đã có ở T-010a, không viết lại);
+lưu tạm **không ghi kho**; hoàn thành một phiếu đã `HOAN_THANH` bị từ chối
+(idempotent). Test ca biên bắt buộc: thiếu HSD khi bật quản lý lô bị từ chối; sản
+phẩm tắt lô bỏ qua lô/HSD, rơi đúng lô ngầm định; nhập vào lô đã tồn tại cộng dồn
+đúng lô cũ (không tạo lô trùng); số lượng 0 bị từ chối; quy đổi đơn vị lẻ (nhập
+theo hộp → cộng đúng số viên cơ sở). Không có API/UI.
+Ghi chú: đây là T-040 cũ, chẻ ngay lúc chọn task (không build thử rồi bỏ) — cùng
+hình dạng gộp (schema+lõi+API+UI, đường ghi kho+tiền+lô trong một "Xong khi") đã
+khiến T-022/T-009/T-010 vượt ngưỡng khi làm trọn gói; T-040 còn thêm việc
+get-or-create lô thật (T-022 không cần vì hoá đơn chỉ đọc lô có sẵn, không tạo
+lô mới) nên chắc chắn không nhỏ hơn. Không build thử để đo — ước lượng đã đủ chắc
+theo đúng tiền lệ T-009 (BACKLOG §Milestone 2, "chẻ ngay lúc chọn").
+
+### T-040b [A] prio:40.2 — Phiếu nhập: API
+Trạng thái: TODO · Phụ thuộc: T-040a
+Xong khi: `POST /api/phieu-nhap` (tạo, nhận cờ lưu tạm hay hoàn thành ngay),
+`PUT /api/phieu-nhap/:id` (sửa dòng khi còn ở trạng thái tạm — từ chối khi đã
+hoàn thành), `POST /api/phieu-nhap/:id/hoan-thanh`, `GET /api/phieu-nhap` (danh
+sách) và `GET /api/phieu-nhap/:id` (chi tiết); 400 khi dữ liệu không hợp lệ, 409
+khi thiếu lô/HSD bắt buộc hoặc hoàn thành phiếu đã hoàn thành.
+
+### T-040c [B] prio:40.3 — Phiếu nhập: giao diện
+Trạng thái: TODO · Phụ thuộc: T-040b
+Xong khi: khớp luồng trong screenshots "Giao diện tìm kiếm hàng đã có để nhập" và
+"Đã nhập 2 hàng" (`docs/reference/kiotviet/Quản trị/Nhập hàng/`); tìm hàng đã có
+qua ô tìm (giống màn bán hàng) **và tạo hàng mới ngay trong màn nhập, không rời
+màn** (nhúng lại form tạo hàng hoá của T-009b); nhập số lượng/đơn giá; ô lô + HSD
+chỉ hiện khi sản phẩm bật quản lý lô; nút Lưu tạm / Hoàn thành gọi đúng API
+T-040b.
+Ghi chú: ảnh gốc có panel "Nhà cung cấp"/"Cần trả nhà cung cấp"/"Tính vào công
+nợ" — **không dựng**, SPEC.md §2 đã chốt "Công nợ nhà cung cấp" ngoài v1 (v1.1).
+Tầng B: đường ghi kho + tiền qua tay người dùng lần đầu (khác tiền lệ T-022c chỉ
+nối API đã duyệt B — ở đây UI còn tự quyết thời điểm gọi hoàn thành vs lưu tạm và
+validate lô/HSD bắt buộc ngay tại form, không chỉ dựa 409 từ server).
 
 ### T-041 [A] prio:41 — Danh sách và chi tiết phiếu nhập
-Trạng thái: TODO · Phụ thuộc: T-040
+Trạng thái: TODO · Phụ thuộc: T-040b
 Xong khi: thứ tự cột và bộ lọc khớp screenshot "Danh sách nhập hàng"; chi tiết mở
 ra ngay dưới dòng như KiotViet.
 
 ### T-042 [A] prio:42 — In tem mã
-Trạng thái: TODO · Phụ thuộc: T-040
+Trạng thái: TODO · Phụ thuộc: T-040c
 Xong khi: chọn khổ giấy, sửa số lượng tem từng dòng, preview, in — đối chiếu
 screenshots và file PDF mẫu trong `docs/reference/kiotviet/`; **bỏ dấu tiếng Việt
 trên tem** vì máy in tem không in được chữ có dấu (ghi chú này lấy nguyên văn từ
 màn hình KiotViet).
+Ghi chú: phụ thuộc T-040c (không chỉ T-040b) vì điểm gọi in tem là "sau khi hoàn
+thành" ngay trong màn nhập hàng thật (SPEC.md §6.2 bước 4), không phải một màn
+độc lập.
 
 ### T-043 [B] prio:43 — Nhập hàng từ file Excel
-Trạng thái: TODO · Phụ thuộc: T-040
+Trạng thái: TODO · Phụ thuộc: T-040a
 Xong khi: có file mẫu tải về; báo lỗi theo từng dòng; **file lỗi không làm hỏng
 kho** — hoặc vào hết hoặc không vào gì.
 
@@ -363,7 +406,7 @@ trừ — có test; tiền hoàn dùng `giam_gia_phan_bo` đã lưu lúc bán; k
 danh sách trả hàng; liên kết ngược tới hoá đơn gốc.
 
 ### T-053 [B] prio:53 — Trả hàng nhập (trả nhà cung cấp)
-Trạng thái: TODO · Phụ thuộc: T-040
+Trạng thái: TODO · Phụ thuộc: T-040a
 Xong khi: khớp screenshot "Trả hàng nhập"; liên kết ngược tới phiếu nhập gốc; trừ
 đúng lô đã nhập; ghi thẻ kho.
 
