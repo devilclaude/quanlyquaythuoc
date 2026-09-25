@@ -718,3 +718,14 @@ Tầng: B — chạm package.json/package-lock.json (thêm dependency, giống t
 T-030), và là quyết định nền cho toàn bộ offline sync (T-032/033 xây tiếp).
 Kế tiếp: T-032 (số hoá đơn cấp tại client) khi PR này merge; #58 (T-025) vẫn
 chờ người duyệt song song.
+
+## 2026-09-25 — dọn PR + T-040 (chẻ task, không code)
+Làm: #58/#59 xanh, không comment, không conflict thật (`git merge-tree`) — chờ
+duyệt B, không sửa. Chọn T-040 nhưng "Xong khi" gộp schema+lõi (get-or-create lô
+thật, ghi kho+tiền)+API+UI — cùng hình dạng khiến T-022/T-009/T-010 vượt ngưỡng.
+Chẻ ngay lúc chọn (không build thử): T-040a (schema+lõi)→T-040b (API)→T-040c
+(UI); sửa phụ thuộc T-041→T-040b, T-042→T-040c, T-043/T-053→T-040a. Ảnh gốc có
+panel "Nhà cung cấp/công nợ" — ghi vào T-040c là ngoài v1 (SPEC.md §2).
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: T-040a.
