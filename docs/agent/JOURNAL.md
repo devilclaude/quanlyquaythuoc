@@ -702,3 +702,19 @@ nhóm 2). Khổ giấy nhớ theo máy qua `localStorage`.
 PR: (xem mô tả PR)
 Tầng: A — chỉ trình bày lại dữ liệu đã ghi, không đổi kho/tiền.
 Kế tiếp: T-025 hoặc T-031, đủ điều kiện sau khi PR này merge.
+
+## 2026-09-25 — dọn PR + T-031
+Làm: #57 (T-023) đã merge → DONE. #58 (T-025) vẫn xanh, không comment/conflict,
+chờ duyệt B — không sửa. Chọn T-031: hàng đợi thao tác offline
+(`src/client/offline/hang-doi-thao-tac.ts`) — bảng Dexie đầu tiên của dự án,
+thêm dependency `dexie`/`fake-indexeddb` (devDep). Enqueue idempotent theo ULID
+qua `add` (ConstraintError → no-op, không get-rồi-add để tránh race); trạng thái
+CHO_GUI/DA_GUI/DA_XAC_NHAN/LOI; xử lý hàng đợi không bao giờ xoá thao tác lỗi
+(ở lại để thử lại lần sau); `xoaThaoTacDaXacNhan` từ chối xoá khi chưa xác nhận.
+Nối `useTrangThaiKetNoi` (T-030) vào hàng đợi thật qua `liveQuery` — bỏ mock
+0/null đã ghi chú sẵn trong code từ T-030.
+PR: (xem mô tả PR)
+Tầng: B — chạm package.json/package-lock.json (thêm dependency, giống tiền lệ
+T-030), và là quyết định nền cho toàn bộ offline sync (T-032/033 xây tiếp).
+Kế tiếp: T-032 (số hoá đơn cấp tại client) khi PR này merge; #58 (T-025) vẫn
+chờ người duyệt song song.

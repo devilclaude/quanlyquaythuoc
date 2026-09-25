@@ -255,7 +255,7 @@ sang [A]: chỉ nối `POST /api/hoa-don` (T-022b) đã duyệt, không thêm ki
 mới — tiền lệ T-022a[B]→T-022b[A].
 
 ### T-023 [A] prio:23 — In hoá đơn
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-022c
+Trạng thái: DONE · Phụ thuộc: T-022c
 Xong khi: in được khổ cuộn K57 và K80; có preview; nội dung khớp thông tin trong
 ảnh hoá đơn KiotViet.
 Tầng A: chỉ đọc dữ liệu đã ghi, không thay đổi kho hay tiền.
@@ -292,7 +292,7 @@ hiện** đang online/offline, số thao tác chờ đồng bộ, thời điểm
 mất mạng giữa lúc bán không popup chặn màn hình và không mất giỏ.
 
 ### T-031 [B] prio:31 — Hàng đợi thao tác trong Dexie
-Trạng thái: TODO · Phụ thuộc: T-030
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-030
 Xong khi: mỗi thao tác bất biến, có ULID do client sinh, **idempotent**; trạng thái
 rõ ràng chờ gửi/đã gửi/đã xác nhận/lỗi; không bao giờ tự xoá thao tác chưa được máy
 chủ xác nhận; gửi lại hai lần không nhân đôi tồn kho — có test.
