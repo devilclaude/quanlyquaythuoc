@@ -718,6 +718,24 @@ Tầng: B — chạm package.json/package-lock.json (thêm dependency, giống t
 T-030), và là quyết định nền cho toàn bộ offline sync (T-032/033 xây tiếp).
 Kế tiếp: T-032 (số hoá đơn cấp tại client) khi PR này merge; #58 (T-025) vẫn
 chờ người duyệt song song.
+## 2026-09-24 (run kế 4) — dọn PR + T-025
+Làm: #57 (T-023) đã merge → DONE, không còn PR agent nào mở. Chọn T-025:
+nhiều hoá đơn song song. Đưa `gioHang`/`chiSoDongChon`/panel thanh toán vào
+một `HoaDonTab` mỗi tab (`capNhatTab` là đường DUY NHẤT sửa một tab, các tab
+khác giữ nguyên tham chiếu); `ThanhTabHoaDon` thay div "Hoá đơn 1" tĩnh cũ.
+F7/nút "+" mở tab, Alt+1..9 chuyển theo vị trí hiển thị (UI-FIDELITY.md nhóm
+2), đóng tab không cho về 0 tab. `xuLyThanhToan` chụp `tabId`/giỏ hàng NGAY
+lúc gửi để phản hồi (thành công lẫn lỗi) luôn áp đúng tab đã thanh toán dù
+người dùng đã chuyển tab khác trong lúc chờ — không phải tab đang xem lúc
+phản hồi về.
+PR: (xem mô tả PR)
+Tầng: B — trộn nhầm dòng giữa hai tab sinh hoá đơn sai/trừ kho sai (đúng tiêu
+chí BACKLOG.md đã ghi sẵn cho task này, không phải task tự chọn B).
+Quyết định: Alt+1..9 đọc qua ref (`tabsRef`/`tabDangChonIdRef`), không đưa
+`tabs`/`tabDangChonId` vào deps của effect phím toàn cục (giữ nguyên mẫu
+mount-một-lần đã có ở F3/F9) — tránh bug đóng gói `tabDangChonId` cũ mãi mãi
+trong closure của effect.
+Kế tiếp: T-031 hoặc T-040/T-052/T-055, đủ điều kiện sau khi PR này merge.
 
 ## 2026-09-25 — dọn PR + T-040 (chẻ task, không code)
 Làm: #58/#59 xanh, không comment, không conflict thật (`git merge-tree`) — chờ

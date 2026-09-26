@@ -272,7 +272,7 @@ không mất nhịp và không mất ký tự; phân biệt được luồng qu�
 phím; máy quét hoạt động như bàn phím nên không cần driver.
 
 ### T-025 [B] prio:25 — Nhiều hoá đơn song song
-Trạng thái: TODO · Phụ thuộc: T-022c
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-022c
 Xong khi: mở nhiều tab hoá đơn như KiotViet; chuyển tab bằng bàn phím; giỏ đang gõ
 dở không mất khi chuyển; **có test chứng minh dòng hàng không lẫn giữa các tab**.
 Tầng B dù trông như việc giao diện: trộn nhầm dòng giữa hai tab sinh ra hoá đơn sai

@@ -18,6 +18,7 @@ import {
   tinhKhachCanTraXemTruoc,
   trangThaiThanhToanRong,
   xayDungYeuCauTaoHoaDon,
+  type TrangThaiPanelThanhToan,
 } from './ThanhToan';
 import './BanHang.css';
 
@@ -27,7 +28,8 @@ import './BanHang.css';
 // chỉ báo online/offline (`ChiBaoTrangThai`, xem src/client/offline/). T-022c
 // — panel thanh toán (`ThanhToan.tsx`), F9 sang khu vực thanh toán, Enter xác
 // nhận. T-023 — preview + in hoá đơn (`InHoaDon.tsx`) mở ngay sau khi thanh
-// toán thành công. Nhiều hoá đơn (T-025) KHÔNG thuộc phạm vi.
+// toán thành công. T-025 — nhiều hoá đơn song song (tab hoá đơn, F7 mở tab
+// mới, Alt+1..9 chuyển tab — UI-FIDELITY.md nhóm 2).
 
 /** Tối đa số dòng gợi ý hiện cùng lúc — khớp bản thử `docs/reference/prototype/man-ban-hang.html`. */
 const SO_DONG_GOI_Y_TOI_DA = 12;
@@ -409,6 +411,146 @@ export function BangGioHang({ gioHang, chiSoDongChon, onChonDong, onDoiDonVi, on
   );
 }
 
+// T-025 — Nhiều hoá đơn song song (tab hoá đơn), như KiotViet (SPEC.md §6.1,
+// UI-FIDELITY.md nhóm 2: F7 mở tab mới, Alt+1..9 chuyển tab). Mỗi tab giữ
+// TRỌN VẸN trạng thái một hoá đơn đang soạn — giỏ hàng lẫn panel thanh toán —
+// không có mảnh trạng thái nào của một hoá đơn nằm ngoài tab của nó, để
+// không thể lẫn dòng giữa hai tab dù chuyển qua lại hay thanh toán tab này
+// trong lúc tab khác đang gõ dở.
+export interface HoaDonTab {
+  id: string;
+  /** Số hiện trên nhãn tab ("Hoá đơn N") — TĂNG DẦN, không tái sử dụng số đã
+   * đóng trong cùng phiên (tránh hai tab từng cùng mang một số, dễ nhầm khi
+   * đối chiếu). Không phải mã hoá đơn thật (`HD000001`, sinh ở server lúc
+   * thanh toán) — chỉ là nhãn tab trước khi bán. */
+  soThuTu: number;
+  gioHang: DongGioHang[];
+  chiSoDongChon: number;
+  thanhToan: TrangThaiPanelThanhToan;
+  dangThanhToan: boolean;
+  loiThanhToan: string | undefined;
+  thongBaoThanhToan: string | undefined;
+}
+
+export function taoTabRong(id: string, soThuTu: number): HoaDonTab {
+  return {
+    id,
+    soThuTu,
+    gioHang: [],
+    chiSoDongChon: -1,
+    thanhToan: trangThaiThanhToanRong(),
+    dangThanhToan: false,
+    loiThanhToan: undefined,
+    thongBaoThanhToan: undefined,
+  };
+}
+
+/** Số thứ tự cấp cho tab MỞ TIẾP THEO — luôn lớn hơn số lớn nhất đã từng cấp
+ * trong danh sách hiện tại, kể cả sau khi đóng bớt tab ở giữa. */
+export function soThuTuTabTiepTheo(tabs: HoaDonTab[]): number {
+  return tabs.reduce((max, t) => Math.max(max, t.soThuTu), 0) + 1;
+}
+
+/** F7 hoặc nút "+" (UI-FIDELITY.md nhóm 2): thêm một tab rỗng vào cuối danh
+ * sách. Không tự chuyển sang tab mới — do gọi nơi khác quyết định, để dùng
+ * lại được cho cả luồng phím lẫn luồng chuột. */
+export function moTabMoi(tabs: HoaDonTab[], idMoi: string): { tabs: HoaDonTab[]; tabMoiId: string } {
+  const tabMoi = taoTabRong(idMoi, soThuTuTabTiepTheo(tabs));
+  return { tabs: [...tabs, tabMoi], tabMoiId: tabMoi.id };
+}
+
+/** Đóng một tab — LUÔN còn ít nhất một tab mở (không đóng tab hoá đơn cuối
+ * cùng, khớp KiotViet). Đóng tab đang chọn thì chuyển sang tab liền kề bên
+ * trái (hoặc tab đầu nếu đang đóng tab đầu tiên); đóng một tab không đang
+ * chọn thì tab đang chọn giữ nguyên. */
+export function dongTab(
+  tabs: HoaDonTab[],
+  tabId: string,
+  tabDangChonId: string,
+): { tabs: HoaDonTab[]; tabDangChonId: string } {
+  if (tabs.length <= 1) return { tabs, tabDangChonId };
+  const viTri = tabs.findIndex((t) => t.id === tabId);
+  if (viTri === -1) return { tabs, tabDangChonId };
+
+  const tabsMoi = tabs.filter((t) => t.id !== tabId);
+  if (tabDangChonId !== tabId) return { tabs: tabsMoi, tabDangChonId };
+
+  const tabKeTiep = tabsMoi[Math.max(0, viTri - 1)];
+  return { tabs: tabsMoi, tabDangChonId: tabKeTiep!.id };
+}
+
+/** Alt+1..9 (UI-FIDELITY.md nhóm 2): chuyển theo VỊ TRÍ hiển thị trên thanh
+ * tab (1-based), không phải theo số thứ tự trên nhãn — đóng bớt tab giữa
+ * chừng làm hai số này lệch nhau. Vượt quá số tab đang mở thì không đổi gì. */
+export function tabTheoViTri(tabs: HoaDonTab[], viTriMotBased: number): HoaDonTab | undefined {
+  return tabs[viTriMotBased - 1];
+}
+
+/** Cập nhật ĐÚNG MỘT tab theo id, mọi tab khác giữ nguyên tham chiếu (bất
+ * biến) — đường DUY NHẤT để sửa một tab, để không thể vô tình sửa nhầm tab
+ * khác đang mở cùng lúc (đây là điều khoản "không lẫn dòng giữa các tab"). */
+export function capNhatTab(tabs: HoaDonTab[], tabId: string, doiMoi: (tab: HoaDonTab) => HoaDonTab): HoaDonTab[] {
+  return tabs.map((t) => (t.id === tabId ? doiMoi(t) : t));
+}
+
+interface ThanhTabHoaDonProps {
+  tabs: HoaDonTab[];
+  tabDangChonId: string;
+  onChonTab: (id: string) => void;
+  onDongTab: (id: string) => void;
+  onMoTabMoi: () => void;
+}
+
+/** Thanh tab hoá đơn — khớp ảnh "Giao diện bán hàng chưa có sản phẩm" (nhiều
+ * tab "Hoá đơn N" cạnh nhau, nút "+" mở tab mới, "×" đóng tab — ẩn khi chỉ
+ * còn một tab, không có gì để đóng về). Phím Alt+1..9/F7 hiện thẳng bằng
+ * `<kbd>` NGAY CẠNH việc nó làm — UI-FIDELITY.md: "Mọi phím tắt phải hiện
+ * trên giao diện… Không bắt nhớ, không giấu trong trang trợ giúp"; nhét vào
+ * `aria-label` (chỉ đọc được bởi trình đọc màn hình) KHÔNG tính là hiện trên
+ * giao diện với người dùng thấy bằng mắt — cùng khuôn `<kbd>F9</kbd>` đã có
+ * sẵn ở `ThanhToan.tsx`. */
+export function ThanhTabHoaDon({ tabs, tabDangChonId, onChonTab, onDongTab, onMoTabMoi }: ThanhTabHoaDonProps) {
+  return (
+    <div className="ban-hang__tabs" role="tablist" aria-label="Hoá đơn">
+      {tabs.map((tab, chiSo) => {
+        // Alt+1..9 chuyển theo VỊ TRÍ hiển thị (xem `tabTheoViTri`), không
+        // phải theo `soThuTu` trên nhãn — số hiện đúng phím sẽ đổi cho một
+        // tab nếu tab đứng trước nó bị đóng, đó là hành vi ĐÚNG (khớp phím
+        // thật sự chạy), không phải lỗi hiển thị.
+        const viTri = chiSo + 1;
+        return (
+          <div
+            key={tab.id}
+            role="tab"
+            aria-selected={tab.id === tabDangChonId}
+            className={['ban-hang__tab', tab.id === tabDangChonId ? 'ban-hang__tab--chon' : ''].filter(Boolean).join(' ')}
+            onClick={() => onChonTab(tab.id)}
+          >
+            <span className="ban-hang__tab-nhan">Hoá đơn {tab.soThuTu}</span>
+            {viTri <= 9 ? <kbd>Alt+{viTri}</kbd> : null}
+            {tabs.length > 1 ? (
+              <button
+                type="button"
+                className="ban-hang__tab-dong"
+                aria-label={`Đóng Hoá đơn ${tab.soThuTu}`}
+                onClick={(su) => {
+                  su.stopPropagation();
+                  onDongTab(tab.id);
+                }}
+              >
+                ✕
+              </button>
+            ) : null}
+          </div>
+        );
+      })}
+      <button type="button" className="ban-hang__tab-them" aria-label="Mở hoá đơn mới (F7)" onClick={onMoTabMoi}>
+        +<kbd>F7</kbd>
+      </button>
+    </div>
+  );
+}
+
 /** Container: ô tìm (F3) → gợi ý theo đơn vị → thêm vào giỏ, toàn bộ bằng bàn phím. */
 export function BanHang() {
   const [tim, setTim] = useState('');
@@ -416,18 +558,25 @@ export function BanHang() {
   const [dangTai, setDangTai] = useState(false);
   const [loi, setLoi] = useState<string | undefined>(undefined);
   const [chiSoChon, setChiSoChon] = useState(0);
-  const [gioHang, setGioHang] = useState<DongGioHang[]>([]);
-  /** Dòng giỏ hàng đang chọn — đích của F2/+/-/Delete (T-021). -1 = chưa có dòng nào. */
-  const [chiSoDongChon, setChiSoDongChon] = useState(-1);
-  /** Trạng thái panel thanh toán (T-022c). */
-  const [thanhToan, setThanhToan] = useState(trangThaiThanhToanRong());
-  const [dangThanhToan, setDangThanhToan] = useState(false);
-  const [loiThanhToan, setLoiThanhToan] = useState<string | undefined>(undefined);
-  const [thongBaoThanhToan, setThongBaoThanhToan] = useState<string | undefined>(undefined);
-  /** Hoá đơn vừa tạo cần in (T-023) — `undefined` = không hiện preview. */
+  /** T-025 — mỗi tab giữ trọn giỏ hàng + trạng thái thanh toán riêng, xem
+   * `HoaDonTab`. Bắt đầu với đúng một tab, như vào màn KiotViet lần đầu. */
+  const [tabs, setTabs] = useState<HoaDonTab[]>(() => [taoTabRong(crypto.randomUUID(), 1)]);
+  const [tabDangChonId, setTabDangChonId] = useState<string>(() => tabs[0]!.id);
+  /** Hoá đơn vừa tạo cần in (T-023) — `undefined` = không hiện preview. Chung
+   * cho mọi tab: chỉ một preview mở tại một thời điểm, gắn với hoá đơn VỪA
+   * thanh toán xong, không phải tab đang xem. */
   const [hoaDonDeIn, setHoaDonDeIn] = useState<HoaDonDeIn | undefined>(undefined);
   const [khoGiay, setKhoGiay] = useState<KhoGiayIn>(() => docKhoGiayDaLuu());
   const oTimRef = useRef<HTMLInputElement>(null);
+  /** Bản sao `tabs`/`tabDangChonId` mới nhất đọc được trong handler phím toàn
+   * cục (effect dưới chỉ đăng ký MỘT LẦN — deps rỗng — nên không thể đóng gói
+   * trực tiếp state của lần render hiện tại mà không đăng ký lại listener mỗi
+   * khi đổi; đọc qua ref luôn lấy đúng giá trị mới nhất tại thời điểm gọi, kể
+   * cả từ một closure "cũ" chụp từ lần render đầu tiên). */
+  const tabsRef = useRef(tabs);
+  tabsRef.current = tabs;
+  const tabDangChonIdRef = useRef(tabDangChonId);
+  tabDangChonIdRef.current = tabDangChonId;
   /** F9 (UI-FIDELITY.md nhóm 2) focus vào đây — đích đầu tiên của khu vực thanh toán. */
   const phuongThucRef = useRef<HTMLFieldSetElement>(null);
   /** Nhịp phím đang gõ ở ô tìm — T-024, xem `capNhatNhipGo`/`phanLoaiNhipGo`. */
@@ -443,6 +592,7 @@ export function BanHang() {
   const dinhThoiGianRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const goiY = tim.trim() ? goiYThoBanDau : [];
+  const tabHienTai = tabs.find((t) => t.id === tabDangChonId) ?? tabs[0]!;
 
   /** Gọi API tìm hàng hoá, luôn dùng cho cả debounce (gõ tay) lẫn quét mã (gọi
    * ngay). `useCallback` rỗng deps — chỉ đóng gói setState (định danh ổn định)
@@ -488,11 +638,16 @@ export function BanHang() {
   }, [tim, chayTimKiem]);
 
   function chon(g: GoiYBanHang) {
-    setGioHang((hienTai) => {
-      const ketQua = themVaoGioHang(hienTai, g);
-      setChiSoDongChon(ketQua.findIndex((d) => d.sanPhamId === g.sanPhamId && d.donViTinhId === g.donViTinhId));
-      return ketQua;
-    });
+    setTabs((ts) =>
+      capNhatTab(ts, tabDangChonId, (t) => {
+        const gioHangMoi = themVaoGioHang(t.gioHang, g);
+        return {
+          ...t,
+          gioHang: gioHangMoi,
+          chiSoDongChon: gioHangMoi.findIndex((d) => d.sanPhamId === g.sanPhamId && d.donViTinhId === g.donViTinhId),
+        };
+      }),
+    );
     setTim('');
     setGoiYThoBanDau([]);
     setChiSoChon(0);
@@ -517,19 +672,37 @@ export function BanHang() {
   }
 
   function doiDonVi(chiSo: number, donViTinhId: string) {
-    setGioHang((hienTai) => doiDonViDongGioHang(hienTai, chiSo, donViTinhId));
-    setChiSoDongChon(chiSo);
+    setTabs((ts) =>
+      capNhatTab(ts, tabDangChonId, (t) => ({
+        ...t,
+        gioHang: doiDonViDongGioHang(t.gioHang, chiSo, donViTinhId),
+        chiSoDongChon: chiSo,
+      })),
+    );
   }
 
   function suaSoLuong(chiSo: number, soLuongMoi: number) {
     if (Number.isNaN(soLuongMoi)) return;
-    setGioHang((hienTai) => suaSoLuongDongGioHang(hienTai, chiSo, soLuongMoi));
-    setChiSoDongChon(chiSo);
+    setTabs((ts) =>
+      capNhatTab(ts, tabDangChonId, (t) => ({
+        ...t,
+        gioHang: suaSoLuongDongGioHang(t.gioHang, chiSo, soLuongMoi),
+        chiSoDongChon: chiSo,
+      })),
+    );
   }
 
   function xoaDong(chiSo: number) {
-    setGioHang((hienTai) => xoaDongGioHang(hienTai, chiSo));
-    setChiSoDongChon((v) => (gioHang.length <= 1 ? -1 : Math.min(v, gioHang.length - 2)));
+    setTabs((ts) =>
+      capNhatTab(ts, tabDangChonId, (t) => {
+        const gioHangMoi = xoaDongGioHang(t.gioHang, chiSo);
+        return {
+          ...t,
+          gioHang: gioHangMoi,
+          chiSoDongChon: gioHangMoi.length === 0 ? -1 : Math.min(t.chiSoDongChon, gioHangMoi.length - 1),
+        };
+      }),
+    );
   }
 
   function doiKhoGiay(khoGiayMoi: KhoGiayIn) {
@@ -544,36 +717,91 @@ export function BanHang() {
     oTimRef.current?.focus();
   }
 
+  /** Dọn trạng thái ô tìm/gợi ý khi chuyển ngữ cảnh sang một tab khác (mở tab
+   * mới, đóng tab, hay bấm/Alt+N sang tab khác) — từ khoá đang gõ dở KHÔNG
+   * thuộc về hoá đơn nào cả (chỉ là thao tác tìm-để-thêm tạm thời), khác giỏ
+   * hàng đã thêm (thuộc tab, không bao giờ mất khi chuyển — xem `HoaDonTab`). */
+  function resetOTim() {
+    setTim('');
+    setGoiYThoBanDau([]);
+    setChiSoChon(0);
+    setDangTai(false);
+    setLoi(undefined);
+    nhipGoRef.current = { lanTruocMs: null, khoangCach: [] };
+  }
+
+  /** Chuyển tab — bấm chuột vào tab, hoặc Alt+1..9 (UI-FIDELITY.md nhóm 2). */
+  /** Đọc `tabDangChonIdRef` (không phải state `tabDangChonId` trực tiếp) vì
+   * hàm này còn được gọi từ handler phím toàn cục (Alt+1..9) — closure của
+   * effect đó chụp MỘT LẦN lúc mount (xem `xuLyPhimToanCuc` bên dưới), nên
+   * đọc thẳng state ở đây sẽ mãi mãi so sánh với giá trị CŨ từ lần render đầu
+   * tiên, không bao giờ nhận ra tab đã đổi. */
+  function chuyenTab(id: string) {
+    if (id === tabDangChonIdRef.current) return;
+    setTabDangChonId(id);
+    resetOTim();
+    oTimRef.current?.focus();
+  }
+
+  /** F7 hoặc nút "+" (UI-FIDELITY.md nhóm 2): mở hoá đơn mới rồi chuyển sang
+   * ngay — như bấm F7 trong KiotViet là bắt đầu bán đơn tiếp theo luôn. */
+  function moTabMoiVaChon() {
+    const ketQua = moTabMoi(tabsRef.current, crypto.randomUUID());
+    setTabs(ketQua.tabs);
+    setTabDangChonId(ketQua.tabMoiId);
+    resetOTim();
+    oTimRef.current?.focus();
+  }
+
+  /** Đóng tab (nút "×" trên tab). */
+  function dongTabHandler(id: string) {
+    const ketQua = dongTab(tabs, id, tabDangChonId);
+    setTabs(ketQua.tabs);
+    if (ketQua.tabDangChonId !== tabDangChonId) {
+      setTabDangChonId(ketQua.tabDangChonId);
+      resetOTim();
+    }
+  }
+
   /** Enter ở bất kỳ ô nào trong panel thanh toán (submit form — T-022c). Validate
    * phía client trước (phản hồi ngay, không đợi round-trip cho hai lỗi gõ tay
    * phổ biến nhất), gọi `POST /api/hoa-don` (T-022b) — không viết lại logic
    * nghiệp vụ nào ở đây. Thành công thì xoá giỏ hàng, báo mã hoá đơn, focus lại
    * ô tìm cho đơn tiếp theo. */
   function xuLyThanhToan() {
-    if (gioHang.length === 0 || dangThanhToan) return;
+    const tab = tabHienTai;
+    if (tab.gioHang.length === 0 || tab.dangThanhToan) return;
 
-    const giamGiaSo = soNguyenKhongAmTuChuoi(thanhToan.giamGia);
-    const thuKhacSo = soNguyenKhongAmTuChuoi(thanhToan.thuKhac);
-    if (giamGiaSo === undefined) return setLoiThanhToan('Giảm giá không hợp lệ');
-    if (thuKhacSo === undefined) return setLoiThanhToan('Thu khác không hợp lệ');
+    const capNhatLoi = (thongBao: string) =>
+      setTabs((ts) => capNhatTab(ts, tab.id, (t) => ({ ...t, loiThanhToan: thongBao })));
 
-    const khachCanTra = tinhKhachCanTraXemTruoc(tongTien, giamGiaSo, thuKhacSo);
-    const khachThanhToanSo = soTienKhachThanhToanTuChuoi(thanhToan.khachThanhToan, khachCanTra);
-    if (khachThanhToanSo === undefined) return setLoiThanhToan('Khách thanh toán không hợp lệ');
+    const giamGiaSo = soNguyenKhongAmTuChuoi(tab.thanhToan.giamGia);
+    const thuKhacSo = soNguyenKhongAmTuChuoi(tab.thanhToan.thuKhac);
+    if (giamGiaSo === undefined) return capNhatLoi('Giảm giá không hợp lệ');
+    if (thuKhacSo === undefined) return capNhatLoi('Thu khác không hợp lệ');
+
+    const khachCanTra = tinhKhachCanTraXemTruoc(tinhTongTien(tab.gioHang), giamGiaSo, thuKhacSo);
+    const khachThanhToanSo = soTienKhachThanhToanTuChuoi(tab.thanhToan.khachThanhToan, khachCanTra);
+    if (khachThanhToanSo === undefined) return capNhatLoi('Khách thanh toán không hợp lệ');
 
     const loiHopLe = kiemTraThanhToanHopLe({
-      phuongThucThanhToan: thanhToan.phuongThucThanhToan,
+      phuongThucThanhToan: tab.thanhToan.phuongThucThanhToan,
       khachThanhToan: khachThanhToanSo,
       khachCanTra,
     });
-    if (loiHopLe) return setLoiThanhToan(loiHopLe);
+    if (loiHopLe) return capNhatLoi(loiHopLe);
 
-    setLoiThanhToan(undefined);
-    setThongBaoThanhToan(undefined);
-    setDangThanhToan(true);
+    // Chụp lại id + giỏ hàng NGAY LÚC gửi — nếu người dùng chuyển sang tab
+    // khác trong lúc chờ phản hồi, kết quả (thành công lẫn lỗi) vẫn phải áp
+    // đúng tab đã thanh toán, không phải "tab đang xem lúc phản hồi về" (đây
+    // là chỗ dễ lẫn dòng giữa hai tab nhất nếu chỉ đọc `tabHienTai` trong
+    // `.then`/`.catch`).
+    const tabId = tab.id;
+    const gioHangDaBan = tab.gioHang;
+    setTabs((ts) => capNhatTab(ts, tabId, (t) => ({ ...t, dangThanhToan: true, loiThanhToan: undefined, thongBaoThanhToan: undefined })));
 
-    const yeuCau = xayDungYeuCauTaoHoaDon(gioHang, {
-      phuongThucThanhToan: thanhToan.phuongThucThanhToan,
+    const yeuCau = xayDungYeuCauTaoHoaDon(gioHangDaBan, {
+      phuongThucThanhToan: tab.thanhToan.phuongThucThanhToan,
       giamGia: giamGiaSo,
       thuKhac: thuKhacSo,
     });
@@ -592,24 +820,34 @@ export function BanHang() {
         return HoaDonResSchema.parse(json);
       })
       .then((hoaDon) => {
-        setDangThanhToan(false);
+        setTabs((ts) =>
+          capNhatTab(ts, tabId, (t) => ({
+            ...t,
+            dangThanhToan: false,
+            gioHang: [],
+            chiSoDongChon: -1,
+            thanhToan: trangThaiThanhToanRong(),
+            thongBaoThanhToan: `Đã tạo hoá đơn ${hoaDon.ma}`,
+          })),
+        );
         setHoaDonDeIn(
-          xayDungHoaDonDeIn(gioHang, hoaDon, {
-            phuongThucThanhToan: thanhToan.phuongThucThanhToan,
+          xayDungHoaDonDeIn(gioHangDaBan, hoaDon, {
+            phuongThucThanhToan: tab.thanhToan.phuongThucThanhToan,
             khachThanhToan: khachThanhToanSo,
           }),
         );
-        setGioHang([]);
-        setChiSoDongChon(-1);
-        setThanhToan(trangThaiThanhToanRong());
-        setThongBaoThanhToan(`Đã tạo hoá đơn ${hoaDon.ma}`);
         // Không focus lại ô tìm ở đây — preview in hoá đơn mở ngay và tự
         // focus nút "In", khớp "Enter xác nhận thanh toán và in"
         // (UI-FIDELITY.md nhóm 2). Ô tìm lấy lại focus khi đóng preview.
       })
       .catch((err: unknown) => {
-        setDangThanhToan(false);
-        setLoiThanhToan(err instanceof Error ? err.message : 'Không tạo được hoá đơn');
+        setTabs((ts) =>
+          capNhatTab(ts, tabId, (t) => ({
+            ...t,
+            dangThanhToan: false,
+            loiThanhToan: err instanceof Error ? err.message : 'Không tạo được hoá đơn',
+          })),
+        );
       });
   }
 
@@ -658,14 +896,23 @@ export function BanHang() {
     // dở) — phím tác động lên dòng giỏ hàng đang chọn (T-021, UI-FIDELITY.md
     // nhóm 2: F2 đổi đơn vị, +/- sửa số lượng, Delete xoá dòng). Sai chỗ này
     // sẽ nuốt mất ký tự đang gõ dở — UI-FIDELITY.md cấm tuyệt đối.
-    if (tim.trim() === '' && gioHang.length > 0 && chiSoDongChon >= 0) {
-      const dongDangChon = gioHang[chiSoDongChon];
+    if (tim.trim() === '' && tabHienTai.gioHang.length > 0 && tabHienTai.chiSoDongChon >= 0) {
+      const chiSoDongChon = tabHienTai.chiSoDongChon;
+      const dongDangChon = tabHienTai.gioHang[chiSoDongChon];
       if (su.key === 'ArrowDown' || su.key === 'ArrowUp') {
         su.preventDefault();
-        setChiSoDongChon((v) => diChuyenChiSoGoiY(v, gioHang.length, su.key as 'ArrowDown' | 'ArrowUp'));
+        const huong = su.key;
+        setTabs((ts) =>
+          capNhatTab(ts, tabDangChonId, (t) => ({
+            ...t,
+            chiSoDongChon: diChuyenChiSoGoiY(t.chiSoDongChon, t.gioHang.length, huong),
+          })),
+        );
       } else if (su.key === 'F2') {
         su.preventDefault();
-        setGioHang((hienTai) => doiDonViKeTiep(hienTai, chiSoDongChon));
+        setTabs((ts) =>
+          capNhatTab(ts, tabDangChonId, (t) => ({ ...t, gioHang: doiDonViKeTiep(t.gioHang, t.chiSoDongChon) })),
+        );
       } else if (su.key === '+' && dongDangChon) {
         su.preventDefault();
         suaSoLuong(chiSoDongChon, dongDangChon.soLuong + 1);
@@ -696,12 +943,26 @@ export function BanHang() {
         const daChon = phuongThucRef.current?.querySelector<HTMLInputElement>('input[type="radio"]:checked');
         (daChon ?? phuongThucRef.current?.querySelector('input[type="radio"]'))?.focus();
       }
+      if (su.key === 'F7') {
+        su.preventDefault();
+        moTabMoiVaChon();
+      }
+      // Alt+1..9 (UI-FIDELITY.md nhóm 2): chuyển sang tab theo VỊ TRÍ hiển thị.
+      // Đọc `tabsRef` (không phải `tabs` đóng gói lúc mount) vì effect này chỉ
+      // đăng ký một lần (deps rỗng, giữ nguyên như F3/F9 đã có từ trước).
+      if (su.altKey && /^[1-9]$/.test(su.key)) {
+        const dich = tabTheoViTri(tabsRef.current, Number(su.key));
+        if (dich) {
+          su.preventDefault();
+          chuyenTab(dich.id);
+        }
+      }
     }
     document.addEventListener('keydown', xuLyPhimToanCuc);
     return () => document.removeEventListener('keydown', xuLyPhimToanCuc);
   }, []);
 
-  const tongTien = tinhTongTien(gioHang);
+  const tongTien = tinhTongTien(tabHienTai.gioHang);
 
   return (
     <div className="ban-hang">
@@ -718,16 +979,24 @@ export function BanHang() {
           />
           <DanhSachGoiY tuKhoa={tim} goiY={goiY} dangTai={dangTai} loi={loi} chiSoChon={chiSoChon} onChon={chon} />
         </div>
-        <div className="ban-hang__hoa-don-hien-tai">Hoá đơn 1</div>
+        <ThanhTabHoaDon
+          tabs={tabs}
+          tabDangChonId={tabDangChonId}
+          onChonTab={chuyenTab}
+          onDongTab={dongTabHandler}
+          onMoTabMoi={moTabMoiVaChon}
+        />
         <ChiBaoTrangThai />
       </div>
 
       <div className="ban-hang__than">
         <div className="ban-hang__gio">
           <BangGioHang
-            gioHang={gioHang}
-            chiSoDongChon={chiSoDongChon}
-            onChonDong={setChiSoDongChon}
+            gioHang={tabHienTai.gioHang}
+            chiSoDongChon={tabHienTai.chiSoDongChon}
+            onChonDong={(chiSo) =>
+              setTabs((ts) => capNhatTab(ts, tabDangChonId, (t) => ({ ...t, chiSoDongChon: chiSo })))
+            }
             onDoiDonVi={doiDonVi}
             onSuaSoLuong={suaSoLuong}
             onXoaDong={xoaDong}
@@ -736,15 +1005,17 @@ export function BanHang() {
 
         <aside className="ban-hang__panel">
           <PanelThanhToan
-            soMon={tinhSoMon(gioHang)}
+            soMon={tinhSoMon(tabHienTai.gioHang)}
             tongTien={tongTien}
-            trangThai={thanhToan}
-            dangGui={dangThanhToan}
-            loi={loiThanhToan}
-            thongBao={thongBaoThanhToan}
-            gioHangRong={gioHang.length === 0}
+            trangThai={tabHienTai.thanhToan}
+            dangGui={tabHienTai.dangThanhToan}
+            loi={tabHienTai.loiThanhToan}
+            thongBao={tabHienTai.thongBaoThanhToan}
+            gioHangRong={tabHienTai.gioHang.length === 0}
             phuongThucRef={phuongThucRef}
-            onDoi={setThanhToan}
+            onDoi={(trangThaiMoi) =>
+              setTabs((ts) => capNhatTab(ts, tabDangChonId, (t) => ({ ...t, thanhToan: trangThaiMoi })))
+            }
             onSubmit={xuLyThanhToan}
           />
         </aside>

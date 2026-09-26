@@ -22,16 +22,82 @@
   min-width: 240px;
 }
 
-.ban-hang__hoa-don-hien-tai {
-  background: var(--xam-0);
-  color: var(--mau-chu);
-  font-weight: 600;
-  font-size: var(--chu-sm);
-  padding: var(--kc-2) var(--kc-3);
-  border-radius: var(--bo-goc);
-  min-height: 40px;
+/* ---------- tab hoá đơn (T-025) ---------- */
+.ban-hang__tabs {
   display: flex;
   align-items: center;
+  gap: var(--kc-1);
+  overflow-x: auto;
+}
+
+.ban-hang__tab {
+  display: flex;
+  align-items: center;
+  gap: var(--kc-1);
+  background: var(--duong-800);
+  color: var(--mau-tren-chinh);
+  font-weight: 500;
+  font-size: var(--chu-sm);
+  padding: 0 var(--kc-1) 0 var(--kc-3);
+  border-radius: var(--bo-goc);
+  min-height: 44px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ban-hang__tab--chon {
+  background: var(--xam-0);
+  color: var(--mau-chu);
+}
+
+.ban-hang__tab-dong {
+  border: none;
+  background: transparent;
+  font-size: var(--chu-lg);
+  line-height: 1;
+  color: inherit;
+}
+
+.ban-hang__tab-them {
+  display: flex;
+  align-items: center;
+  gap: var(--kc-1);
+  padding: 0 var(--kc-2);
+  border: none;
+  background: var(--duong-800);
+  color: var(--mau-tren-chinh);
+  font-size: var(--chu-lg);
+  line-height: 1;
+}
+
+.ban-hang__tab-them:hover {
+  background: var(--mau-chinh-hover);
+}
+
+/* Phím Alt+1..9 (đổi tab)/F7 (mở tab) hiện NGAY TRÊN thanh tab — UI-FIDELITY.md
+ * cấm giấu phím tắt trong aria-label. Tab đang chọn nền sáng (`--xam-0`) nên
+ * kbd dùng bảng màu sáng như `.thanh-toan__tieu-de kbd`; tab chưa chọn và nút
+ * "+" nền xanh đậm nên kbd đổi sang bảng xanh nhạt hơn để đủ tương phản. */
+.ban-hang__tab kbd,
+.ban-hang__tab-them kbd {
+  font-size: 11px;
+  font-family: var(--font-chinh);
+  border-radius: var(--bo-goc);
+  padding: 1px var(--kc-1);
+  line-height: 1.4;
+}
+
+.ban-hang__tab--chon kbd {
+  color: var(--mau-chu-phu);
+  background: var(--mau-nen);
+  border: var(--vien);
+}
+
+.ban-hang__tab:not(.ban-hang__tab--chon) kbd,
+.ban-hang__tab-them kbd {
+  color: var(--mau-tren-chinh);
+  background: var(--duong-700);
+  border: 1px solid var(--duong-600);
 }
 
 /* ---------- gợi ý tìm ---------- */
