@@ -255,7 +255,7 @@ sang [A]: chỉ nối `POST /api/hoa-don` (T-022b) đã duyệt, không thêm ki
 mới — tiền lệ T-022a[B]→T-022b[A].
 
 ### T-023 [A] prio:23 — In hoá đơn
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-022c
+Trạng thái: DONE · Phụ thuộc: T-022c
 Xong khi: in được khổ cuộn K57 và K80; có preview; nội dung khớp thông tin trong
 ảnh hoá đơn KiotViet.
 Tầng A: chỉ đọc dữ liệu đã ghi, không thay đổi kho hay tiền.
@@ -272,7 +272,7 @@ không mất nhịp và không mất ký tự; phân biệt được luồng qu�
 phím; máy quét hoạt động như bàn phím nên không cần driver.
 
 ### T-025 [B] prio:25 — Nhiều hoá đơn song song
-Trạng thái: TODO · Phụ thuộc: T-022c
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-022c
 Xong khi: mở nhiều tab hoá đơn như KiotViet; chuyển tab bằng bàn phím; giỏ đang gõ
 dở không mất khi chuyển; **có test chứng minh dòng hàng không lẫn giữa các tab**.
 Tầng B dù trông như việc giao diện: trộn nhầm dòng giữa hai tab sinh ra hoá đơn sai

@@ -5,23 +5,31 @@ import type { HangHoaDanhSachItem } from '../../../shared/hop-dong/hang-hoa';
 import {
   BangGioHang,
   DanhSachGoiY,
+  ThanhTabHoaDon,
   capNhatEsc,
   capNhatNhipGo,
+  capNhatTab,
   diChuyenChiSoGoiY,
   dinhDangTonTheoDonVi,
   doiDonViDongGioHang,
   doiDonViKeTiep,
+  dongTab,
   layGoiYTimHang,
+  moTabMoi,
   phanLoaiNhipGo,
   quyetDinhSauKhiQuet,
   soLuongCoSoDongGioHang,
+  soThuTuTabTiepTheo,
   suaSoLuongDongGioHang,
+  tabTheoViTri,
+  taoTabRong,
   themVaoGioHang,
   tinhSoMon,
   tinhTongTien,
   xoaDongGioHang,
   type DongGioHang,
   type GoiYBanHang,
+  type HoaDonTab,
 } from './BanHang';
 
 const panadol: HangHoaDanhSachItem = {
@@ -557,5 +565,203 @@ describe('BangGioHang', () => {
   it('không dòng nào được đánh dấu khi chưa chọn dòng nào', () => {
     const html = veBangGioHang({ gioHang: [dongVi], chiSoDongChon: -1 });
     expect(html).not.toContain('gio-hang__dong--chon');
+  });
+});
+
+// T-025 — nhiều hoá đơn song song (tab hoá đơn).
+describe('taoTabRong', () => {
+  it('tạo tab rỗng: giỏ hàng rỗng, chưa chọn dòng nào, panel thanh toán ở trạng thái mặc định', () => {
+    const tab = taoTabRong('tab-1', 1);
+
+    expect(tab).toEqual({
+      id: 'tab-1',
+      soThuTu: 1,
+      gioHang: [],
+      chiSoDongChon: -1,
+      thanhToan: { giamGia: '0', thuKhac: '0', phuongThucThanhToan: 'TIEN_MAT', khachThanhToan: '' },
+      dangThanhToan: false,
+      loiThanhToan: undefined,
+      thongBaoThanhToan: undefined,
+    });
+  });
+});
+
+describe('soThuTuTabTiepTheo', () => {
+  it('danh sách rỗng → 1 (tab đầu tiên)', () => {
+    expect(soThuTuTabTiepTheo([])).toBe(1);
+  });
+
+  it('lớn hơn số thứ tự lớn nhất đang có 1 đơn vị', () => {
+    const tabs = [taoTabRong('a', 1), taoTabRong('b', 2)];
+    expect(soThuTuTabTiepTheo(tabs)).toBe(3);
+  });
+
+  it('không tái sử dụng số đã đóng — vẫn tính theo số LỚN NHẤT đã từng cấp, không phải số lượng tab đang mở', () => {
+    // Mô phỏng: đã từng mở tới "Hoá đơn 3" rồi đóng tab 1 và 2, chỉ còn tab 3.
+    const tabs = [taoTabRong('c', 3)];
+    expect(soThuTuTabTiepTheo(tabs)).toBe(4);
+  });
+});
+
+describe('moTabMoi', () => {
+  it('thêm một tab rỗng vào cuối, số thứ tự tiếp theo, không đổi tab nào đang có', () => {
+    const tabs = [taoTabRong('a', 1)];
+    const ketQua = moTabMoi(tabs, 'b');
+
+    expect(ketQua.tabs).toHaveLength(2);
+    expect(ketQua.tabs[0]).toBe(tabs[0]); // tab cũ giữ nguyên tham chiếu
+    expect(ketQua.tabs[1]).toMatchObject({ id: 'b', soThuTu: 2, gioHang: [] });
+    expect(ketQua.tabMoiId).toBe('b');
+  });
+});
+
+describe('dongTab', () => {
+  it('còn đúng một tab thì không đóng được — trả về nguyên trạng', () => {
+    const tabs = [taoTabRong('a', 1)];
+    expect(dongTab(tabs, 'a', 'a')).toEqual({ tabs, tabDangChonId: 'a' });
+  });
+
+  it('đóng một tab KHÔNG đang chọn — tab đang chọn giữ nguyên', () => {
+    const tabs = [taoTabRong('a', 1), taoTabRong('b', 2)];
+    const ketQua = dongTab(tabs, 'b', 'a');
+
+    expect(ketQua.tabs.map((t) => t.id)).toEqual(['a']);
+    expect(ketQua.tabDangChonId).toBe('a');
+  });
+
+  it('đóng tab ĐANG chọn ở giữa — chuyển sang tab liền kề bên trái', () => {
+    const tabs = [taoTabRong('a', 1), taoTabRong('b', 2), taoTabRong('c', 3)];
+    const ketQua = dongTab(tabs, 'b', 'b');
+
+    expect(ketQua.tabs.map((t) => t.id)).toEqual(['a', 'c']);
+    expect(ketQua.tabDangChonId).toBe('a');
+  });
+
+  it('đóng tab ĐẦU TIÊN đang chọn — chuyển sang tab kế tiếp (giờ là tab đầu)', () => {
+    const tabs = [taoTabRong('a', 1), taoTabRong('b', 2)];
+    const ketQua = dongTab(tabs, 'a', 'a');
+
+    expect(ketQua.tabs.map((t) => t.id)).toEqual(['b']);
+    expect(ketQua.tabDangChonId).toBe('b');
+  });
+
+  it('id không tồn tại thì không đổi gì', () => {
+    const tabs = [taoTabRong('a', 1), taoTabRong('b', 2)];
+    expect(dongTab(tabs, 'khong-ton-tai', 'a')).toEqual({ tabs, tabDangChonId: 'a' });
+  });
+});
+
+describe('tabTheoViTri', () => {
+  const tabs = [taoTabRong('a', 1), taoTabRong('b', 2), taoTabRong('c', 3)];
+
+  it('Alt+1..9: lấy đúng tab theo VỊ TRÍ hiển thị (1-based)', () => {
+    expect(tabTheoViTri(tabs, 1)?.id).toBe('a');
+    expect(tabTheoViTri(tabs, 3)?.id).toBe('c');
+  });
+
+  it('vị trí vượt quá số tab đang mở → undefined, không đổi gì', () => {
+    expect(tabTheoViTri(tabs, 9)).toBeUndefined();
+  });
+});
+
+describe('capNhatTab — không lẫn dòng giữa các tab (T-025)', () => {
+  it('chỉ sửa đúng tab theo id, tab khác giữ NGUYÊN THAM CHIẾU (bất biến)', () => {
+    const tabs = [taoTabRong('a', 1), taoTabRong('b', 2)];
+    const ketQua = capNhatTab(tabs, 'a', (t) => ({ ...t, gioHang: [dongVi] }));
+
+    expect(ketQua[0]?.gioHang).toEqual([dongVi]);
+    expect(ketQua[1]).toBe(tabs[1]); // tab 'b' không hề bị chạm tới
+  });
+
+  it('thêm hàng vào tab đang chọn không làm lẫn dòng sang tab khác đang có sẵn hàng', () => {
+    // Tái hiện đúng ca "Xong khi" của T-025: hai tab đang mở song song, mỗi
+    // tab đã có một dòng hàng RIÊNG — thêm tiếp vào tab A không được phép làm
+    // xuất hiện dòng đó ở tab B, và ngược lại.
+    let tabs: HoaDonTab[] = [taoTabRong('a', 1), taoTabRong('b', 2)];
+    tabs = capNhatTab(tabs, 'a', (t) => ({ ...t, gioHang: themVaoGioHang(t.gioHang, goiYVi) }));
+    tabs = capNhatTab(tabs, 'b', (t) => ({ ...t, gioHang: themVaoGioHang(t.gioHang, goiYHop) }));
+    // Thêm một lần nữa vào tab A — mô phỏng gõ tiếp trong lúc tab B đang "gõ
+    // dở" từ trước, đích thực của "chuyển tab không mất giỏ đang gõ dở".
+    tabs = capNhatTab(tabs, 'a', (t) => ({ ...t, gioHang: themVaoGioHang(t.gioHang, goiYVi) }));
+
+    const tabA = tabs.find((t) => t.id === 'a');
+    const tabB = tabs.find((t) => t.id === 'b');
+
+    expect(tabA?.gioHang).toEqual([{ ...themVaoGioHang([], goiYVi)[0]!, soLuong: 2 }]);
+    expect(tabA?.gioHang.every((d) => d.donViTinhId === 'dvt-vi')).toBe(true);
+    expect(tabB?.gioHang).toEqual([themVaoGioHang([], goiYHop)[0]]);
+    expect(tabB?.gioHang.some((d) => d.donViTinhId === 'dvt-vi')).toBe(false);
+  });
+});
+
+function veThanhTabHoaDon(props: Partial<ComponentProps<typeof ThanhTabHoaDon>> = {}) {
+  return renderToStaticMarkup(
+    <ThanhTabHoaDon
+      tabs={[taoTabRong('a', 1)]}
+      tabDangChonId="a"
+      onChonTab={() => {}}
+      onDongTab={() => {}}
+      onMoTabMoi={() => {}}
+      {...props}
+    />,
+  );
+}
+
+describe('ThanhTabHoaDon', () => {
+  it('hiện nhãn "Hoá đơn N" cho từng tab, theo đúng số thứ tự', () => {
+    const html = veThanhTabHoaDon({ tabs: [taoTabRong('a', 1), taoTabRong('b', 2)], tabDangChonId: 'a' });
+
+    expect(html).toContain('Hoá đơn 1');
+    expect(html).toContain('Hoá đơn 2');
+  });
+
+  it('tab đang chọn có aria-selected="true", tab khác thì "false"', () => {
+    const html = veThanhTabHoaDon({ tabs: [taoTabRong('a', 1), taoTabRong('b', 2)], tabDangChonId: 'b' });
+    // Mỗi tab là một `<div role="tab" aria-selected="…">` riêng — tách theo
+    // dấu mở thẻ để đối chiếu đúng thuộc tính của TỪNG tab, không phải toàn
+    // trang (hai tab dùng chung class gốc `ban-hang__tab`).
+    const [, doanTabA, doanTabB] = html.split('<div role="tab"');
+
+    expect(doanTabA).toContain('aria-selected="false"');
+    expect(doanTabA).toContain('Hoá đơn 1');
+    expect(doanTabB).toContain('aria-selected="true"');
+    expect(doanTabB).toContain('Hoá đơn 2');
+  });
+
+  it('chỉ còn MỘT tab thì không có nút đóng — không đóng được tab hoá đơn cuối cùng', () => {
+    const html = veThanhTabHoaDon({ tabs: [taoTabRong('a', 1)], tabDangChonId: 'a' });
+    expect(html).not.toContain('ban-hang__tab-dong');
+  });
+
+  it('từ hai tab trở lên thì mỗi tab có nút đóng riêng', () => {
+    const html = veThanhTabHoaDon({ tabs: [taoTabRong('a', 1), taoTabRong('b', 2)], tabDangChonId: 'a' });
+    expect(html).toContain('Đóng Hoá đơn 1');
+    expect(html).toContain('Đóng Hoá đơn 2');
+  });
+
+  it('luôn có nút mở tab mới, phím F7 hiện thật trên giao diện (không chỉ trong aria-label)', () => {
+    const html = veThanhTabHoaDon();
+    expect(html).toContain('Mở hoá đơn mới (F7)'); // aria-label — mô tả cho trình đọc màn hình
+    expect(html).toContain('<kbd>F7</kbd>'); // NỘI DUNG HIỂN THỊ thật — UI-FIDELITY.md cấm giấu phím tắt trong aria-label
+  });
+
+  it('mỗi tab hiện phím Alt+N tương ứng THEO VỊ TRÍ hiển thị (UI-FIDELITY.md nhóm 2), không phải theo nhãn "Hoá đơn N"', () => {
+    // Mô phỏng đúng ca đã đóng bớt tab: tab còn lại mang nhãn "Hoá đơn 3"
+    // nhưng đang đứng ở VỊ TRÍ THỨ HAI — phím thật sự chạy nó là Alt+2
+    // (`tabTheoViTri`), nên gợi ý hiện trên giao diện phải là Alt+2, không
+    // phải Alt+3, nếu không sẽ dạy sai phím cho người dùng.
+    const html = veThanhTabHoaDon({ tabs: [taoTabRong('a', 1), taoTabRong('c', 3)], tabDangChonId: 'a' });
+
+    expect(html).toContain('<kbd>Alt+1</kbd>');
+    expect(html).toContain('<kbd>Alt+2</kbd>');
+    expect(html).not.toContain('<kbd>Alt+3</kbd>');
+  });
+
+  it('quá 9 tab thì tab thứ 10 trở đi không hiện gợi ý Alt+N — Alt+1..9 không vươn tới được nó', () => {
+    const tabs = Array.from({ length: 10 }, (_v, i) => taoTabRong(`t${i}`, i + 1));
+    const html = veThanhTabHoaDon({ tabs, tabDangChonId: 't0' });
+
+    expect(html).toContain('<kbd>Alt+9</kbd>');
+    expect(html).not.toContain('<kbd>Alt+10</kbd>');
   });
 });

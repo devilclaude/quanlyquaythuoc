@@ -394,6 +394,105 @@ test('in hoá đơn: preview khớp nội dung, đổi khổ giấy nhớ lại 
     .toBe(1);
 });
 
+// T-025 — Nhiều hoá đơn song song (tab hoá đơn). Ca test bắt buộc theo
+// BACKLOG.md: mở tab mới (chuột lẫn F7), chuyển tab bằng bàn phím (Alt+1..9),
+// giỏ hàng đang gõ dở của một tab không mất khi chuyển sang tab khác, và
+// KHÔNG lẫn dòng hàng giữa hai tab (đây là lý do task này khai Tầng B — trộn
+// nhầm dòng sinh ra hoá đơn sai và trừ kho sai).
+const DU_LIEU_VITAMIN: unknown = {
+  duLieu: [
+    {
+      id: 'sp-2',
+      maHang: 'SP002',
+      ten: 'Vitamin C',
+      giaBan: 1000,
+      giaVon: 0,
+      tonKho: 100,
+      ngayTao: '2026-09-02T00:00:00.000Z',
+      donViTinh: [{ id: 'dvt-vitaminc', ten: 'viên', heSo: 1, laCoSo: true, giaBan: 1000 }],
+    },
+  ],
+};
+
+test('nhiều hoá đơn song song: mở tab (chuột + F7), chuyển tab bằng Alt+1..9, không lẫn dòng hàng giữa các tab (T-025)', async ({
+  page,
+  context,
+}) => {
+  await context.route('**/api/hang-hoa*', (route) => {
+    const url = new URL(route.request().url());
+    const tuKhoa = url.searchParams.get('tim') ?? '';
+    return route.fulfill({ json: tuKhoa.startsWith('vita') ? DU_LIEU_VITAMIN : DU_LIEU_TIM });
+  });
+  await page.goto('/');
+
+  const oTim = page.getByPlaceholder('Tìm hàng hóa (F3)');
+  const goiYOption = page.getByRole('listbox', { name: 'Gợi ý hàng hoá' }).getByRole('option');
+  const dongGioHang = page.locator('.ban-hang__gio tbody tr');
+  const tabList = page.getByRole('tablist', { name: 'Hoá đơn' });
+
+  // Chỉ một tab lúc đầu — không có nút đóng (không đóng được tab hoá đơn
+  // cuối cùng, khớp KiotViet).
+  await expect(tabList.getByText('Hoá đơn 1')).toBeVisible();
+  await expect(tabList.getByRole('button', { name: /Đóng/ })).toHaveCount(0);
+
+  // Thêm hàng vào tab 1.
+  await oTim.pressSequentially('pana');
+  await expect(goiYOption).toHaveCount(2);
+  await page.keyboard.press('Enter'); // vỉ, 17.000đ
+  await expect(dongGioHang).toHaveCount(1);
+  await expect(dongGioHang).toContainText('SP000240');
+
+  // F7 (bàn phím) mở tab mới: ô tìm/gợi ý dọn sạch, focus quay lại ô tìm,
+  // giỏ hàng của tab mới rỗng.
+  await page.keyboard.press('F7');
+  await expect(tabList.getByText('Hoá đơn 2')).toBeVisible();
+  await expect(oTim).toHaveValue('');
+  await expect(oTim).toBeFocused();
+  await expect(page.getByText('Chưa có hàng trong đơn.')).toBeVisible();
+
+  // Thêm một hàng KHÁC hẳn vào tab 2.
+  await oTim.pressSequentially('vita');
+  await expect(goiYOption).toHaveCount(1);
+  await page.keyboard.press('Enter');
+  await expect(dongGioHang).toHaveCount(1);
+  await expect(dongGioHang).toContainText('Vitamin C');
+
+  // Nút "+" (chuột) cũng mở tab mới — tab 3, vẫn rỗng.
+  await page.getByRole('button', { name: 'Mở hoá đơn mới (F7)' }).click();
+  await expect(tabList.getByText('Hoá đơn 3')).toBeVisible();
+  await expect(page.getByText('Chưa có hàng trong đơn.')).toBeVisible();
+
+  // Alt+1 quay lại tab 1 BẰNG BÀN PHÍM — giỏ hàng đang gõ dở từ đầu bài vẫn
+  // còn NGUYÊN, không lẫn dòng "Vitamin C" của tab 2 (điều khoản bắt buộc
+  // của T-025: không mất giỏ khi chuyển, không lẫn dòng giữa các tab).
+  await page.keyboard.press('Alt+1');
+  await expect(dongGioHang).toHaveCount(1);
+  await expect(dongGioHang).toContainText('SP000240');
+  await expect(dongGioHang).not.toContainText('Vitamin C');
+
+  // Alt+2 sang tab 2 — dòng Vitamin C vẫn còn nguyên, không lẫn ngược lại
+  // dòng Panadol của tab 1.
+  await page.keyboard.press('Alt+2');
+  await expect(dongGioHang).toHaveCount(1);
+  await expect(dongGioHang).toContainText('Vitamin C');
+  await expect(dongGioHang).not.toContainText('SP000240');
+
+  // Alt+3 sang tab 3 — vẫn rỗng, không lẫn hàng của cả hai tab kia.
+  await page.keyboard.press('Alt+3');
+  await expect(page.getByText('Chưa có hàng trong đơn.')).toBeVisible();
+
+  // Đóng tab 3 đang chọn (chuột, nút "×") — quay về tab liền kề bên trái
+  // (tab 2), giỏ hàng tab 2 vẫn còn nguyên.
+  await page.getByRole('button', { name: 'Đóng Hoá đơn 3' }).click();
+  await expect(tabList.getByText('Hoá đơn 3')).toHaveCount(0);
+  await expect(dongGioHang).toHaveCount(1);
+  await expect(dongGioHang).toContainText('Vitamin C');
+
+  // Alt+9 (vượt quá số tab đang mở — chỉ còn 2) không đổi gì.
+  await page.keyboard.press('Alt+9');
+  await expect(dongGioHang).toContainText('Vitamin C');
+});
+
 test('thanh toán: tiền mặt đưa chưa đủ thì báo lỗi ngay, không gọi API và không xoá giỏ hàng (T-022c)', async ({
   page,
   context,
