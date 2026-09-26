@@ -292,7 +292,7 @@ hiện** đang online/offline, số thao tác chờ đồng bộ, thời điểm
 mất mạng giữa lúc bán không popup chặn màn hình và không mất giỏ.
 
 ### T-031 [B] prio:31 — Hàng đợi thao tác trong Dexie
-Trạng thái: TODO · Phụ thuộc: T-030
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-030
 Xong khi: mỗi thao tác bất biến, có ULID do client sinh, **idempotent**; trạng thái
 rõ ràng chờ gửi/đã gửi/đã xác nhận/lỗi; không bao giờ tự xoá thao tác chưa được máy
 chủ xác nhận; gửi lại hai lần không nhân đôi tồn kho — có test.
