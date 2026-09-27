@@ -747,3 +747,19 @@ panel "Nhà cung cấp/công nợ" — ghi vào T-040c là ngoài v1 (SPEC.md §
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: T-040a.
+
+## 2026-09-27 — dọn PR (không còn PR mở) + T-040a
+Làm: không còn PR agent nào mở; #58/#59/#60 đều đã merge từ trước (BACKLOG lệch
+với T-025/chẻ T-040, chưa ai chuyển DONE — sửa ở đây). Không có chỉ đạo mới ở
+#quaythuoc-admin từ 2026-09-19. Chọn T-040a: bảng `phieu_nhap`/`phieu_nhap_dong`;
+`taoPhieuNhap` (lưu tạm không ghi kho, hoặc hoàn thành ngay trong cùng
+transaction) và `hoanThanhPhieuNhap` (idempotent — phiếu đã `HOAN_THANH` bị từ
+chối) get-or-create đúng một lô theo `(san_pham_id, so_lo, hsd)` — cả hai phải
+khai cùng lúc hoặc cùng bỏ trống, tránh ngữ nghĩa NULL != NULL của SQLite làm
+lô trùng; bắt buộc lô+HSD chỉ khi `giaiNghiaCaiDatQuanLyLo` ra BẬT.
+PR: (xem mô tả PR)
+Tầng: B
+Quyết định: sửa công thức `gia_tri` trong BACKLOG.md (xem Ghi chú ở đó) —
+"đơn giá × số lượng cơ sở" sai đơn vị đo, đúng phải là tổng tiền dòng nhập
+(đơn giá × số lượng theo đơn vị đã chọn), khớp SPEC.md §3.4.
+Kế tiếp: T-040b (API) sau khi PR này merge.

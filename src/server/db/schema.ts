@@ -340,3 +340,55 @@ export const hoaDonDongLo = sqliteTable(
     check('hoa_don_dong_lo_so_luong_duong', sql`${t.soLuong} > 0`),
   ],
 );
+
+// Chứng từ nhập hàng (T-040a, SPEC.md §6.2) — chứng từ giao dịch, không xoá cứng
+// (SPEC.md §3.5). `PHIEU_TAM` là lưu tạm, chưa ghi kho; `HOAN_THANH` đã ghi thẻ
+// kho thật, không lùi lại được (idempotent — hoàn thành phiếu đã hoàn thành bị
+// từ chối, xem `src/server/nhap-hang/tao-phieu-nhap.ts`). `ma` tự sinh tuần tự
+// giống hoá đơn (`hoa_don.ma`).
+export const phieuNhap = sqliteTable(
+  'phieu_nhap',
+  {
+    id: text('id').primaryKey(),
+    chiNhanhId: text('chi_nhanh_id')
+      .notNull()
+      .references(() => chiNhanh.id),
+    ma: text('ma').notNull().unique(),
+    trangThai: text('trang_thai').notNull().default('PHIEU_TAM').$type<'PHIEU_TAM' | 'HOAN_THANH'>(),
+    thoiGian: text('thoi_gian').notNull(),
+    thoiGianMayChu: text('thoi_gian_may_chu')
+      .notNull()
+      .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+  },
+  (t) => [check('phieu_nhap_trang_thai_hop_le', sql`${t.trangThai} IN ('PHIEU_TAM', 'HOAN_THANH')`)],
+);
+
+// Từng dòng nhập của một phiếu. Snapshot đơn vị/giá tại thời điểm nhập — không
+// tham chiếu `don_vi_tinh` bằng FK (cùng lý do `hoa_don_dong`, SPEC.md §5.4).
+// `so_lo`/`hsd` là LÔ MONG MUỐN người nhập khai — cho phép rỗng khi sản phẩm tắt
+// quản lý lô (SPEC.md §3.2); get-or-create lô thật chỉ xảy ra lúc Hoàn thành,
+// không lúc lưu dòng tạm này (lưu tạm không ghi kho, không tạo lô).
+export const phieuNhapDong = sqliteTable(
+  'phieu_nhap_dong',
+  {
+    id: text('id').primaryKey(),
+    phieuId: text('phieu_id')
+      .notNull()
+      .references(() => phieuNhap.id),
+    sanPhamId: text('san_pham_id')
+      .notNull()
+      .references(() => sanPham.id),
+    donViTen: text('don_vi_ten').notNull(),
+    heSo: integer('he_so').notNull(),
+    donGia: integer('don_gia').notNull(),
+    /** Số lượng theo đơn vị đã chọn (`don_vi_ten`), KHÔNG phải đơn vị cơ sở. */
+    soLuong: integer('so_luong').notNull(),
+    soLo: text('so_lo'),
+    hsd: text('hsd'),
+  },
+  (t) => [
+    check('phieu_nhap_dong_he_so_toi_thieu', sql`${t.heSo} >= 1`),
+    check('phieu_nhap_dong_don_gia_khong_am', sql`${t.donGia} >= 0`),
+    check('phieu_nhap_dong_so_luong_duong', sql`${t.soLuong} > 0`),
+  ],
+);
