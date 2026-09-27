@@ -747,3 +747,14 @@ panel "Nhà cung cấp/công nợ" — ghi vào T-040c là ngoài v1 (SPEC.md §
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: T-040a.
+
+## 2026-09-27 — dọn PR + T-032
+Làm: #61 (T-040a) xanh, không comment/conflict, chờ duyệt B — không sửa. #58/#59
+(T-025/T-031) đã merge từ trước → chuyển DONE (BACKLOG lệch, chưa ai cập nhật).
+Chọn T-032: `src/client/offline/so-hoa-don-client.ts` — Dexie riêng (không dùng
+chung `csdlCucBo` T-031), mã máy random 6 ký tự Crockford sinh một lần/thiết bị
+(DOMAIN-NOTES.md cho phép "ID do client sinh" thay đăng ký tay); cấp số
+`HD<mãMáy>-NNNNNN` idempotent theo `idThaoTac` (unique index) trong transaction.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-033 (đồng bộ phía máy chủ) sau khi PR này merge.
