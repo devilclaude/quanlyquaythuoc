@@ -404,12 +404,47 @@ cho tồn cũ đang nằm ở lô ngầm định.
 Trạng thái: DONE · Phụ thuộc: T-006
 Xong khi: xuất khỏi kho có lý do và người thực hiện, ghi thẻ kho, chọn đúng lô.
 
-### T-052 [B] prio:52 — Trả hàng (khách trả)
+### T-052a [B] prio:52.1 — Trả hàng: schema + lõi nghiệp vụ
 Trạng thái: TODO · Phụ thuộc: T-022c
-Xong khi: hoàn về đúng lô theo **LIFO trên chính các dòng đã trừ**; ở chế độ phẳng
-tự suy biến thành hoàn về lô ngầm định, không có nhánh riêng; tổng hoàn ≤ tổng đã
-trừ — có test; tiền hoàn dùng `giam_gia_phan_bo` đã lưu lúc bán; khớp screenshot
-danh sách trả hàng; liên kết ngược tới hoá đơn gốc.
+Xong khi: migration `tra_hang` (chứng từ, không xoá cứng, liên kết `hoa_don_id`
+tới hoá đơn gốc, mã tự sinh tuần tự) và `tra_hang_dong` (dòng trả: liên kết
+`hoa_don_dong_id`, số lượng trả theo đơn vị cơ sở, tiền hoàn dùng lại
+`giam_gia_phan_bo` đã lưu lúc bán — không tính lại); hàm nghiệp vụ
+`taoPhieuTraHang`: với mỗi dòng, hoàn kho theo **LIFO trên chính các dòng
+`hoa_don_dong_lo` đã trừ lúc bán** của dòng hoá đơn gốc đó (lô trừ sau cùng lúc
+bán được hoàn về trước — bảng này đã có sẵn từ T-022a, không cần suy lại từ FEFO);
+tổng số lượng trả **cộng dồn qua nhiều lần trả** của một dòng ≤ số lượng đã bán
+của dòng đó — có test; ghi thẻ kho loại `TRA_HANG` dương qua `ghiMotDongTheKho`
+đã có; toàn bộ một phiếu trong **một transaction**; ở chế độ phẳng tự suy biến
+hoàn về lô ngầm định, không có nhánh riêng theo cài đặt quản lý lô. Test ca biên
+bắt buộc: trả một phần một dòng; trả đủ số đã bán; trả vượt số đã bán bị từ chối;
+trả hai lần cộng dồn vượt tổng đã bán bị từ chối ở lần thứ hai; hoàn đúng thứ tự
+LIFO khi dòng gốc đã trừ qua nhiều hơn một lô; chế độ phẳng và chế độ lô ra cùng
+số dư cuối trên cùng kịch bản. Không có API/UI.
+Ghi chú: đây là T-052 cũ, chẻ ngay lúc chọn task (không build thử rồi bỏ) — cùng
+hình dạng gộp schema+lõi (đọc/ghi kho+tiền qua `hoa_don_dong_lo`)+API+UI đã khiến
+T-009/T-010/T-022/T-040 vượt ngưỡng 1000 dòng/24 file khi làm trọn gói; T-052 còn
+có hai màn UI (danh sách trả hàng + luồng tạo trả hàng, luồng sau không có
+screenshot tham chiếu) nên chắc chắn không nhỏ hơn T-040. Theo đúng tiền lệ T-040a.
+
+### T-052b [A] prio:52.2 — Trả hàng: API
+Trạng thái: TODO · Phụ thuộc: T-052a
+Xong khi: `POST /api/tra-hang` (tạo phiếu trả cho một hoá đơn, gọi
+`taoPhieuTraHang`), `GET /api/tra-hang` (danh sách) và `GET /api/tra-hang/:id`
+(chi tiết, kèm liên kết ngược hoá đơn gốc); 400 khi dữ liệu không hợp lệ, 409 khi
+số lượng trả vượt số đã bán (cộng dồn các lần trả trước). Không có UI.
+
+### T-052c [B] prio:52.3 — Trả hàng: giao diện
+Trạng thái: TODO · Phụ thuộc: T-052b
+Xong khi: màn danh sách khớp screenshot "Danh sách trả hàng"
+(`docs/reference/kiotviet/Quản trị/Trả hàng/`); luồng tạo trả hàng: tìm hoá đơn
+gốc, chọn dòng + số lượng trả, gọi `POST /api/tra-hang` (T-052b); mở được liên
+kết ngược từ hoá đơn gốc sang phiếu trả đã tạo.
+Ghi chú: không có screenshot tham chiếu cho form/luồng TẠO trả hàng trong
+`docs/reference/kiotviet/` (chỉ có màn danh sách) — dựng theo token trong
+`.claude/skills/design-system/`, ghi rõ trong PR, theo tiền lệ T-010c/T-023.
+Tầng B: đường ghi kho + tiền qua tay người dùng lần đầu ở luồng tạo (tương tự lý
+do T-040c[B], khác tiền lệ T-022c[A]/T-040b[A] chỉ nối API đã duyệt).
 
 ### T-053 [B] prio:53 — Trả hàng nhập (trả nhà cung cấp)
 Trạng thái: TODO · Phụ thuộc: T-040a
