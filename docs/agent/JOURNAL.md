@@ -747,3 +747,14 @@ panel "Nhà cung cấp/công nợ" — ghi vào T-040c là ngoài v1 (SPEC.md §
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: T-040a.
+
+## 2026-09-27 — dọn PR + T-052 (chẻ task, không code)
+Làm: #61 (T-040a)/#62 (T-032) xanh, không comment, không conflict — chờ duyệt B,
+không sửa. Chọn T-052 (trả hàng) nhưng "Xong khi" gộp schema+lõi (LIFO trên
+`hoa_don_dong_lo` đã có từ T-022a, ghi kho+tiền)+API+UI hai màn — cùng hình dạng
+đã khiến T-009/T-010/T-022/T-040 vượt ngưỡng. Chẻ ngay lúc chọn (không build
+thử): T-052a (schema+lõi)→T-052b (API)→T-052c (UI, không có ảnh tham chiếu cho
+luồng tạo, chỉ có ảnh danh sách).
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: T-052a.
