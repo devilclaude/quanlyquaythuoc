@@ -775,13 +775,16 @@ PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: T-052a.
 
-## 2026-09-27 — dọn PR: sửa conflict #61, dừng run
+## 2026-09-27 — dọn PR: sửa conflict #61 và #62, dừng run
 Làm: #61 (T-040a) và #62 (T-032) đều CI xanh, không comment, nhưng cả hai
 conflict thật với `main` (`git merge`, không chỉ `merge-tree`) — cùng đụng
-điểm chèn cuối `JOURNAL.md` (append-only). Sửa đúng một PR rồi dừng run tại
-đó theo luật, không mở task mới: merge `main` vào nhánh `#61`, giữ cả hai
-entry JOURNAL theo đúng thứ tự thời gian (entry T-040a trước, vì #61 được
-tạo trước và entry T-052 đã nhắc tới #61 như PR đang mở). `npm run ci` xanh
-lại sau merge (526 test, build, 13 e2e). Đã push lên nhánh `#61`.
-PR: #61 (cập nhật, không mở PR mới)
-Kế tiếp: run sau cần dọn conflict tương tự cho #62 trước khi chọn task mới.
+điểm chèn cuối `JOURNAL.md` (append-only, do main đã merge PR #63 T-052-chẻ
+sau khi cả hai được mở). Sửa cả hai (tiền lệ 2026-09-26 với #58/#59) rồi dừng
+run, không mở task mới: merge `main` vào từng nhánh, giữ cả hai entry
+JOURNAL theo đúng thứ tự thời gian (entry gốc của mỗi PR trước, vì cả hai
+được tạo trước entry T-052 và entry đó đã nhắc tới chúng như PR đang mở).
+`npm run ci` xanh lại sau merge cho cả hai (#61: 526 test; #62: 522 test;
+build; 13 e2e). Đã push lên cả hai nhánh.
+PR: #61, #62 (cập nhật, không mở PR mới)
+Kế tiếp: cả hai vẫn Tầng B, chờ người duyệt tay. Nếu chưa merge ở run sau,
+kiểm tra lại conflict trước khi chọn task mới.
