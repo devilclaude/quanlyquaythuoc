@@ -272,7 +272,7 @@ không mất nhịp và không mất ký tự; phân biệt được luồng qu�
 phím; máy quét hoạt động như bàn phím nên không cần driver.
 
 ### T-025 [B] prio:25 — Nhiều hoá đơn song song
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-022c
+Trạng thái: DONE · Phụ thuộc: T-022c
 Xong khi: mở nhiều tab hoá đơn như KiotViet; chuyển tab bằng bàn phím; giỏ đang gõ
 dở không mất khi chuyển; **có test chứng minh dòng hàng không lẫn giữa các tab**.
 Tầng B dù trông như việc giao diện: trộn nhầm dòng giữa hai tab sinh ra hoá đơn sai
@@ -292,7 +292,7 @@ hiện** đang online/offline, số thao tác chờ đồng bộ, thời điểm
 mất mạng giữa lúc bán không popup chặn màn hình và không mất giỏ.
 
 ### T-031 [B] prio:31 — Hàng đợi thao tác trong Dexie
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-030
+Trạng thái: DONE · Phụ thuộc: T-030
 Xong khi: mỗi thao tác bất biến, có ULID do client sinh, **idempotent**; trạng thái
 rõ ràng chờ gửi/đã gửi/đã xác nhận/lỗi; không bao giờ tự xoá thao tác chưa được máy
 chủ xác nhận; gửi lại hai lần không nhân đôi tồn kho — có test.
@@ -319,7 +319,7 @@ khi offline.
 ## Milestone 4 — Nhập hàng
 
 ### T-040a [B] prio:40.1 — Phiếu nhập: schema + lõi nghiệp vụ
-Trạng thái: TODO · Phụ thuộc: T-007, T-010b
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-007, T-010b
 Xong khi: migration `phieu_nhap` (chứng từ, trạng thái `PHIEU_TAM`/`HOAN_THANH`,
 mã tự sinh tuần tự, không xoá cứng) + `phieu_nhap_dong` (dòng nhập: sản phẩm, đơn
 vị, số lượng theo đơn vị đã chọn, đơn giá, lô mong muốn `so_lo`/`hsd` — cho phép
@@ -335,6 +335,12 @@ lưu tạm **không ghi kho**; hoàn thành một phiếu đã `HOAN_THANH` bị
 phẩm tắt lô bỏ qua lô/HSD, rơi đúng lô ngầm định; nhập vào lô đã tồn tại cộng dồn
 đúng lô cũ (không tạo lô trùng); số lượng 0 bị từ chối; quy đổi đơn vị lẻ (nhập
 theo hộp → cộng đúng số viên cơ sở). Không có API/UI.
+Ghi chú (sửa lúc làm): "gia_tri = đơn giá × số lượng cơ sở" ở trên sai đơn vị
+đo — đơn giá lưu theo đơn vị ĐÃ CHỌN (vd. giá/hộp), nhân với số lượng cơ sở
+(viên) ra một con số vô nghĩa, và quy đổi đơn giá sang cơ sở đòi một phép chia
+(hệ số) mà chính câu này cấm. Đã cài đúng theo bảng "Nhập sl với tổng tiền T"
+của SPEC.md §3.4: `gia_tri = đơn giá(đơn vị đã chọn) × số lượng(đơn vị đã
+chọn)` — chỉ nhân, không chia, và là tổng tiền thật của dòng nhập.
 Ghi chú: đây là T-040 cũ, chẻ ngay lúc chọn task (không build thử rồi bỏ) — cùng
 hình dạng gộp (schema+lõi+API+UI, đường ghi kho+tiền+lô trong một "Xong khi") đã
 khiến T-022/T-009/T-010 vượt ngưỡng khi làm trọn gói; T-040 còn thêm việc
