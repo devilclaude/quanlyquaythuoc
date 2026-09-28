@@ -298,7 +298,7 @@ rõ ràng chờ gửi/đã gửi/đã xác nhận/lỗi; không bao giờ tự x
 chủ xác nhận; gửi lại hai lần không nhân đôi tồn kho — có test.
 
 ### T-032 [B] prio:32 — Số hoá đơn cấp tại client
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-031
+Trạng thái: DONE · Phụ thuộc: T-031
 Xong khi: dạng `HD<mã máy>-<số tăng dần>`; cấp được khi offline; **bất biến sau khi
 đồng bộ**; hai thiết bị không bao giờ va số; số đã in luôn tra cứu được.
 
@@ -319,7 +319,7 @@ khi offline.
 ## Milestone 4 — Nhập hàng
 
 ### T-040a [B] prio:40.1 — Phiếu nhập: schema + lõi nghiệp vụ
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-007, T-010b
+Trạng thái: DONE · Phụ thuộc: T-007, T-010b
 Xong khi: migration `phieu_nhap` (chứng từ, trạng thái `PHIEU_TAM`/`HOAN_THANH`,
 mã tự sinh tuần tự, không xoá cứng) + `phieu_nhap_dong` (dòng nhập: sản phẩm, đơn
 vị, số lượng theo đơn vị đã chọn, đơn giá, lô mong muốn `so_lo`/`hsd` — cho phép
@@ -349,12 +349,16 @@ lô mới) nên chắc chắn không nhỏ hơn. Không build thử để đo �
 theo đúng tiền lệ T-009 (BACKLOG §Milestone 2, "chẻ ngay lúc chọn").
 
 ### T-040b [A] prio:40.2 — Phiếu nhập: API
-Trạng thái: TODO · Phụ thuộc: T-040a
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-040a
 Xong khi: `POST /api/phieu-nhap` (tạo, nhận cờ lưu tạm hay hoàn thành ngay),
 `PUT /api/phieu-nhap/:id` (sửa dòng khi còn ở trạng thái tạm — từ chối khi đã
 hoàn thành), `POST /api/phieu-nhap/:id/hoan-thanh`, `GET /api/phieu-nhap` (danh
 sách) và `GET /api/phieu-nhap/:id` (chi tiết); 400 khi dữ liệu không hợp lệ, 409
 khi thiếu lô/HSD bắt buộc hoặc hoàn thành phiếu đã hoàn thành.
+Ghi chú: `PUT /:id` dùng ngữ nghĩa THAY THẾ TOÀN BỘ danh sách dòng (cùng khuôn
+`SuaHangHoaReqSchema`/T-009c) — không có id dòng cũ trong request, server sinh
+ULID mới cho từng dòng. Không kiểm tra bắt buộc lô/HSD lúc sửa (chỉ áp dụng lúc
+Hoàn thành, giống lúc tạo phiếu tạm).
 
 ### T-040c [B] prio:40.3 — Phiếu nhập: giao diện
 Trạng thái: TODO · Phụ thuộc: T-040b

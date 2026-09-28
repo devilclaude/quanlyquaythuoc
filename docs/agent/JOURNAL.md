@@ -798,3 +798,17 @@ build; 13 e2e). Đã push lên cả hai nhánh.
 PR: #61, #62 (cập nhật, không mở PR mới)
 Kế tiếp: cả hai vẫn Tầng B, chờ người duyệt tay. Nếu chưa merge ở run sau,
 kiểm tra lại conflict trước khi chọn task mới.
+
+## 2026-09-28 (run kế) — dọn PR + T-040b
+Làm: #64 (T-033), #65 (T-052a) đều xanh, không comment, không conflict, chờ
+duyệt B — không sửa. Phát hiện BACKLOG lệch: #61 (T-040a)/#62 (T-032) đã merge
+từ trước (`git log origin/main`) nhưng file vẫn ghi CHỜ MERGE — sửa DONE ở
+đây. Chọn T-040b: `POST`/`PUT /api/phieu-nhap/:id`/`POST /:id/hoan-thanh`/`GET`
+(danh sách+chi tiết); thêm `suaPhieuNhap`/`layDanhSachPhieuNhap`/
+`layChiTietPhieuNhap` vào lõi T-040a (thay toàn bộ dòng khi còn PHIEU_TAM,
+cùng khuôn `suaHangHoa`/T-009c). Viết lỡ tay Zod contract trước test một lần —
+xoá, viết lại đúng thứ tự theo luật sắt TDD.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: T-043 hoặc T-053 (cả hai phụ thuộc T-040a, đã DONE) sau khi PR này
+merge; T-040c/T-041/T-042 vẫn chờ T-040b merge.
