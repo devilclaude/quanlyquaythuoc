@@ -5,12 +5,17 @@ import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { caiDat, chiNhanh, loHang, phieuNhap, sanPham, theKho, tonKhoLo } from '../db/schema';
 import {
+  DongPhieuNhapRongError,
   LoHsdKhongDayDuError,
   PhieuDaHoanThanhError,
   PhieuNhapKhongTonTaiError,
   SoLuongKhongHopLeError,
+  SuaPhieuDaHoanThanhError,
   ThieuLoHsdError,
   hoanThanhPhieuNhap,
+  layChiTietPhieuNhap,
+  layDanhSachPhieuNhap,
+  suaPhieuNhap,
   taoPhieuNhap,
 } from './tao-phieu-nhap';
 
@@ -334,5 +339,144 @@ describe('hoanThanhPhieuNhap', () => {
     });
 
     expect(() => hoanThanhPhieuNhap(db, 'pn-1', '2026-09-27T09:00:00.000Z')).toThrow(ThieuLoHsdError);
+  });
+});
+
+describe('suaPhieuNhap', () => {
+  it('sửa dòng khi phiếu còn PHIEU_TAM — thay đúng dòng mới, không ghi kho', () => {
+    const loMacDinh = taoSanPham('sp-1', 'SP001');
+    taoPhieuNhap(db, {
+      id: 'pn-1',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-09-27T07:00:00.000Z',
+      dong: [{ id: 'pnd-1', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 1_500, soLuong: 10 }],
+    });
+
+    suaPhieuNhap(db, 'pn-1', [
+      { id: 'pnd-moi', sanPhamId: 'sp-1', donViTen: 'hộp', heSo: 180, donGia: 260_000, soLuong: 2 },
+    ]);
+
+    const chiTiet = layChiTietPhieuNhap(db, 'pn-1');
+    expect(chiTiet?.dong).toHaveLength(1);
+    expect(chiTiet?.dong[0]).toMatchObject({ donViTen: 'hộp', heSo: 180, donGia: 260_000, soLuong: 2 });
+    expect(tonDem(loMacDinh, 'cn-1')).toBe(0);
+  });
+
+  it('sửa một phiếu không tồn tại bị từ chối', () => {
+    expect(() =>
+      suaPhieuNhap(db, 'khong-ton-tai', [
+        { id: 'pnd-1', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 1_500, soLuong: 10 },
+      ]),
+    ).toThrow(PhieuNhapKhongTonTaiError);
+  });
+
+  it('sửa một phiếu đã HOAN_THANH bị từ chối, không đổi dòng cũ', () => {
+    taoSanPham('sp-1', 'SP001');
+    taoPhieuNhap(db, {
+      id: 'pn-1',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-09-27T07:00:00.000Z',
+      hoanThanhNgay: true,
+      dong: [{ id: 'pnd-1', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 1_500, soLuong: 10 }],
+    });
+
+    expect(() =>
+      suaPhieuNhap(db, 'pn-1', [
+        { id: 'pnd-moi', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 1_500, soLuong: 999 },
+      ]),
+    ).toThrow(SuaPhieuDaHoanThanhError);
+
+    const chiTiet = layChiTietPhieuNhap(db, 'pn-1');
+    expect(chiTiet?.dong[0]?.soLuong).toBe(10);
+  });
+
+  it('sửa với danh sách dòng rỗng bị từ chối', () => {
+    taoSanPham('sp-1', 'SP001');
+    taoPhieuNhap(db, {
+      id: 'pn-1',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-09-27T07:00:00.000Z',
+      dong: [{ id: 'pnd-1', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 1_500, soLuong: 10 }],
+    });
+
+    expect(() => suaPhieuNhap(db, 'pn-1', [])).toThrow(DongPhieuNhapRongError);
+  });
+
+  it('sửa với số lượng không hợp lệ bị từ chối', () => {
+    taoSanPham('sp-1', 'SP001');
+    taoPhieuNhap(db, {
+      id: 'pn-1',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-09-27T07:00:00.000Z',
+      dong: [{ id: 'pnd-1', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 1_500, soLuong: 10 }],
+    });
+
+    expect(() =>
+      suaPhieuNhap(db, 'pn-1', [{ id: 'pnd-moi', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 1_500, soLuong: 0 }]),
+    ).toThrow(SoLuongKhongHopLeError);
+  });
+});
+
+describe('layDanhSachPhieuNhap và layChiTietPhieuNhap', () => {
+  it('danh sách trả về mọi phiếu đã tạo', () => {
+    taoSanPham('sp-1', 'SP001');
+    taoPhieuNhap(db, {
+      id: 'pn-1',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-09-27T07:00:00.000Z',
+      dong: [{ id: 'pnd-1', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 1_500, soLuong: 10 }],
+    });
+    taoPhieuNhap(db, {
+      id: 'pn-2',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-09-27T08:00:00.000Z',
+      dong: [{ id: 'pnd-2', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 1_500, soLuong: 5 }],
+    });
+
+    const danhSach = layDanhSachPhieuNhap(db);
+
+    expect(danhSach.map((p) => p.id).sort()).toEqual(['pn-1', 'pn-2']);
+  });
+
+  it('chi tiết trả về đúng dòng kèm lô/HSD đã khai', () => {
+    taoSanPham('sp-1', 'SP001', 'BAT');
+    taoPhieuNhap(db, {
+      id: 'pn-1',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-09-27T07:00:00.000Z',
+      dong: [
+        {
+          id: 'pnd-1',
+          sanPhamId: 'sp-1',
+          donViTen: 'hộp',
+          heSo: 180,
+          donGia: 260_000,
+          soLuong: 5,
+          soLo: 'L01',
+          hsd: '2027-01-01',
+        },
+      ],
+    });
+
+    const chiTiet = layChiTietPhieuNhap(db, 'pn-1');
+
+    expect(chiTiet?.ma).toMatch(/^PN\d{6}$/);
+    expect(chiTiet?.trangThai).toBe('PHIEU_TAM');
+    expect(chiTiet?.dong).toEqual([
+      {
+        id: 'pnd-1',
+        sanPhamId: 'sp-1',
+        donViTen: 'hộp',
+        heSo: 180,
+        donGia: 260_000,
+        soLuong: 5,
+        soLo: 'L01',
+        hsd: '2027-01-01',
+      },
+    ]);
+  });
+
+  it('chi tiết trả về undefined khi phiếu không tồn tại', () => {
+    expect(layChiTietPhieuNhap(db, 'khong-ton-tai')).toBeUndefined();
   });
 });

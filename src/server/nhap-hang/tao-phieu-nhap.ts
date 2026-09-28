@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import type { drizzle } from 'drizzle-orm/better-sqlite3';
 import { giaiNghiaCaiDatQuanLyLo, type GhiDeQuanLyLo } from '../../shared/cai-dat/giai-nghia';
 import { quyDoiSangCoSo } from '../../shared/don-vi/quy-doi';
@@ -61,6 +61,13 @@ export class PhieuDaHoanThanhError extends Error {
   }
 }
 
+export class SuaPhieuDaHoanThanhError extends Error {
+  constructor(public readonly phieuId: string) {
+    super(`Phiếu nhập ${phieuId} đã hoàn thành, không thể sửa`);
+    this.name = 'SuaPhieuDaHoanThanhError';
+  }
+}
+
 export interface DongPhieuNhapInput {
   id: string;
   sanPhamId: string;
@@ -91,6 +98,29 @@ export interface PhieuNhapDaTao {
   id: string;
   ma: string;
   trangThai: TrangThaiPhieuNhap;
+}
+
+export interface PhieuNhapDongChiTiet {
+  id: string;
+  sanPhamId: string;
+  donViTen: string;
+  heSo: number;
+  donGia: number;
+  soLuong: number;
+  soLo: string | null;
+  hsd: string | null;
+}
+
+export interface PhieuNhapDanhSachItem {
+  id: string;
+  ma: string;
+  chiNhanhId: string;
+  trangThai: TrangThaiPhieuNhap;
+  thoiGian: string;
+}
+
+export interface PhieuNhapChiTiet extends PhieuNhapDanhSachItem {
+  dong: PhieuNhapDongChiTiet[];
 }
 
 function laLoiTrungMaPhieuNhap(loi: unknown): boolean {
@@ -259,4 +289,83 @@ export function hoanThanhPhieuNhap(db: Db, phieuId: string, thoiGian: string): v
 
     hoanThanhTrongTx(tx, phieuId, phieu.chiNhanhId, thoiGian);
   });
+}
+
+/**
+ * Thay TOÀN BỘ danh sách dòng của một phiếu còn `PHIEU_TAM` (T-040b) — cùng ngữ
+ * nghĩa "thay thế toàn bộ" với đơn vị tính khác của hàng hoá (`suaHangHoa`,
+ * T-009c): xoá hết dòng cũ rồi chèn lại dòng mới, an toàn vì dòng tạm chưa ghi
+ * kho/lô nào (get-or-create lô thật chỉ xảy ra lúc Hoàn thành). Không kiểm tra
+ * bắt buộc lô/HSD ở đây — ràng buộc đó chỉ áp dụng lúc `hoanThanhTrongTx`, đúng
+ * như lúc tạo phiếu tạm ban đầu.
+ */
+export function suaPhieuNhap(db: Db, phieuId: string, dong: readonly DongPhieuNhapInput[]): void {
+  if (dong.length === 0) throw new DongPhieuNhapRongError();
+  for (const d of dong) {
+    if (!Number.isInteger(d.soLuong) || d.soLuong <= 0) throw new SoLuongKhongHopLeError(d.id);
+  }
+
+  db.transaction((tx) => {
+    const [phieu] = tx.select().from(phieuNhap).where(eq(phieuNhap.id, phieuId)).all();
+    if (!phieu) throw new PhieuNhapKhongTonTaiError(phieuId);
+    if (phieu.trangThai === 'HOAN_THANH') throw new SuaPhieuDaHoanThanhError(phieuId);
+
+    tx.delete(phieuNhapDong).where(eq(phieuNhapDong.phieuId, phieuId)).run();
+    for (const d of dong) {
+      tx.insert(phieuNhapDong)
+        .values({
+          id: d.id,
+          phieuId,
+          sanPhamId: d.sanPhamId,
+          donViTen: d.donViTen,
+          heSo: d.heSo,
+          donGia: d.donGia,
+          soLuong: d.soLuong,
+          soLo: chuanHoaChuoi(d.soLo),
+          hsd: chuanHoaChuoi(d.hsd),
+        })
+        .run();
+    }
+  });
+}
+
+/** Danh sách phiếu nhập, mới nhất trước (T-040b). Không có bộ lọc — T-041 sẽ mở rộng khi dựng UI. */
+export function layDanhSachPhieuNhap(db: Db): PhieuNhapDanhSachItem[] {
+  return db
+    .select({
+      id: phieuNhap.id,
+      ma: phieuNhap.ma,
+      chiNhanhId: phieuNhap.chiNhanhId,
+      trangThai: phieuNhap.trangThai,
+      thoiGian: phieuNhap.thoiGian,
+    })
+    .from(phieuNhap)
+    .orderBy(desc(phieuNhap.thoiGianMayChu))
+    .all();
+}
+
+/** Chi tiết một phiếu nhập kèm toàn bộ dòng (T-040b). */
+export function layChiTietPhieuNhap(db: Db, id: string): PhieuNhapChiTiet | undefined {
+  const [phieu] = db.select().from(phieuNhap).where(eq(phieuNhap.id, id)).all();
+  if (!phieu) return undefined;
+
+  const dong = db.select().from(phieuNhapDong).where(eq(phieuNhapDong.phieuId, id)).all();
+
+  return {
+    id: phieu.id,
+    ma: phieu.ma,
+    chiNhanhId: phieu.chiNhanhId,
+    trangThai: phieu.trangThai,
+    thoiGian: phieu.thoiGian,
+    dong: dong.map((d) => ({
+      id: d.id,
+      sanPhamId: d.sanPhamId,
+      donViTen: d.donViTen,
+      heSo: d.heSo,
+      donGia: d.donGia,
+      soLuong: d.soLuong,
+      soLo: d.soLo,
+      hsd: d.hsd,
+    })),
+  };
 }
