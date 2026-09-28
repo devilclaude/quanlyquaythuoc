@@ -798,3 +798,15 @@ build; 13 e2e). Đã push lên cả hai nhánh.
 PR: #61, #62 (cập nhật, không mở PR mới)
 Kế tiếp: cả hai vẫn Tầng B, chờ người duyệt tay. Nếu chưa merge ở run sau,
 kiểm tra lại conflict trước khi chọn task mới.
+
+## 2026-09-28 — dọn PR + T-052a
+Làm: #61/#62 đã merge từ trước → DONE (BACKLOG lệch, sửa ở đây). #64 (T-033)
+xanh, không comment/conflict, chờ duyệt B — không sửa. Chọn T-052a: thêm cột
+`hoa_don_dong_lo.thu_tu` (thứ tự trừ lô lúc bán — không suy lại được từ FEFO
+vì có thể đã ghi đè thủ công) để trả hàng hoàn đúng LIFO; bảng mới
+`tra_hang`/`tra_hang_dong`/`tra_hang_dong_lo` (đối xứng `hoa_don_dong_lo`, cần
+để biết đã hoàn bao nhiêu vào từng lô qua nhiều lần trả); tiền hoàn = tỷ lệ
+`(thanh_tien − giam_gia_phan_bo) × sl_trả / sl_đã_bán`, làm tròn nửa lên.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-052b (API) sau khi PR này merge.

@@ -334,6 +334,12 @@ export const hoaDonDongLo = sqliteTable(
       .references(() => loHang.id),
     /** Dương, đơn vị cơ sở — số lượng đã trừ từ đúng lô này cho dòng này. */
     soLuong: integer('so_luong').notNull(),
+    // Thứ tự lô bị trừ trong lần bán này (0 = trừ đầu tiên) — T-052a cần để trả
+    // hàng hoàn đúng LIFO (SPEC.md §4.2: "lô bị trừ sau cùng được hoàn trước").
+    // Không suy lại được từ FEFO hiện tại của các lô, vì người bán có thể đã ghi
+    // đè bằng lô ưu tiên thủ công (SPEC.md §4.1) — thứ tự thật chỉ tồn tại tại
+    // thời điểm bán, không phải thuộc tính cố định của lô.
+    thuTu: integer('thu_tu').notNull().default(0),
   },
   (t) => [
     unique('hoa_don_dong_lo_dong_lo_unique').on(t.hoaDonDongId, t.loId),
@@ -390,5 +396,78 @@ export const phieuNhapDong = sqliteTable(
     check('phieu_nhap_dong_he_so_toi_thieu', sql`${t.heSo} >= 1`),
     check('phieu_nhap_dong_don_gia_khong_am', sql`${t.donGia} >= 0`),
     check('phieu_nhap_dong_so_luong_duong', sql`${t.soLuong} > 0`),
+  ],
+);
+
+// Chứng từ trả hàng (khách trả, T-052a, SPEC.md §4.2/§6.4) — chứng từ giao dịch,
+// không xoá cứng (SPEC.md §3.5). `chi_nhanh_id` LUÔN lấy từ hoá đơn gốc (không
+// nhận riêng qua tham số) — một phiếu trả không thể thuộc chi nhánh khác chi
+// nhánh đã bán, nên suy ra thay vì cho phép hai giá trị lệch nhau. `ma` tự sinh
+// tuần tự giống `hoa_don.ma`/`phieu_nhap.ma`.
+export const traHang = sqliteTable('tra_hang', {
+  id: text('id').primaryKey(),
+  hoaDonId: text('hoa_don_id')
+    .notNull()
+    .references(() => hoaDon.id),
+  chiNhanhId: text('chi_nhanh_id')
+    .notNull()
+    .references(() => chiNhanh.id),
+  ma: text('ma').notNull().unique(),
+  thoiGian: text('thoi_gian').notNull(),
+  thoiGianMayChu: text('thoi_gian_may_chu')
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+});
+
+// Từng dòng trả của một phiếu — liên kết ngược tới đúng dòng hoá đơn gốc đã bán
+// (không tới sản phẩm, để không phải suy lại đơn vị/giá). `so_luong` là đơn vị
+// CƠ SỞ (khác `hoa_don_dong.so_luong` — SPEC.md §3.2 "tồn kho lưu ở đơn vị cơ
+// sở"): trả hàng thao tác thẳng trên sổ cái, không có khái niệm "đơn vị đã
+// chọn" riêng của lần trả. `tien_hoan` dùng lại `giam_gia_phan_bo` đã lưu lúc
+// bán làm cơ sở tính theo tỷ lệ số lượng trả/đã bán — KHÔNG tính lại từ %
+// (SPEC.md §3.4), nên hai lần trả cho cùng một dòng luôn cộng dồn nhất quán với
+// số đã giảm giá thật lúc bán, không phụ thuộc tỷ lệ giảm giá có đổi ý nghĩa
+// sau này hay không.
+export const traHangDong = sqliteTable(
+  'tra_hang_dong',
+  {
+    id: text('id').primaryKey(),
+    traHangId: text('tra_hang_id')
+      .notNull()
+      .references(() => traHang.id),
+    hoaDonDongId: text('hoa_don_dong_id')
+      .notNull()
+      .references(() => hoaDonDong.id),
+    soLuong: integer('so_luong').notNull(),
+    tienHoan: integer('tien_hoan').notNull(),
+  },
+  (t) => [
+    unique('tra_hang_dong_tra_hang_hoa_don_dong_unique').on(t.traHangId, t.hoaDonDongId),
+    check('tra_hang_dong_so_luong_duong', sql`${t.soLuong} > 0`),
+    check('tra_hang_dong_tien_hoan_khong_am', sql`${t.tienHoan} >= 0`),
+  ],
+);
+
+// Lô nào nhận lại bao nhiêu cho từng dòng trả — một dòng trả có thể tràn sang
+// nhiều lô khi hoàn LIFO (đối xứng với `hoa_don_dong_lo` ở chiều bán, T-022a).
+// Cần bảng riêng (không chỉ đọc `hoa_don_dong_lo`) để biết CHÍNH XÁC đã hoàn bao
+// nhiêu vào mỗi lô qua các lần trả trước — phần còn lại có thể hoàn của một lô
+// là số đã trừ (`hoa_don_dong_lo.so_luong`) trừ đi tổng đã hoàn vào lô đó ở đây.
+export const traHangDongLo = sqliteTable(
+  'tra_hang_dong_lo',
+  {
+    id: text('id').primaryKey(),
+    traHangDongId: text('tra_hang_dong_id')
+      .notNull()
+      .references(() => traHangDong.id),
+    loId: text('lo_id')
+      .notNull()
+      .references(() => loHang.id),
+    /** Dương, đơn vị cơ sở — số lượng đã hoàn về đúng lô này cho dòng trả này. */
+    soLuong: integer('so_luong').notNull(),
+  },
+  (t) => [
+    unique('tra_hang_dong_lo_dong_lo_unique').on(t.traHangDongId, t.loId),
+    check('tra_hang_dong_lo_so_luong_duong', sql`${t.soLuong} > 0`),
   ],
 );

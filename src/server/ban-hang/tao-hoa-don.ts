@@ -171,9 +171,9 @@ export function taoHoaDonTuGioHang(db: Db, input: TaoHoaDonInput): HoaDonDaTao {
             d.loUuTienThuCong ?? [],
           );
 
-          for (const pb of phanBoLo) {
+          phanBoLo.forEach((pb, thuTu) => {
             tx.insert(hoaDonDongLo)
-              .values({ id: `${d.id}-${pb.loId}`, hoaDonDongId: d.id, loId: pb.loId, soLuong: pb.soLuong })
+              .values({ id: `${d.id}-${pb.loId}`, hoaDonDongId: d.id, loId: pb.loId, soLuong: pb.soLuong, thuTu })
               .run();
 
             ghiMotDongTheKho(tx, {
@@ -184,7 +184,7 @@ export function taoHoaDonTuGioHang(db: Db, input: TaoHoaDonInput): HoaDonDaTao {
               soLuong: -pb.soLuong,
               thoiGian: input.thoiGian,
             });
-          }
+          });
         });
       });
 

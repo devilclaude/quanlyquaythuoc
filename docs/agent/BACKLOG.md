@@ -298,7 +298,7 @@ rõ ràng chờ gửi/đã gửi/đã xác nhận/lỗi; không bao giờ tự x
 chủ xác nhận; gửi lại hai lần không nhân đôi tồn kho — có test.
 
 ### T-032 [B] prio:32 — Số hoá đơn cấp tại client
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-031
+Trạng thái: DONE · Phụ thuộc: T-031
 Xong khi: dạng `HD<mã máy>-<số tăng dần>`; cấp được khi offline; **bất biến sau khi
 đồng bộ**; hai thiết bị không bao giờ va số; số đã in luôn tra cứu được.
 
@@ -319,7 +319,7 @@ khi offline.
 ## Milestone 4 — Nhập hàng
 
 ### T-040a [B] prio:40.1 — Phiếu nhập: schema + lõi nghiệp vụ
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-007, T-010b
+Trạng thái: DONE · Phụ thuộc: T-007, T-010b
 Xong khi: migration `phieu_nhap` (chứng từ, trạng thái `PHIEU_TAM`/`HOAN_THANH`,
 mã tự sinh tuần tự, không xoá cứng) + `phieu_nhap_dong` (dòng nhập: sản phẩm, đơn
 vị, số lượng theo đơn vị đã chọn, đơn giá, lô mong muốn `so_lo`/`hsd` — cho phép
@@ -405,7 +405,7 @@ Trạng thái: DONE · Phụ thuộc: T-006
 Xong khi: xuất khỏi kho có lý do và người thực hiện, ghi thẻ kho, chọn đúng lô.
 
 ### T-052a [B] prio:52.1 — Trả hàng: schema + lõi nghiệp vụ
-Trạng thái: TODO · Phụ thuộc: T-022c
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-022c
 Xong khi: migration `tra_hang` (chứng từ, không xoá cứng, liên kết `hoa_don_id`
 tới hoá đơn gốc, mã tự sinh tuần tự) và `tra_hang_dong` (dòng trả: liên kết
 `hoa_don_dong_id`, số lượng trả theo đơn vị cơ sở, tiền hoàn dùng lại
