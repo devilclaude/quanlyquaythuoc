@@ -298,12 +298,12 @@ rõ ràng chờ gửi/đã gửi/đã xác nhận/lỗi; không bao giờ tự x
 chủ xác nhận; gửi lại hai lần không nhân đôi tồn kho — có test.
 
 ### T-032 [B] prio:32 — Số hoá đơn cấp tại client
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-031
+Trạng thái: DONE · Phụ thuộc: T-031
 Xong khi: dạng `HD<mã máy>-<số tăng dần>`; cấp được khi offline; **bất biến sau khi
 đồng bộ**; hai thiết bị không bao giờ va số; số đã in luôn tra cứu được.
 
 ### T-033 [B] prio:33 — Đồng bộ phía máy chủ
-Trạng thái: TODO · Phụ thuộc: T-032
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-032
 Xong khi: máy chủ nhận hàng đợi, áp dụng theo thứ tự đến, idempotent theo ULID;
 **không bao giờ từ chối một đơn đã bán và đã in**; giá vốn gấp theo thứ tự đến,
 không hồi tố; test đơn offline về muộn không làm đổi số đã hiển thị.
@@ -319,7 +319,7 @@ khi offline.
 ## Milestone 4 — Nhập hàng
 
 ### T-040a [B] prio:40.1 — Phiếu nhập: schema + lõi nghiệp vụ
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-007, T-010b
+Trạng thái: DONE · Phụ thuộc: T-007, T-010b
 Xong khi: migration `phieu_nhap` (chứng từ, trạng thái `PHIEU_TAM`/`HOAN_THANH`,
 mã tự sinh tuần tự, không xoá cứng) + `phieu_nhap_dong` (dòng nhập: sản phẩm, đơn
 vị, số lượng theo đơn vị đã chọn, đơn giá, lô mong muốn `so_lo`/`hsd` — cho phép

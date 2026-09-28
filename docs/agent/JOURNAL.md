@@ -798,3 +798,29 @@ build; 13 e2e). Đã push lên cả hai nhánh.
 PR: #61, #62 (cập nhật, không mở PR mới)
 Kế tiếp: cả hai vẫn Tầng B, chờ người duyệt tay. Nếu chưa merge ở run sau,
 kiểm tra lại conflict trước khi chọn task mới.
+
+## 2026-09-28 — dọn PR + T-033
+Làm: #61 (T-040a), #62 (T-032) đã merge → chuyển DONE. Không có PR agent nào
+mở, Slack #quaythuoc-admin không có chỉ đạo mới. Chọn T-033 (đồng bộ phía máy
+chủ): `phanBoTheoThuTu`/`chonLoXuatKho` (kho/fefo.ts) nhận cờ `choPhepTonAm` —
+tồn không đủ thì dồn phần thiếu vào lô cuối thay vì ném lỗi; `taoHoaDonTuGioHang`
+nhận `maDaCap` (dùng thẳng mã T-032 cấp tại client, không tự sinh) và
+`choPhepTonAm` (mặc định false, đường online T-022b không đổi hành vi).
+`src/server/dong-bo/ap-dung-thao-tac.ts` — `apDungThaoTacBanHang` idempotent
+theo id thao tác (kiểm tra `hoa_don.id` tồn tại trước khi gọi), lỗi nghiệp vụ
+thật (giảm giá hỏng...) trả `LOI` thay vì ném, không chặn thao tác sau trong
+cùng lô; `apDungLoThaoTac` áp dụng đúng thứ tự mảng truyền vào. `POST
+/api/dong-bo` (luôn 200 kèm kết quả từng thao tác, 400 chỉ khi sai hợp đồng).
+Test COGS gấp theo thứ tự ĐẾN máy chủ, không theo `thoiGian` từng thao tác.
+PR: (xem mô tả PR)
+Tầng: B
+Quyết định: `ThaoTacDongBoSchema` hiện bằng đúng `ThaoTacBanHangOfflineSchema`
+(chưa phải union thật) vì trả hàng offline (T-052a) chưa có lõi nghiệp vụ —
+ghi rõ trong file để người sau biết chỗ mở rộng khi T-052a xong, không dựng
+sẵn discriminated union cho một nhánh chưa tồn tại.
+Cố tình không làm: chưa nối `xuLyHangDoi` (T-031) gọi endpoint này qua fetch
+thật, và `BanHang.tsx` chưa tạo thao tác BAN_HANG khi offline — T-033 "Xong
+khi" chỉ yêu cầu hành vi phía máy chủ, wiring luồng bán hàng thật là việc
+khác (giống tiền lệ T-032 để lại wiring cho T-033).
+Kế tiếp: T-034 (cảnh báo lệch kho) sau khi PR này merge; T-041/T-043/T-053/
+T-055 cũng đủ điều kiện phụ thuộc (T-040a/T-010b/T-022c đã DONE).

@@ -1,6 +1,7 @@
 import type { drizzle } from 'drizzle-orm/better-sqlite3';
 import { Hono } from 'hono';
 import { dangKyCaiDatRoutes } from './api/cai-dat';
+import { dangKyDongBoRoutes } from './api/dong-bo';
 import { dangKyHangHoaRoutes } from './api/hang-hoa';
 import { dangKyHoaDonRoutes } from './api/hoa-don';
 
@@ -22,6 +23,10 @@ export function taoApp(db: Db) {
   const hoaDonRouter = new Hono();
   dangKyHoaDonRoutes(hoaDonRouter, db);
   app.route('/api/hoa-don', hoaDonRouter);
+
+  const dongBoRouter = new Hono();
+  dangKyDongBoRoutes(dongBoRouter, db);
+  app.route('/api/dong-bo', dongBoRouter);
 
   return app;
 }
