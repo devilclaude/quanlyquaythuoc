@@ -349,12 +349,16 @@ lô mới) nên chắc chắn không nhỏ hơn. Không build thử để đo �
 theo đúng tiền lệ T-009 (BACKLOG §Milestone 2, "chẻ ngay lúc chọn").
 
 ### T-040b [A] prio:40.2 — Phiếu nhập: API
-Trạng thái: TODO · Phụ thuộc: T-040a
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-040a
 Xong khi: `POST /api/phieu-nhap` (tạo, nhận cờ lưu tạm hay hoàn thành ngay),
 `PUT /api/phieu-nhap/:id` (sửa dòng khi còn ở trạng thái tạm — từ chối khi đã
 hoàn thành), `POST /api/phieu-nhap/:id/hoan-thanh`, `GET /api/phieu-nhap` (danh
 sách) và `GET /api/phieu-nhap/:id` (chi tiết); 400 khi dữ liệu không hợp lệ, 409
 khi thiếu lô/HSD bắt buộc hoặc hoàn thành phiếu đã hoàn thành.
+Ghi chú: `PUT /:id` dùng ngữ nghĩa THAY THẾ TOÀN BỘ danh sách dòng (cùng khuôn
+`SuaHangHoaReqSchema`/T-009c) — không có id dòng cũ trong request, server sinh
+ULID mới cho từng dòng. Không kiểm tra bắt buộc lô/HSD lúc sửa (chỉ áp dụng lúc
+Hoàn thành, giống lúc tạo phiếu tạm).
 
 ### T-040c [B] prio:40.3 — Phiếu nhập: giao diện
 Trạng thái: TODO · Phụ thuộc: T-040b
