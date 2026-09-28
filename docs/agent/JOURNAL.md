@@ -824,3 +824,28 @@ khi" chỉ yêu cầu hành vi phía máy chủ, wiring luồng bán hàng thậ
 khác (giống tiền lệ T-032 để lại wiring cho T-033).
 Kế tiếp: T-034 (cảnh báo lệch kho) sau khi PR này merge; T-041/T-043/T-053/
 T-055 cũng đủ điều kiện phụ thuộc (T-040a/T-010b/T-022c đã DONE).
+
+## 2026-09-28 (run kế) — dọn PR + T-040b
+Làm: #64 (T-033), #65 (T-052a) đều xanh, không comment, không conflict, chờ
+duyệt B — không sửa. Phát hiện BACKLOG lệch: #61 (T-040a)/#62 (T-032) đã merge
+từ trước (`git log origin/main`) nhưng file vẫn ghi CHỜ MERGE — sửa DONE ở
+đây. Chọn T-040b: `POST`/`PUT /api/phieu-nhap/:id`/`POST /:id/hoan-thanh`/`GET`
+(danh sách+chi tiết); thêm `suaPhieuNhap`/`layDanhSachPhieuNhap`/
+`layChiTietPhieuNhap` vào lõi T-040a (thay toàn bộ dòng khi còn PHIEU_TAM,
+cùng khuôn `suaHangHoa`/T-009c). Viết lỡ tay Zod contract trước test một lần —
+xoá, viết lại đúng thứ tự theo luật sắt TDD.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: T-043 hoặc T-053 (cả hai phụ thuộc T-040a, đã DONE) sau khi PR này
+merge; T-040c/T-041/T-042 vẫn chờ T-040b merge.
+
+## 2026-09-28 (run kế 2) — dọn conflict #64/#65
+Làm: #66 (T-040b) merge vào main sau khi #64, #65 mở → cả hai thành `dirty`
+(conflict `docs/agent/JOURNAL.md` điểm chèn cuối append-only, và `src/server/
+app.ts` cùng chèn route mới cạnh nhau). Không CI đỏ, không comment chưa xử lý
+— chỉ conflict. Sửa cả hai (tiền lệ 2026-09-26 #58/#59, 2026-09-27 #61/#62):
+merge `main` vào từng nhánh, giữ cả hai route trong `app.ts`, giữ cả hai entry
+JOURNAL theo thứ tự thời gian tạo PR. `npm run ci` xanh lại cho cả hai, push
+lên cả hai nhánh, không mở task mới.
+PR: #64, #65 (cập nhật, không mở PR mới)
+Kế tiếp: cả hai vẫn Tầng B, chờ người duyệt tay.
