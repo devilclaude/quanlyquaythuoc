@@ -748,6 +748,16 @@ PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: T-040a.
 
+## 2026-09-27 — dọn PR + T-032
+Làm: #61 (T-040a) xanh, không comment/conflict, chờ duyệt B — không sửa. #58/#59
+(T-025/T-031) đã merge từ trước → chuyển DONE (BACKLOG lệch, chưa ai cập nhật).
+Chọn T-032: `src/client/offline/so-hoa-don-client.ts` — Dexie riêng (không dùng
+chung `csdlCucBo` T-031), mã máy random 6 ký tự Crockford sinh một lần/thiết bị
+(DOMAIN-NOTES.md cho phép "ID do client sinh" thay đăng ký tay); cấp số
+`HD<mãMáy>-NNNNNN` idempotent theo `idThaoTac` (unique index) trong transaction.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-033 (đồng bộ phía máy chủ) sau khi PR này merge.
 ## 2026-09-27 — dọn PR (không còn PR mở) + T-040a
 Làm: không còn PR agent nào mở; #58/#59/#60 đều đã merge từ trước (BACKLOG lệch
 với T-025/chẻ T-040, chưa ai chuyển DONE — sửa ở đây). Không có chỉ đạo mới ở

@@ -298,7 +298,7 @@ rõ ràng chờ gửi/đã gửi/đã xác nhận/lỗi; không bao giờ tự x
 chủ xác nhận; gửi lại hai lần không nhân đôi tồn kho — có test.
 
 ### T-032 [B] prio:32 — Số hoá đơn cấp tại client
-Trạng thái: TODO · Phụ thuộc: T-031
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-031
 Xong khi: dạng `HD<mã máy>-<số tăng dần>`; cấp được khi offline; **bất biến sau khi
 đồng bộ**; hai thiết bị không bao giờ va số; số đã in luôn tra cứu được.
 
