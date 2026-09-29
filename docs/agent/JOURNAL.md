@@ -860,3 +860,22 @@ JOURNAL theo thứ tự thời gian tạo PR. `npm run ci` xanh lại cho cả h
 lên cả hai nhánh, không mở task mới.
 PR: #64, #65 (cập nhật, không mở PR mới)
 Kế tiếp: cả hai vẫn Tầng B, chờ người duyệt tay.
+
+## 2026-09-29 — dọn PR (không còn PR mở) + T-043
+Làm: không còn PR agent nào mở, mọi PR trước đã merge (BACKLOG đã đúng trạng
+thái). Slack #quaythuoc-admin không có chỉ đạo mới từ 2026-09-19 (câu hỏi hôm
+đó về auto-merge đã trả lời xong ở run kế tiếp cùng ngày). Chọn T-043 (nhập từ
+Excel): cột file mẫu tự định nghĩa (Mã hàng/Tên đơn vị/Số lượng/Đơn giá/Số
+lô/Hạn dùng), đọc+xác thực TOÀN BỘ file trước (chỉ đọc CSDL), một dòng lỗi thì
+không ghi gì cả, chỉ hợp lệ hết mới gọi `taoPhieuNhap` (T-040a) một lần —
+không viết lại logic ghi kho/lô/giá vốn. Cân nhắc thư viện: bỏ `xlsx` (CVE
+HIGH chưa vá trên npm, rủi ro trực tiếp vì xử lý file người dùng tải lên),
+chọn `exceljs`. Dựng màn "Nhập hàng" độc lập (T-040c — màn tạo tay đầy đủ —
+vẫn TODO) chỉ chứa khối nhập-từ-Excel, ghi rõ trong BACKLOG để gộp khi T-040c
+xong. `exceljs` tự khai `declare interface Buffer extends ArrayBuffer {}` ở
+phạm vi toàn cục trong .d.ts của nó (lỗi đã biết của gói) làm hỏng kiểu
+`Buffer` thật của Node — né bằng cách chỉ dùng `Uint8Array` trong chữ ký hàm
+của module mình, ép kiểu đúng tại ranh giới gọi `exceljs`.
+PR: (xem mô tả PR)
+Tầng: B — thêm dependency mới (`exceljs`), theo tiền lệ T-031 (dexie).
+Kế tiếp: T-053 hoặc T-055 sau khi PR này merge.

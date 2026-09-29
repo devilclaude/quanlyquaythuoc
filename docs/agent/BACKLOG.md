@@ -390,9 +390,19 @@ thành" ngay trong màn nhập hàng thật (SPEC.md §6.2 bước 4), không ph
 độc lập.
 
 ### T-043 [B] prio:43 — Nhập hàng từ file Excel
-Trạng thái: TODO · Phụ thuộc: T-040a
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-040a
 Xong khi: có file mẫu tải về; báo lỗi theo từng dòng; **file lỗi không làm hỏng
 kho** — hoặc vào hết hoặc không vào gì.
+Ghi chú: màn đầy đủ trong screenshot "Giao diện chọn file nhập hàng.png" là một
+khối bên trong màn Nhập hàng tạo tay (T-040c, vẫn TODO) — slice này chỉ dựng
+đúng khối "Thêm sản phẩm từ file excel" (link tải mẫu + nút chọn file) thành
+một màn độc lập dưới nav "Nhập hàng", không dựng lại bảng dòng/panel NCC thuộc
+T-040c. Khi T-040c build, hai màn nên gộp lại — ghi chú lại đây cho run sau.
+File mẫu do phần mềm này tự định nghĩa (6 cột: Mã hàng, Tên đơn vị, Số lượng,
+Đơn giá, Số lô, Hạn dùng yyyy-mm-dd) — không phải bản xuất KiotViet thật nên
+không bị chặn như T-060. Thư viện Excel: chọn `exceljs` thay vì `xlsx` (SheetJS)
+vì `xlsx` trên npm có CVE mức HIGH (prototype pollution/ReDoS) chưa có bản vá,
+rủi ro trực tiếp vì endpoint này xử lý file người dùng tải lên.
 
 ---
 

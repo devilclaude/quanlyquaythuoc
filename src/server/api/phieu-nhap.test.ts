@@ -2,10 +2,22 @@ import Database from 'better-sqlite3';
 import { and, eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
+import ExcelJS from 'exceljs';
 import { Hono } from 'hono';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { chiNhanh, loHang, phieuNhap, sanPham, tonKhoLo } from '../db/schema';
+import { CAC_TIEU_DE_MAU_EXCEL } from '../nhap-hang/nhap-tu-excel';
+import { chiNhanh, donViTinh, loHang, phieuNhap, sanPham, tonKhoLo } from '../db/schema';
 import { dangKyPhieuNhapRoutes } from './phieu-nhap';
+
+/** Dựng buffer .xlsx với đúng tiêu đề mẫu + các dòng dữ liệu truyền vào — dùng chung cho test route Excel. */
+async function dungFileExcel(cacDong: (string | number)[][]): Promise<Buffer> {
+  const wb = new ExcelJS.Workbook();
+  const sheet = wb.addWorksheet('Nhập hàng');
+  sheet.addRow([...CAC_TIEU_DE_MAU_EXCEL]);
+  for (const dong of cacDong) sheet.addRow(dong);
+  const buf = await wb.xlsx.writeBuffer();
+  return Buffer.from(buf);
+}
 
 type DbTest = ReturnType<typeof drizzle>;
 
@@ -181,6 +193,64 @@ describe('dangKyPhieuNhapRoutes', () => {
 
     expect(res.status).toBe(409);
     expect(tonDem(loMacDinh)).toBe(900);
+  });
+});
+
+describe('dangKyPhieuNhapRoutes — nhập từ Excel (T-043)', () => {
+  it('GET /mau-excel trả về file .xlsx đúng tiêu đề mẫu', async () => {
+    const res = await taoRouter().request('/mau-excel');
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toContain('spreadsheetml');
+    const buf = new Uint8Array(await res.arrayBuffer());
+
+    const wb = new ExcelJS.Workbook();
+    // Ép kiểu chữ ký hàm tại ranh giới gọi exceljs — xem chú thích trong nhap-tu-excel.ts.
+    const load = wb.xlsx.load.bind(wb.xlsx) as unknown as (duLieu: Uint8Array) => Promise<unknown>;
+    await load(buf);
+    const sheet = wb.worksheets[0];
+    if (!sheet) throw new Error('file mẫu không có sheet');
+    expect((sheet.getRow(1).values as unknown[])[1]).toBe('Mã hàng');
+  });
+
+  it('POST /tu-excel với file hợp lệ tạo phiếu hoàn thành, ghi kho đúng', async () => {
+    const loMacDinh = taoSanPham('sp-1', 'SP001');
+    db.insert(donViTinh).values({ id: 'dvt-1', sanPhamId: 'sp-1', ten: 'viên', heSo: 1, laCoSo: true, giaBan: 500 }).run();
+    db.insert(donViTinh).values({ id: 'dvt-2', sanPhamId: 'sp-1', ten: 'hộp', heSo: 180, giaBan: 90_000 }).run();
+
+    const file = await dungFileExcel([['SP001', 'hộp', 5, 260_000, '', '']]);
+    const form = new FormData();
+    form.set('file', new Blob([new Uint8Array(file)]), 'nhap-hang.xlsx');
+
+    const res = await taoRouter().request('/tu-excel', { method: 'POST', body: form });
+
+    expect(res.status).toBe(201);
+    const json = (await res.json()) as { thanhCong: boolean; phieu: { trangThai: string } };
+    expect(json.thanhCong).toBe(true);
+    expect(json.phieu.trangThai).toBe('HOAN_THANH');
+    expect(tonDem(loMacDinh)).toBe(900);
+  });
+
+  it('POST /tu-excel với dòng lỗi trả về 400 kèm danh sách lỗi, không ghi kho', async () => {
+    const loMacDinh = taoSanPham('sp-1', 'SP001');
+
+    const file = await dungFileExcel([['SP_KHONG_TON_TAI', 'viên', 10, 1_000, '', '']]);
+    const form = new FormData();
+    form.set('file', new Blob([new Uint8Array(file)]), 'nhap-hang.xlsx');
+
+    const res = await taoRouter().request('/tu-excel', { method: 'POST', body: form });
+
+    expect(res.status).toBe(400);
+    const json = (await res.json()) as { thanhCong: boolean; loi: unknown[] };
+    expect(json.thanhCong).toBe(false);
+    expect(json.loi.length).toBeGreaterThan(0);
+    expect(tonDem(loMacDinh)).toBe(0);
+  });
+
+  it('POST /tu-excel thiếu file trả về 400', async () => {
+    const form = new FormData();
+    const res = await taoRouter().request('/tu-excel', { method: 'POST', body: form });
+    expect(res.status).toBe(400);
   });
 });
 
