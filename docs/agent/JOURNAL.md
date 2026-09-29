@@ -872,3 +872,20 @@ Chẻ ngay lúc chọn (không build thử): T-053a (schema+lõi)→T-053b (API)
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: T-053a.
+
+## 2026-09-29 (run kế) — dọn PR + T-034
+Làm: #67 (T-043) vẫn xanh, không comment, không conflict, chờ duyệt B — không
+sửa. #64/#65/#66 (T-033/T-052a/T-040b) đã merge từ trước → chuyển DONE (BACKLOG
+lệch, sửa ở đây). Chọn T-034: cảnh báo lệch kho là **hình chiếu suy ra** trực
+tiếp từ `ton_kho_lo` (`layCanhBaoLechKho`, giống `gia_von_hien_hanh` T-007) —
+một lô `ton < 0` là một cảnh báo, không thêm bảng/migration nào. `GET
+/api/tong-quan/canh-bao-lech-kho`; màn "Tổng quan" mới (chưa có screenshot
+tham chiếu, theo tiền lệ T-010c/T-023) hiện bảng cảnh báo, rỗng thì báo yên
+tâm. Test: hai thiết bị cùng bán hộp cuối lúc offline qua `apDungLoThaoTac`
+(cả hai `DA_AP_DUNG`, tồn -1, cảnh báo xuất hiện); kiểm kê đưa tồn hết âm thì
+cảnh báo tự biến mất, không cần trạng thái "đã xử lý" riêng. Xác nhận thêm
+bằng dev server + Playwright thật (không commit): gọi `/api/dong-bo` bán vượt
+tồn, tải lại "Tổng quan" thấy đúng dòng cảnh báo.
+PR: (xem mô tả PR)
+Tầng: A — chỉ đọc dữ liệu tồn kho đã có, không ghi kho/tiền.
+Kế tiếp: T-040c, T-041, T-052b, hoặc T-053a, đủ điều kiện sau khi PR này merge.
