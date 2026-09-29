@@ -1,0 +1,30 @@
+.tong-quan__khoi {
+  max-width: 960px;
+  padding: var(--kc-5);
+  background: var(--mau-nen-the);
+  border: var(--vien);
+  border-radius: var(--bo-goc);
+}
+
+.tong-quan__tieu-de {
+  margin: 0 0 var(--kc-4);
+  font-size: var(--chu-lg);
+}
+
+.tong-quan__mo-ta {
+  margin: 0 0 var(--kc-4);
+  color: var(--mau-chu-phu);
+  font-size: var(--chu-sm);
+  max-width: 640px;
+}
+
+.tong-quan__rong {
+  margin: 0;
+  color: var(--mau-chu-phu);
+}
+
+.tong-quan__loi {
+  margin: 0;
+  color: var(--mau-nguy);
+  font-size: var(--chu-sm);
+}
