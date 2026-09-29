@@ -834,7 +834,7 @@ describe('hoa_don', () => {
 
     const [dongLo] = db.select().from(hoaDonDongLo).where(eq(hoaDonDongLo.hoaDonDongId, 'hdd-1')).all();
 
-    expect(dongLo).toEqual({ id: 'hddl-1', hoaDonDongId: 'hdd-1', loId, soLuong: 36 });
+    expect(dongLo).toEqual({ id: 'hddl-1', hoaDonDongId: 'hdd-1', loId, soLuong: 36, thuTu: 0 });
   });
 
   it('so_luong dòng hoá đơn không dương bị CHECK chặn', () => {

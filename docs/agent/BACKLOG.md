@@ -409,7 +409,7 @@ Trạng thái: DONE · Phụ thuộc: T-006
 Xong khi: xuất khỏi kho có lý do và người thực hiện, ghi thẻ kho, chọn đúng lô.
 
 ### T-052a [B] prio:52.1 — Trả hàng: schema + lõi nghiệp vụ
-Trạng thái: TODO · Phụ thuộc: T-022c
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-022c
 Xong khi: migration `tra_hang` (chứng từ, không xoá cứng, liên kết `hoa_don_id`
 tới hoá đơn gốc, mã tự sinh tuần tự) và `tra_hang_dong` (dòng trả: liên kết
 `hoa_don_dong_id`, số lượng trả theo đơn vị cơ sở, tiền hoàn dùng lại
