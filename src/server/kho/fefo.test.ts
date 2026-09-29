@@ -57,6 +57,27 @@ describe('phanBoTheoThuTu (hàm thuần)', () => {
 
     expect(() => phanBoTheoThuTu(cacLo, 10)).toThrow(KhongDuTonKhoError);
   });
+
+  it('choPhepTonAm=true: tồn không đủ thì phần thiếu dồn vào lô cuối cùng thay vì ném lỗi (T-033, SPEC.md §4.4)', () => {
+    const cacLo: LoTonKho[] = [
+      { loId: 'lo-1', hsd: '2026-01-01', ngayTao: '2026-01-01T00:00:00.000Z', ton: 5 },
+      { loId: 'lo-2', hsd: '2026-06-01', ngayTao: '2026-01-01T00:00:00.000Z', ton: 3 },
+    ];
+
+    expect(phanBoTheoThuTu(cacLo, 10, { choPhepTonAm: true })).toEqual([
+      { loId: 'lo-1', soLuong: 5 },
+      { loId: 'lo-2', soLuong: 5 },
+    ]);
+  });
+
+  it('choPhepTonAm=true nhưng không có lô nào còn tồn dương: phần thiếu dồn hết vào lô cuối cùng trong danh sách', () => {
+    const cacLo: LoTonKho[] = [
+      { loId: 'lo-1', hsd: '2026-01-01', ngayTao: '2026-01-01T00:00:00.000Z', ton: 0 },
+      { loId: 'lo-2', hsd: '2026-06-01', ngayTao: '2026-01-01T00:00:00.000Z', ton: 0 },
+    ];
+
+    expect(phanBoTheoThuTu(cacLo, 7, { choPhepTonAm: true })).toEqual([{ loId: 'lo-2', soLuong: 7 }]);
+  });
 });
 
 describe('sapXepFefo — hsd ASC NULLS FIRST, ngay_tao ASC, lo_id ASC', () => {
@@ -213,6 +234,17 @@ describe('chonLoXuatKho — chế độ lô thật cho cùng số dư cuối nh�
     ]);
 
     expect(() => chonLoXuatKho(db, 'sp-1', 'cn-1', 11)).toThrow(KhongDuTonKhoError);
+  });
+
+  it('choPhepTonAm=true: bán vượt tổng tồn không bị từ chối, phần thiếu dồn vào lô cuối cùng (T-033)', () => {
+    const loNgamDinh = taoSanPham('sp-1', 'SP001');
+    ghiTheKho(db, [
+      { id: 'tk-1', chiNhanhId: 'cn-1', loId: loNgamDinh, loai: 'NHAP', soLuong: 10, thoiGian: '2026-09-13T08:00:00.000Z' },
+    ]);
+
+    expect(chonLoXuatKho(db, 'sp-1', 'cn-1', 15, [], { choPhepTonAm: true })).toEqual([
+      { loId: loNgamDinh, soLuong: 15 },
+    ]);
   });
 
   it('hai giao dịch liên tiếp cùng trừ lô cuối: giao dịch sau bị từ chối khi tồn đã hết', () => {

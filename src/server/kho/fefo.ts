@@ -31,6 +31,17 @@ export class KhongDuTonKhoError extends Error {
   }
 }
 
+export interface TuyChonPhanBo {
+  /**
+   * Cho phép tồn âm khi tổng tồn không đủ: phần thiếu dồn vào lô cuối cùng
+   * trong danh sách thay vì ném `KhongDuTonKhoError` (SPEC.md §4.4 — "máy chủ
+   * không bao giờ từ chối một đơn đã bán và đã in"). Chỉ dùng ở đường đồng bộ
+   * offline (T-033); mặc định false nên đường bán hàng trực tuyến (T-022) vẫn
+   * từ chối bán vượt tồn như cũ.
+   */
+  choPhepTonAm?: boolean;
+}
+
 function soSanhFefo(a: LoTonKho, b: LoTonKho): number {
   if (a.hsd !== b.hsd) {
     if (a.hsd === null) return -1;
@@ -71,7 +82,11 @@ export function sapXepUuTienThuCong(
 // lô thì tràn đúng sang lô kế tiếp trong danh sách (SPEC.md §9 bất biến 10). Ném
 // KhongDuTonKhoError khi tổng tồn không đủ, dùng để từ chối bán vượt tồn lúc
 // online (SPEC.md §4.4) — không trả về một phân bổ dở dang.
-export function phanBoTheoThuTu(danhSachLoDaSapXep: readonly LoTonKho[], soLuongCanXuat: number): PhanBoLo[] {
+export function phanBoTheoThuTu(
+  danhSachLoDaSapXep: readonly LoTonKho[],
+  soLuongCanXuat: number,
+  tuyChon: TuyChonPhanBo = {},
+): PhanBoLo[] {
   if (soLuongCanXuat === 0) return [];
 
   const ketQua: PhanBoLo[] = [];
@@ -84,7 +99,21 @@ export function phanBoTheoThuTu(danhSachLoDaSapXep: readonly LoTonKho[], soLuong
     conLai -= lay;
   }
 
-  if (conLai > 0) throw new KhongDuTonKhoError(conLai);
+  if (conLai > 0) {
+    if (!tuyChon.choPhepTonAm) throw new KhongDuTonKhoError(conLai);
+
+    const loCuoi = danhSachLoDaSapXep.at(-1);
+    // Bất biến (SPEC.md §3.2): mọi sản phẩm luôn có ít nhất lô ngầm định, nên
+    // danh sách không bao giờ rỗng ở đường gọi thật — đây chỉ là rào chắn kiểu.
+    if (!loCuoi) throw new KhongDuTonKhoError(conLai);
+
+    const phanBoCoSan = ketQua.find((pb) => pb.loId === loCuoi.loId);
+    if (phanBoCoSan) {
+      phanBoCoSan.soLuong += conLai;
+    } else {
+      ketQua.push({ loId: loCuoi.loId, soLuong: conLai });
+    }
+  }
   return ketQua;
 }
 
@@ -108,9 +137,10 @@ export function chonLoXuatKho(
   chiNhanhId: string,
   soLuongCanXuat: number,
   loUuTienThuCong: readonly string[] = [],
+  tuyChon: TuyChonPhanBo = {},
 ): PhanBoLo[] {
   const danhSach = layDanhSachLoTonKho(db, sanPhamId, chiNhanhId);
   const daSapXep =
     loUuTienThuCong.length > 0 ? sapXepUuTienThuCong(danhSach, loUuTienThuCong) : sapXepFefo(danhSach);
-  return phanBoTheoThuTu(daSapXep, soLuongCanXuat);
+  return phanBoTheoThuTu(daSapXep, soLuongCanXuat, tuyChon);
 }
