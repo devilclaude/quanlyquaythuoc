@@ -369,4 +369,58 @@ describe('taoHoaDonTuGioHang', () => {
     expect(tonDem(loPhang, 'cn-1')).toBe(164);
     expect(tonDem(loThatSp, 'cn-1')).toBe(0);
   });
+
+  it('maDaCap: dùng thẳng mã đã cấp sẵn (T-033, đơn offline dùng mã T-032 cấp tại client), không tự sinh tuần tự', () => {
+    taoChiNhanh('cn-1');
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+    nhapKho(loId, 'cn-1', 100, '2026-09-20T07:00:00.000Z');
+
+    const ketQua = taoHoaDonTuGioHang(db, {
+      id: 'hd-1',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-09-21T08:00:00.000Z',
+      phuongThucThanhToan: 'TIEN_MAT',
+      maDaCap: 'HDABC123-000007',
+      dong: [moiDong({ heSo: 1, donGia: 1_000, soLuong: 1 })],
+    });
+
+    expect(ketQua.ma).toBe('HDABC123-000007');
+  });
+
+  it('choPhepTonAm=false (mặc định, đường online): bán vượt tồn vẫn bị từ chối như trước', () => {
+    taoChiNhanh('cn-1');
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+    nhapKho(loId, 'cn-1', 2, '2026-09-20T07:00:00.000Z');
+
+    expect(() =>
+      taoHoaDonTuGioHang(db, {
+        id: 'hd-1',
+        chiNhanhId: 'cn-1',
+        thoiGian: '2026-09-21T08:00:00.000Z',
+        phuongThucThanhToan: 'TIEN_MAT',
+        dong: [moiDong({ heSo: 1, donGia: 1_000, soLuong: 5 })],
+      }),
+    ).toThrow(KhongDuTonKhoError);
+  });
+
+  it('choPhepTonAm=true (đường đồng bộ offline): bán vượt tồn KHÔNG bị từ chối, tồn đi âm (SPEC.md §4.4)', () => {
+    taoChiNhanh('cn-1');
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+    nhapKho(loId, 'cn-1', 2, '2026-09-20T07:00:00.000Z', 20_000);
+
+    const ketQua = taoHoaDonTuGioHang(db, {
+      id: 'hd-1',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-09-21T08:00:00.000Z',
+      phuongThucThanhToan: 'TIEN_MAT',
+      choPhepTonAm: true,
+      dong: [moiDong({ heSo: 1, donGia: 1_000, soLuong: 5 })],
+    });
+
+    expect(ketQua.id).toBe('hd-1');
+    expect(tonDem(loId, 'cn-1')).toBe(-3);
+    const dongTheKho = dongBanCuaLo(loId);
+    expect(dongTheKho).toHaveLength(1);
+    expect(dongTheKho[0]?.soLuong).toBe(-5);
+  });
 });

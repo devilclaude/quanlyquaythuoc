@@ -61,6 +61,20 @@ export interface TaoHoaDonInput {
   /** Làm tròn hoá đơn, đồng — mặc định TẮT (luôn 0) ở slice này (SPEC.md §3.4). */
   lamTron?: number;
   dong: readonly DongGioHang[];
+  /**
+   * Mã hoá đơn đã cấp sẵn (SPEC.md §5.3: đơn offline dùng mã do client cấp qua
+   * T-032, dạng `HD<mã máy>-<số tăng dần>`) — dùng thẳng thay vì tự sinh tuần
+   * tự, và không thử lại khi trùng (trùng nghĩa là đã áp dụng, do tầng gọi
+   * T-033 xử lý idempotency trước khi gọi tới đây).
+   */
+  maDaCap?: string;
+  /**
+   * Cho phép tồn âm khi bán vượt tồn (SPEC.md §4.4 — "máy chủ không bao giờ
+   * từ chối một đơn đã bán và đã in"). Chỉ đường đồng bộ offline (T-033) bật
+   * cờ này; mặc định false nên đường bán hàng trực tuyến (T-022b) vẫn từ chối
+   * bán vượt tồn như cũ.
+   */
+  choPhepTonAm?: boolean;
 }
 
 export interface HoaDonDaTao {
@@ -127,9 +141,9 @@ export function taoHoaDonTuGioHang(db: Db, input: TaoHoaDonInput): HoaDonDaTao {
 
   const khachCanTra = tongTienHang - giamGia + thuKhac + lamTron;
 
-  const soLanThuToiDa = 5;
+  const soLanThuToiDa = input.maDaCap ? 1 : 5;
   for (let lanThu = 0; lanThu < soLanThuToiDa; lanThu++) {
-    const ma = sinhMaHoaDonTuDong(db, lanThu);
+    const ma = input.maDaCap ?? sinhMaHoaDonTuDong(db, lanThu);
 
     try {
       db.transaction((tx) => {
@@ -169,6 +183,7 @@ export function taoHoaDonTuGioHang(db: Db, input: TaoHoaDonInput): HoaDonDaTao {
             input.chiNhanhId,
             d.soLuongCoSo,
             d.loUuTienThuCong ?? [],
+            { choPhepTonAm: input.choPhepTonAm ?? false },
           );
 
           phanBoLo.forEach((pb, thuTu) => {
@@ -190,7 +205,9 @@ export function taoHoaDonTuGioHang(db: Db, input: TaoHoaDonInput): HoaDonDaTao {
 
       return { id: input.id, ma, tongTienHang, giamGia, thuKhac, lamTron, khachCanTra, thoiGian: input.thoiGian };
     } catch (loi) {
-      if (!laLoiTrungMaHoaDon(loi)) throw loi;
+      // maDaCap là mã cố định (T-033) — thử lại với mã khác không có ý nghĩa,
+      // luôn ném thẳng lỗi gốc lên tầng gọi (đã xử lý idempotency riêng).
+      if (input.maDaCap || !laLoiTrungMaHoaDon(loi)) throw loi;
       // Mã tự sinh đụng UNIQUE do đua giữa hai lần tạo gần nhau — thử mã kế tiếp.
     }
   }

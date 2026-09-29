@@ -303,7 +303,7 @@ Xong khi: dạng `HD<mã máy>-<số tăng dần>`; cấp được khi offline; 
 đồng bộ**; hai thiết bị không bao giờ va số; số đã in luôn tra cứu được.
 
 ### T-033 [B] prio:33 — Đồng bộ phía máy chủ
-Trạng thái: TODO · Phụ thuộc: T-032
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-032
 Xong khi: máy chủ nhận hàng đợi, áp dụng theo thứ tự đến, idempotent theo ULID;
 **không bao giờ từ chối một đơn đã bán và đã in**; giá vốn gấp theo thứ tự đến,
 không hồi tố; test đơn offline về muộn không làm đổi số đã hiển thị.
