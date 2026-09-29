@@ -460,10 +460,48 @@ Ghi chú: không có screenshot tham chiếu cho form/luồng TẠO trả hàng 
 Tầng B: đường ghi kho + tiền qua tay người dùng lần đầu ở luồng tạo (tương tự lý
 do T-040c[B], khác tiền lệ T-022c[A]/T-040b[A] chỉ nối API đã duyệt).
 
-### T-053 [B] prio:53 — Trả hàng nhập (trả nhà cung cấp)
+### T-053a [B] prio:53.1 — Trả hàng nhập: schema + lõi nghiệp vụ
 Trạng thái: TODO · Phụ thuộc: T-040a
-Xong khi: khớp screenshot "Trả hàng nhập"; liên kết ngược tới phiếu nhập gốc; trừ
-đúng lô đã nhập; ghi thẻ kho.
+Xong khi: migration `tra_hang_nhap` (chứng từ, không xoá cứng, liên kết
+`phieu_nhap_id` tới phiếu nhập gốc, mã tự sinh tuần tự) và `tra_hang_nhap_dong`
+(dòng trả: liên kết `phieu_nhap_dong_id`, số lượng trả theo đơn vị cơ sở, đơn
+giá lấy lại từ dòng nhập gốc — không tính lại); hàm nghiệp vụ
+`taoPhieuTraHangNhap`: với mỗi dòng, trừ đúng **lô đã nhập ở dòng phiếu nhập
+gốc đó** (không FEFO — trả về đúng lô đã nhận, không phải lô khác do FEFO chọn);
+tổng số lượng trả **cộng dồn qua nhiều lần trả** của một dòng ≤ số lượng đã nhập
+của dòng đó — có test; ghi thẻ kho loại `TRA_NCC` âm qua `ghiMotDongTheKho` đã
+có (tập giá trị `loai` đã có sẵn `TRA_NCC` từ T-004c, không cần migration thêm
+cột); toàn bộ một phiếu trong **một transaction**; ở chế độ phẳng tự suy biến
+về lô ngầm định, không có nhánh riêng theo cài đặt quản lý lô. Test ca biên bắt
+buộc: trả một phần một dòng; trả đủ số đã nhập; trả vượt số đã nhập bị từ chối;
+trả hai lần cộng dồn vượt tổng đã nhập bị từ chối ở lần thứ hai; trả vượt tồn
+hiện có của đúng lô đó (đã bán bớt từ lúc nhập) bị từ chối, không tự lấy bù từ
+lô khác. Không có API/UI.
+Ghi chú: đây là T-053 cũ, chẻ ngay lúc chọn task (không build thử rồi bỏ) —
+cùng hình dạng gộp schema+lõi (đọc/ghi kho+tiền+lô, khớp screenshot, liên kết
+ngược chứng từ gốc)+API+UI đã khiến T-009/T-022/T-040/T-052 vượt ngưỡng 1000
+dòng/24 file khi làm trọn gói. Theo đúng tiền lệ T-040a/T-052a.
+
+### T-053b [A] prio:53.2 — Trả hàng nhập: API
+Trạng thái: TODO · Phụ thuộc: T-053a
+Xong khi: `POST /api/tra-hang-nhap` (tạo phiếu trả cho một phiếu nhập, gọi
+`taoPhieuTraHangNhap`), `GET /api/tra-hang-nhap` (danh sách) và
+`GET /api/tra-hang-nhap/:id` (chi tiết, kèm liên kết ngược phiếu nhập gốc); 400
+khi dữ liệu không hợp lệ, 409 khi số lượng trả vượt số đã nhập (cộng dồn các
+lần trả trước) hoặc vượt tồn hiện có của lô. Không có UI.
+Ghi chú: theo tiền lệ T-010a[B]→T-010b[A]/T-022a[B]→T-022b[A]/T-040a[B]→
+T-040b[A]/T-052a[B]→T-052b[A] — chỉ nối API cho lõi đã duyệt B, không thêm
+quyết định kiến trúc mới.
+
+### T-053c [B] prio:53.3 — Trả hàng nhập: giao diện
+Trạng thái: TODO · Phụ thuộc: T-053b
+Xong khi: khớp screenshot "Trả hàng nhập" (`docs/reference/kiotviet/`); liên kết
+ngược tới phiếu nhập gốc (mở được từ chi tiết phiếu nhập sang phiếu trả đã tạo,
+và ngược lại); luồng tạo: tìm phiếu nhập gốc, chọn dòng + số lượng trả, gọi
+`POST /api/tra-hang-nhap` (T-053b).
+Tầng B: đường ghi kho + tiền qua tay người dùng lần đầu ở luồng tạo (tương tự lý
+do T-040c[B]/T-052c[B], khác tiền lệ T-022c[A]/T-040b[A]/T-052b[A] chỉ nối API
+đã duyệt).
 
 ### T-054 [A] prio:54 — Màn thẻ kho
 Trạng thái: BLOCKED · Phụ thuộc: T-005, T-007

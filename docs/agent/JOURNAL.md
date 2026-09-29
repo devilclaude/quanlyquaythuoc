@@ -879,3 +879,15 @@ của module mình, ép kiểu đúng tại ranh giới gọi `exceljs`.
 PR: (xem mô tả PR)
 Tầng: B — thêm dependency mới (`exceljs`), theo tiền lệ T-031 (dexie).
 Kế tiếp: T-053 hoặc T-055 sau khi PR này merge.
+
+## 2026-09-29 — dọn PR + T-053 (chẻ task, không code)
+Làm: #67 (T-043) xanh, không comment, không conflict, chờ duyệt B — không sửa
+(đã khai đúng, PR do run trước đó cùng ngày mở). Không có PR agent nào khác mở.
+Slack #quaythuoc-admin không có chỉ đạo mới từ 2026-09-19. Chọn T-053 (Trả hàng
+nhập) nhưng "Xong khi" gộp schema+lõi (trừ đúng lô đã nhập, ghi kho+tiền)+API+UI
+khớp screenshot — cùng hình dạng đã khiến T-009/T-022/T-040/T-052 vượt ngưỡng.
+Chẻ ngay lúc chọn (không build thử): T-053a (schema+lõi)→T-053b (API)→T-053c
+(UI). Không có task nào khác phụ thuộc T-053 nên không cần sửa phụ thuộc chỗ khác.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: T-053a.
