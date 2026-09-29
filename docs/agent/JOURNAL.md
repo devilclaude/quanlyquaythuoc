@@ -891,3 +891,16 @@ Chẻ ngay lúc chọn (không build thử): T-053a (schema+lõi)→T-053b (API)
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: T-053a.
+
+## 2026-09-29 — dọn PR: sửa conflict #67, không mở task mới
+Làm: #67 (T-043) bị `main` vượt qua sau khi #68 (T-053 chẻ task) merge — hai
+entry JOURNAL cùng chèn cuối file gây conflict (`mergeable_state: dirty`).
+Không CI đỏ, không comment chưa xử lý — chỉ conflict. Merge `main` vào nhánh,
+giữ cả hai entry JOURNAL theo thứ tự thời gian (tiền lệ 2026-09-26/27), BACKLOG
+tự merge sạch. `npm run ci` xanh lại (typecheck, lint, 629 test, build); e2e
+ban đầu lỗi do máy chạy CI cục bộ thiếu đúng bản chromium đã pin — chạy lại với
+`PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium` (escape hatch có sẵn trong
+`playwright.config.ts`) thì cả 13 ca xanh; không phải lỗi code. Push lên nhánh,
+không mở task mới theo luật "sửa PR cũ rồi dừng".
+PR: #67 (cập nhật, không mở PR mới)
+Kế tiếp: chờ CI GitHub xanh + người duyệt B cho #67; sau đó T-053a.
