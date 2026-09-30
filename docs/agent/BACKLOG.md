@@ -367,19 +367,29 @@ Ghi chú: `PUT /:id` dùng ngữ nghĩa THAY THẾ TOÀN BỘ danh sách dòng (
 ULID mới cho từng dòng. Không kiểm tra bắt buộc lô/HSD lúc sửa (chỉ áp dụng lúc
 Hoàn thành, giống lúc tạo phiếu tạm).
 
-### T-040c [B] prio:40.3 — Phiếu nhập: giao diện
+### T-040c1 [B] prio:40.31 — Phiếu nhập: giao diện (hàng đã có)
 Trạng thái: TODO · Phụ thuộc: T-040b
 Xong khi: khớp luồng trong screenshots "Giao diện tìm kiếm hàng đã có để nhập" và
-"Đã nhập 2 hàng" (`docs/reference/kiotviet/Quản trị/Nhập hàng/`); tìm hàng đã có
-qua ô tìm (giống màn bán hàng) **và tạo hàng mới ngay trong màn nhập, không rời
-màn** (nhúng lại form tạo hàng hoá của T-009b); nhập số lượng/đơn giá; ô lô + HSD
+"Đã nhập 2 hàng" (`docs/reference/kiotviet/Quản trị/Nhập hàng/`) cho phần TÌM HÀNG
+ĐÃ CÓ; tìm hàng qua ô tìm (giống màn bán hàng); nhập số lượng/đơn giá; ô lô + HSD
 chỉ hiện khi sản phẩm bật quản lý lô; nút Lưu tạm / Hoàn thành gọi đúng API
 T-040b.
 Ghi chú: ảnh gốc có panel "Nhà cung cấp"/"Cần trả nhà cung cấp"/"Tính vào công
 nợ" — **không dựng**, SPEC.md §2 đã chốt "Công nợ nhà cung cấp" ngoài v1 (v1.1).
+"Tạo hàng mới ngay trong màn nhập" (phần còn lại của luồng SPEC.md §6.2 bước 1,
+nối nút "+" trong ảnh "Giao diện tìm kiếm hàng đã có để nhập") chuyển sang
+T-040c2 — xem ghi chú chẻ bên dưới.
 Tầng B: đường ghi kho + tiền qua tay người dùng lần đầu (khác tiền lệ T-022c chỉ
 nối API đã duyệt B — ở đây UI còn tự quyết thời điểm gọi hoàn thành vs lưu tạm và
 validate lô/HSD bắt buộc ngay tại form, không chỉ dựa 409 từ server).
+
+### T-040c2 [B] prio:40.32 — Phiếu nhập: tạo hàng mới ngay trong màn
+Trạng thái: TODO · Phụ thuộc: T-040c1, T-009b
+Xong khi: nút "+" cạnh ô tìm (khớp vị trí ảnh "Giao diện tìm kiếm hàng đã có để
+nhập") mở form tạo hàng hoá NGAY TRONG màn nhập, không rời màn (nhúng lại
+`FormTaoHangHoa`/`TaoMoiHangHoa` của T-009b); tạo xong thì hàng mới được thêm
+thẳng vào phiếu đang soạn (cùng đường thêm dòng đã có ở T-040c1, không viết lại).
+Ghi chú: đây là phần bị chẻ khỏi T-040c gốc — xem ghi chú chẻ ở T-040c1.
 
 ### T-041 [A] prio:41 — Danh sách và chi tiết phiếu nhập
 Trạng thái: TODO · Phụ thuộc: T-040b
@@ -387,14 +397,15 @@ Xong khi: thứ tự cột và bộ lọc khớp screenshot "Danh sách nhập h
 ra ngay dưới dòng như KiotViet.
 
 ### T-042 [A] prio:42 — In tem mã
-Trạng thái: TODO · Phụ thuộc: T-040c
+Trạng thái: TODO · Phụ thuộc: T-040c1
 Xong khi: chọn khổ giấy, sửa số lượng tem từng dòng, preview, in — đối chiếu
 screenshots và file PDF mẫu trong `docs/reference/kiotviet/`; **bỏ dấu tiếng Việt
 trên tem** vì máy in tem không in được chữ có dấu (ghi chú này lấy nguyên văn từ
 màn hình KiotViet).
-Ghi chú: phụ thuộc T-040c (không chỉ T-040b) vì điểm gọi in tem là "sau khi hoàn
+Ghi chú: phụ thuộc T-040c1 (không chỉ T-040b) vì điểm gọi in tem là "sau khi hoàn
 thành" ngay trong màn nhập hàng thật (SPEC.md §6.2 bước 4), không phải một màn
-độc lập.
+độc lập. Chỉ cần T-040c1 (luồng hàng đã có) — nút Hoàn thành không phụ thuộc
+T-040c2 (tạo hàng mới ngay trong màn).
 
 ### T-043 [B] prio:43 — Nhập hàng từ file Excel
 Trạng thái: CHỜ MERGE · Phụ thuộc: T-040a
@@ -465,7 +476,7 @@ Ghi chú: không có screenshot tham chiếu cho form/luồng TẠO trả hàng 
 `docs/reference/kiotviet/` (chỉ có màn danh sách) — dựng theo token trong
 `.claude/skills/design-system/`, ghi rõ trong PR, theo tiền lệ T-010c/T-023.
 Tầng B: đường ghi kho + tiền qua tay người dùng lần đầu ở luồng tạo (tương tự lý
-do T-040c[B], khác tiền lệ T-022c[A]/T-040b[A] chỉ nối API đã duyệt).
+do T-040c1[B], khác tiền lệ T-022c[A]/T-040b[A] chỉ nối API đã duyệt).
 
 ### T-053a [B] prio:53.1 — Trả hàng nhập: schema + lõi nghiệp vụ
 Trạng thái: TODO · Phụ thuộc: T-040a
@@ -507,7 +518,7 @@ ngược tới phiếu nhập gốc (mở được từ chi tiết phiếu nhậ
 và ngược lại); luồng tạo: tìm phiếu nhập gốc, chọn dòng + số lượng trả, gọi
 `POST /api/tra-hang-nhap` (T-053b).
 Tầng B: đường ghi kho + tiền qua tay người dùng lần đầu ở luồng tạo (tương tự lý
-do T-040c[B]/T-052c[B], khác tiền lệ T-022c[A]/T-040b[A]/T-052b[A] chỉ nối API
+do T-040c1[B]/T-052c[B], khác tiền lệ T-022c[A]/T-040b[A]/T-052b[A] chỉ nối API
 đã duyệt).
 
 ### T-054 [A] prio:54 — Màn thẻ kho

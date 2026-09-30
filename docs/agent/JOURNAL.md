@@ -933,3 +933,29 @@ nhánh, không mở task mới theo luật "sửa PR cũ rồi dừng".
 PR: #67 (cập nhật, không mở PR mới)
 Kế tiếp: chờ CI GitHub xanh + người duyệt B cho #67; sau đó T-053a hoặc T-034
 kế tiếp (T-040c, T-041, T-052b).
+
+## 2026-09-30 — dọn PR + T-040c (chẻ task, không code)
+Làm: #69 (T-034) đã merge → DONE (sửa BACKLOG ở đây). #67 (T-043) vẫn xanh,
+không comment, không conflict, chờ duyệt B — không sửa. Chọn T-040c (prio nhỏ
+nhất đủ điều kiện, T-040b đã DONE): dựng trọn vẹn theo TDD (`npm run ci` xanh,
+22 test đơn vị + 2 test e2e xác nhận luồng bàn phím lẫn Lô/HSD có điều kiện)
+rồi đo trước khi mở PR: 1232 dòng/5 file, vượt ngưỡng 1000 dòng CLAUDE.md. Bỏ
+toàn bộ code (không commit), chẻ T-040c thành T-040c1 (tìm hàng đã có — giữ
+nguyên "Xong khi" gốc trừ phần tạo hàng mới) / T-040c2 (tạo hàng mới ngay
+trong màn, nhúng T-009b); sửa phụ thuộc T-042 sang T-040c1 (điểm gọi in tem
+không cần T-040c2).
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: T-040c1.
+
+## 2026-09-30 (run kế) — dọn PR: sửa conflict #67 lần 3 (main tiến thêm do #70 merge)
+Làm: #70 (T-040c chẻ task) đã merge → `main` lại vượt #67, conflict lần 3, chỉ
+ở `docs/agent/JOURNAL.md` (hai entry cuối cùng chèn khác vị trí); BACKLOG.md tự
+merge sạch, không đụng App.tsx lần này (PR #70 không có code). Không CI đỏ,
+không comment chưa xử lý trên #67 — chỉ conflict. Merge `main` vào nhánh, giữ
+cả hai entry JOURNAL theo đúng thứ tự thời gian đã có. Không mở task mới theo
+luật "sửa PR cũ rồi dừng".
+PR: #67 (cập nhật, không mở PR mới)
+Kế tiếp: chờ CI GitHub xanh + người duyệt B cho #67 và #71; xem lại tiền lệ
+conflict lặp lại 3 lần — có thể #67 nên được ưu tiên duyệt sớm để cắt đứt vòng
+lặp merge-conflict mỗi khi có PR `[A]` mới merge vào main.
