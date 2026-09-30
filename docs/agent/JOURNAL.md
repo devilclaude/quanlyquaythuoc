@@ -861,6 +861,25 @@ lên cả hai nhánh, không mở task mới.
 PR: #64, #65 (cập nhật, không mở PR mới)
 Kế tiếp: cả hai vẫn Tầng B, chờ người duyệt tay.
 
+## 2026-09-29 — dọn PR (không còn PR mở) + T-043
+Làm: không còn PR agent nào mở, mọi PR trước đã merge (BACKLOG đã đúng trạng
+thái). Slack #quaythuoc-admin không có chỉ đạo mới từ 2026-09-19 (câu hỏi hôm
+đó về auto-merge đã trả lời xong ở run kế tiếp cùng ngày). Chọn T-043 (nhập từ
+Excel): cột file mẫu tự định nghĩa (Mã hàng/Tên đơn vị/Số lượng/Đơn giá/Số
+lô/Hạn dùng), đọc+xác thực TOÀN BỘ file trước (chỉ đọc CSDL), một dòng lỗi thì
+không ghi gì cả, chỉ hợp lệ hết mới gọi `taoPhieuNhap` (T-040a) một lần —
+không viết lại logic ghi kho/lô/giá vốn. Cân nhắc thư viện: bỏ `xlsx` (CVE
+HIGH chưa vá trên npm, rủi ro trực tiếp vì xử lý file người dùng tải lên),
+chọn `exceljs`. Dựng màn "Nhập hàng" độc lập (T-040c — màn tạo tay đầy đủ —
+vẫn TODO) chỉ chứa khối nhập-từ-Excel, ghi rõ trong BACKLOG để gộp khi T-040c
+xong. `exceljs` tự khai `declare interface Buffer extends ArrayBuffer {}` ở
+phạm vi toàn cục trong .d.ts của nó (lỗi đã biết của gói) làm hỏng kiểu
+`Buffer` thật của Node — né bằng cách chỉ dùng `Uint8Array` trong chữ ký hàm
+của module mình, ép kiểu đúng tại ranh giới gọi `exceljs`.
+PR: (xem mô tả PR)
+Tầng: B — thêm dependency mới (`exceljs`), theo tiền lệ T-031 (dexie).
+Kế tiếp: T-053 hoặc T-055 sau khi PR này merge.
+
 ## 2026-09-29 — dọn PR + T-053 (chẻ task, không code)
 Làm: #67 (T-043) xanh, không comment, không conflict, chờ duyệt B — không sửa
 (đã khai đúng, PR do run trước đó cùng ngày mở). Không có PR agent nào khác mở.
@@ -872,6 +891,19 @@ Chẻ ngay lúc chọn (không build thử): T-053a (schema+lõi)→T-053b (API)
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: T-053a.
+
+## 2026-09-29 — dọn PR: sửa conflict #67, không mở task mới
+Làm: #67 (T-043) bị `main` vượt qua sau khi #68 (T-053 chẻ task) merge — hai
+entry JOURNAL cùng chèn cuối file gây conflict (`mergeable_state: dirty`).
+Không CI đỏ, không comment chưa xử lý — chỉ conflict. Merge `main` vào nhánh,
+giữ cả hai entry JOURNAL theo thứ tự thời gian (tiền lệ 2026-09-26/27), BACKLOG
+tự merge sạch. `npm run ci` xanh lại (typecheck, lint, 629 test, build); e2e
+ban đầu lỗi do máy chạy CI cục bộ thiếu đúng bản chromium đã pin — chạy lại với
+`PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium` (escape hatch có sẵn trong
+`playwright.config.ts`) thì cả 13 ca xanh; không phải lỗi code. Push lên nhánh,
+không mở task mới theo luật "sửa PR cũ rồi dừng".
+PR: #67 (cập nhật, không mở PR mới)
+Kế tiếp: chờ CI GitHub xanh + người duyệt B cho #67; sau đó T-053a.
 
 ## 2026-09-29 (run kế) — dọn PR + T-034
 Làm: #67 (T-043) vẫn xanh, không comment, không conflict, chờ duyệt B — không
@@ -890,6 +922,18 @@ PR: (xem mô tả PR)
 Tầng: A — chỉ đọc dữ liệu tồn kho đã có, không ghi kho/tiền.
 Kế tiếp: T-040c, T-041, T-052b, hoặc T-053a, đủ điều kiện sau khi PR này merge.
 
+## 2026-09-30 — dọn PR: sửa conflict #67 lần 2 (main tiến thêm do #69 merge)
+Làm: sau khi #69 (T-034) merge, `main` lại vượt #67 → conflict lần nữa ở
+`docs/agent/JOURNAL.md` (hai entry cuối file) và `src/client/App.tsx` (route
+"Tổng quan" mới của T-034 chèn cùng vị trí với route "Nhập hàng" của T-043).
+Không CI đỏ, không comment chưa xử lý trên #67 — chỉ conflict. Merge `main`
+vào nhánh, giữ cả hai entry JOURNAL theo thứ tự thời gian, giữ cả hai route
+trong App.tsx (không loại trừ nhau). `npm run ci` chạy lại xanh. Push lên
+nhánh, không mở task mới theo luật "sửa PR cũ rồi dừng".
+PR: #67 (cập nhật, không mở PR mới)
+Kế tiếp: chờ CI GitHub xanh + người duyệt B cho #67; sau đó T-053a hoặc T-034
+kế tiếp (T-040c, T-041, T-052b).
+
 ## 2026-09-30 — dọn PR + T-040c (chẻ task, không code)
 Làm: #69 (T-034) đã merge → DONE (sửa BACKLOG ở đây). #67 (T-043) vẫn xanh,
 không comment, không conflict, chờ duyệt B — không sửa. Chọn T-040c (prio nhỏ
@@ -903,3 +947,15 @@ không cần T-040c2).
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: T-040c1.
+
+## 2026-09-30 (run kế) — dọn PR: sửa conflict #67 lần 3 (main tiến thêm do #70 merge)
+Làm: #70 (T-040c chẻ task) đã merge → `main` lại vượt #67, conflict lần 3, chỉ
+ở `docs/agent/JOURNAL.md` (hai entry cuối cùng chèn khác vị trí); BACKLOG.md tự
+merge sạch, không đụng App.tsx lần này (PR #70 không có code). Không CI đỏ,
+không comment chưa xử lý trên #67 — chỉ conflict. Merge `main` vào nhánh, giữ
+cả hai entry JOURNAL theo đúng thứ tự thời gian đã có. Không mở task mới theo
+luật "sửa PR cũ rồi dừng".
+PR: #67 (cập nhật, không mở PR mới)
+Kế tiếp: chờ CI GitHub xanh + người duyệt B cho #67 và #71; xem lại tiền lệ
+conflict lặp lại 3 lần — có thể #67 nên được ưu tiên duyệt sớm để cắt đứt vòng
+lặp merge-conflict mỗi khi có PR `[A]` mới merge vào main.
