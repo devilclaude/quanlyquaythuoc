@@ -202,8 +202,8 @@ export function BangDongPhieuNhap({
     <Bang>
       <thead>
         <tr>
-          <th>STT</th>
           <th></th>
+          <th>STT</th>
           <th>Mã hàng</th>
           <th>Tên hàng</th>
           <th>ĐVT</th>
@@ -227,7 +227,6 @@ export function BangDongPhieuNhap({
               .join(' ')}
             onClick={() => onChonDong(i)}
           >
-            <OSo>{i + 1}</OSo>
             <td>
               <button
                 type="button"
@@ -241,6 +240,7 @@ export function BangDongPhieuNhap({
                 ✕
               </button>
             </td>
+            <OSo>{i + 1}</OSo>
             <td>{d.maHang}</td>
             <td>{d.ten}</td>
             <td>

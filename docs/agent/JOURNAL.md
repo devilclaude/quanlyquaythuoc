@@ -912,6 +912,8 @@ bán — một phiếu có thể có nhiều dòng cùng sản phẩm khác lô/
 lô/Hạn dùng chỉ hiện khi sản phẩm bật quản lý lô (giải nghĩa qua cài đặt toàn
 cục + ghi đè sản phẩm); validate lô/HSD bắt buộc ngay ở form trước khi gọi
 Hoàn thành; F6 = Lưu tạm. Không dựng panel NCC/nút "+" tạo hàng mới (T-040c2).
+doi-chieu-ui phát hiện cột nút xoá/STT bị đảo so với ảnh "Đã nhập 2 hàng"
+(icon thùng rác phải đứng TRƯỚC STT) — đã sửa.
 PR: (xem mô tả PR)
 Tầng: B
 Kế tiếp: T-040c2, T-041, T-042 (đủ điều kiện sau khi PR này merge).
