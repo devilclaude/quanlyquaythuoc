@@ -903,3 +903,15 @@ không cần T-040c2).
 PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: T-040c1.
+
+## 2026-09-30 — T-040c1 (Phiếu nhập: tìm hàng đã có)
+Làm: #67 (T-043) vẫn xanh, không comment, không conflict, chờ duyệt B — không
+sửa. Dựng phần TÌM HÀNG ĐÃ CÓ của màn Nhập hàng: tái dùng nguyên khối tìm/gợi
+ý của T-020 (BanHang.tsx), mỗi lần chọn thêm MỘT DÒNG MỚI (không gộp như giỏ
+bán — một phiếu có thể có nhiều dòng cùng sản phẩm khác lô/HSD); cột Số
+lô/Hạn dùng chỉ hiện khi sản phẩm bật quản lý lô (giải nghĩa qua cài đặt toàn
+cục + ghi đè sản phẩm); validate lô/HSD bắt buộc ngay ở form trước khi gọi
+Hoàn thành; F6 = Lưu tạm. Không dựng panel NCC/nút "+" tạo hàng mới (T-040c2).
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-040c2, T-041, T-042 (đủ điều kiện sau khi PR này merge).

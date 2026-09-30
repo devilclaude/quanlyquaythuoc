@@ -368,7 +368,7 @@ ULID mới cho từng dòng. Không kiểm tra bắt buộc lô/HSD lúc sửa (
 Hoàn thành, giống lúc tạo phiếu tạm).
 
 ### T-040c1 [B] prio:40.31 — Phiếu nhập: giao diện (hàng đã có)
-Trạng thái: TODO · Phụ thuộc: T-040b
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-040b
 Xong khi: khớp luồng trong screenshots "Giao diện tìm kiếm hàng đã có để nhập" và
 "Đã nhập 2 hàng" (`docs/reference/kiotviet/Quản trị/Nhập hàng/`) cho phần TÌM HÀNG
 ĐÃ CÓ; tìm hàng qua ô tìm (giống màn bán hàng); nhập số lượng/đơn giá; ô lô + HSD
