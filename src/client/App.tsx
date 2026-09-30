@@ -3,10 +3,11 @@ import { BanHang } from './man-hinh/BanHang/BanHang';
 import { CaiDat } from './man-hinh/CaiDat/CaiDat';
 import { DanhSachHangHoa } from './man-hinh/HangHoa/DanhSachHangHoa';
 import { NhapHangTuExcel } from './man-hinh/NhapHang/NhapHangTuExcel';
+import { TongQuan } from './man-hinh/TongQuan/TongQuan';
 import { Nut } from './thanh-phan';
 import './App.css';
 
-type Man = 'ban-hang' | 'hang-hoa' | 'nhap-hang' | 'cai-dat';
+type Man = 'ban-hang' | 'hang-hoa' | 'nhap-hang' | 'tong-quan' | 'cai-dat';
 
 // Bộ chuyển màn tối thiểu — KHÔNG bám sidebar đầy đủ của KiotViet (chưa có task
 // dựng nav thật trong BACKLOG.md). Chỉ để "Hàng hoá" (T-009) không biến mất khỏi
@@ -29,6 +30,9 @@ export function App() {
         <Nut bienThe={man === 'nhap-hang' ? 'chinh' : 'phu'} onClick={() => setMan('nhap-hang')}>
           Nhập hàng
         </Nut>
+        <Nut bienThe={man === 'tong-quan' ? 'chinh' : 'phu'} onClick={() => setMan('tong-quan')}>
+          Tổng quan
+        </Nut>
         <Nut bienThe={man === 'cai-dat' ? 'chinh' : 'phu'} onClick={() => setMan('cai-dat')}>
           Cài đặt
         </Nut>
@@ -39,6 +43,8 @@ export function App() {
         <DanhSachHangHoa />
       ) : man === 'nhap-hang' ? (
         <NhapHangTuExcel />
+      ) : man === 'tong-quan' ? (
+        <TongQuan />
       ) : (
         <CaiDat />
       )}

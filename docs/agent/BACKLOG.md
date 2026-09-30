@@ -303,16 +303,23 @@ Xong khi: dạng `HD<mã máy>-<số tăng dần>`; cấp được khi offline; 
 đồng bộ**; hai thiết bị không bao giờ va số; số đã in luôn tra cứu được.
 
 ### T-033 [B] prio:33 — Đồng bộ phía máy chủ
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-032
+Trạng thái: DONE · Phụ thuộc: T-032
 Xong khi: máy chủ nhận hàng đợi, áp dụng theo thứ tự đến, idempotent theo ULID;
 **không bao giờ từ chối một đơn đã bán và đã in**; giá vốn gấp theo thứ tự đến,
 không hồi tố; test đơn offline về muộn không làm đổi số đã hiển thị.
 
-### T-034 [B] prio:34 — Cảnh báo lệch kho
-Trạng thái: TODO · Phụ thuộc: T-033
+### T-034 [A] prio:34 — Cảnh báo lệch kho
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-033
 Xong khi: hợp nhất ra tồn âm thì sinh cảnh báo yêu cầu kiểm kê, không tự sửa và
 không im lặng; cảnh báo hiện ở màn tổng quan; test hai thiết bị cùng bán hộp cuối
 khi offline.
+Ghi chú: cảnh báo là **hình chiếu suy ra** trực tiếp từ `ton_kho_lo` (giống
+`gia_von_hien_hanh` T-007) — một lô `ton < 0` là một cảnh báo, không có bảng
+lưu trạng thái riêng. "Không tự sửa" vì chỉ kiểm kê (T-050) mới ghi được bút
+toán đưa `ton` hết âm; cảnh báo tự biến mất đúng lúc đó, không cần trạng thái
+"đã xử lý". Màn "Tổng quan" mới dựng — chưa có screenshot KiotViet tham chiếu
+(theo tiền lệ T-010c/T-023), theo token design-system. Tầng A: chỉ đọc dữ liệu
+tồn kho đã có, không ghi kho/tiền.
 
 ---
 
@@ -349,7 +356,7 @@ lô mới) nên chắc chắn không nhỏ hơn. Không build thử để đo �
 theo đúng tiền lệ T-009 (BACKLOG §Milestone 2, "chẻ ngay lúc chọn").
 
 ### T-040b [A] prio:40.2 — Phiếu nhập: API
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-040a
+Trạng thái: DONE · Phụ thuộc: T-040a
 Xong khi: `POST /api/phieu-nhap` (tạo, nhận cờ lưu tạm hay hoàn thành ngay),
 `PUT /api/phieu-nhap/:id` (sửa dòng khi còn ở trạng thái tạm — từ chối khi đã
 hoàn thành), `POST /api/phieu-nhap/:id/hoan-thanh`, `GET /api/phieu-nhap` (danh
@@ -419,7 +426,7 @@ Trạng thái: DONE · Phụ thuộc: T-006
 Xong khi: xuất khỏi kho có lý do và người thực hiện, ghi thẻ kho, chọn đúng lô.
 
 ### T-052a [B] prio:52.1 — Trả hàng: schema + lõi nghiệp vụ
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-022c
+Trạng thái: DONE · Phụ thuộc: T-022c
 Xong khi: migration `tra_hang` (chứng từ, không xoá cứng, liên kết `hoa_don_id`
 tới hoá đơn gốc, mã tự sinh tuần tự) và `tra_hang_dong` (dòng trả: liên kết
 `hoa_don_dong_id`, số lượng trả theo đơn vị cơ sở, tiền hoàn dùng lại
