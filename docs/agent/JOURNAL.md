@@ -889,3 +889,17 @@ tồn, tải lại "Tổng quan" thấy đúng dòng cảnh báo.
 PR: (xem mô tả PR)
 Tầng: A — chỉ đọc dữ liệu tồn kho đã có, không ghi kho/tiền.
 Kế tiếp: T-040c, T-041, T-052b, hoặc T-053a, đủ điều kiện sau khi PR này merge.
+
+## 2026-09-30 — dọn PR + T-040c (chẻ task, không code)
+Làm: #69 (T-034) đã merge → DONE (sửa BACKLOG ở đây). #67 (T-043) vẫn xanh,
+không comment, không conflict, chờ duyệt B — không sửa. Chọn T-040c (prio nhỏ
+nhất đủ điều kiện, T-040b đã DONE): dựng trọn vẹn theo TDD (`npm run ci` xanh,
+22 test đơn vị + 2 test e2e xác nhận luồng bàn phím lẫn Lô/HSD có điều kiện)
+rồi đo trước khi mở PR: 1232 dòng/5 file, vượt ngưỡng 1000 dòng CLAUDE.md. Bỏ
+toàn bộ code (không commit), chẻ T-040c thành T-040c1 (tìm hàng đã có — giữ
+nguyên "Xong khi" gốc trừ phần tạo hàng mới) / T-040c2 (tạo hàng mới ngay
+trong màn, nhúng T-009b); sửa phụ thuộc T-042 sang T-040c1 (điểm gọi in tem
+không cần T-040c2).
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: T-040c1.
