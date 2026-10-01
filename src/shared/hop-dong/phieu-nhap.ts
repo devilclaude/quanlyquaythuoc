@@ -39,6 +39,9 @@ export const SuaPhieuNhapReqSchema = z.object({
 export const PhieuNhapDongResSchema = z.object({
   id: z.string(),
   sanPhamId: z.string(),
+  /** Mã/tên sản phẩm HIỆN TẠI, tra lúc đọc — không snapshot (xem ghi chú trong `tao-phieu-nhap.ts`). */
+  maHang: z.string(),
+  ten: z.string(),
   donViTen: z.string(),
   heSo: z.number().int(),
   donGia: z.number().int(),
@@ -60,6 +63,8 @@ export const PhieuNhapDanhSachItemSchema = z.object({
   trangThai: TrangThaiPhieuNhapSchema,
   /** Giờ thiết bị lúc thao tác xảy ra (ISO). */
   thoiGian: z.string(),
+  /** Tổng tiền hàng = Σ (đơn giá × số lượng) các dòng (T-041) — không phải "Cần trả NCC" (chưa có công nợ NCC, v1.1). */
+  tongTien: z.number().int(),
 });
 
 export const DanhSachPhieuNhapResSchema = z.object({

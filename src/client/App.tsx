@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { BanHang } from './man-hinh/BanHang/BanHang';
 import { CaiDat } from './man-hinh/CaiDat/CaiDat';
 import { DanhSachHangHoa } from './man-hinh/HangHoa/DanhSachHangHoa';
-import { NhapHang } from './man-hinh/NhapHang/NhapHang';
+import { DanhSachPhieuNhap } from './man-hinh/NhapHang/DanhSachPhieuNhap';
 import { TongQuan } from './man-hinh/TongQuan/TongQuan';
 import { Nut } from './thanh-phan';
 import './App.css';
@@ -12,8 +12,8 @@ type Man = 'ban-hang' | 'hang-hoa' | 'nhap-hang' | 'tong-quan' | 'cai-dat';
 // Bộ chuyển màn tối thiểu — KHÔNG bám sidebar đầy đủ của KiotViet (chưa có task
 // dựng nav thật trong BACKLOG.md). Chỉ để "Hàng hoá" (T-009) không biến mất khỏi
 // giao diện từ khi T-020 thêm màn thứ hai; mặc định "Bán hàng" vì đó là việc
-// dược sĩ làm cả ngày. "Nhập hàng" gộp cả luồng tạo tay (T-040c1) lẫn nhập từ
-// Excel (T-043, nối trong `NhapHang.tsx`) — xem BACKLOG.md T-043.
+// dược sĩ làm cả ngày. "Nhập hàng" vào thẳng DANH SÁCH (T-041, khớp KiotViet:
+// nav vào danh sách, nút "+ Nhập hàng" mới mở luồng tạo tay T-040c1/T-043).
 export function App() {
   const [man, setMan] = useState<Man>('ban-hang');
 
@@ -42,7 +42,7 @@ export function App() {
       ) : man === 'hang-hoa' ? (
         <DanhSachHangHoa />
       ) : man === 'nhap-hang' ? (
-        <NhapHang />
+        <DanhSachPhieuNhap />
       ) : man === 'tong-quan' ? (
         <TongQuan />
       ) : (

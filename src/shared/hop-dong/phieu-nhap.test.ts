@@ -97,8 +97,22 @@ describe('DanhSachPhieuNhapResSchema', () => {
   });
 
   it('chấp nhận danh sách có phiếu', () => {
-    const duLieu = [{ id: 'pn-1', ma: 'PN000001', chiNhanhId: 'cn-1', trangThai: 'PHIEU_TAM', thoiGian: '2026-09-27T07:00:00.000Z' }];
+    const duLieu = [
+      {
+        id: 'pn-1',
+        ma: 'PN000001',
+        chiNhanhId: 'cn-1',
+        trangThai: 'PHIEU_TAM',
+        thoiGian: '2026-09-27T07:00:00.000Z',
+        tongTien: 15_000,
+      },
+    ];
     expect(() => DanhSachPhieuNhapResSchema.parse({ duLieu })).not.toThrow();
+  });
+
+  it('từ chối thiếu tongTien — không phải trường tuỳ chọn', () => {
+    const duLieu = [{ id: 'pn-1', ma: 'PN000001', chiNhanhId: 'cn-1', trangThai: 'PHIEU_TAM', thoiGian: '2026-09-27T07:00:00.000Z' }];
+    expect(() => DanhSachPhieuNhapResSchema.parse({ duLieu })).toThrow();
   });
 });
 
@@ -111,10 +125,13 @@ describe('PhieuNhapChiTietResSchema', () => {
         chiNhanhId: 'cn-1',
         trangThai: 'HOAN_THANH',
         thoiGian: '2026-09-27T07:00:00.000Z',
+        tongTien: 1_300_000,
         dong: [
           {
             id: 'pnd-1',
             sanPhamId: 'sp-1',
+            maHang: 'SP001',
+            ten: 'Paracetamol 500mg',
             donViTen: 'hộp',
             heSo: 180,
             donGia: 260_000,
