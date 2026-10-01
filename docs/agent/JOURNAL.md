@@ -1000,3 +1000,18 @@ tiết chỉ đọc trong PR này (~947 dòng/15 file). Nav "Nhập hàng" nay v
 trước, "+ Nhập hàng" mới mở luồng tạo tay cũ (T-040c1/c2) — cập nhật e2e theo.
 PR: (xem mô tả PR) · Tầng A: chỉ đọc dữ liệu phiếu nhập đã có.
 Kế tiếp: T-041b, T-042, T-052b, hoặc T-053a.
+
+## 2026-10-02 — dọn PR: sửa conflict #72 (main vượt qua do #73/T-041 merge), dừng run
+Làm: #72 (T-040c2) CI xanh, không comment, nhưng `mergeable_state: dirty` —
+conflict thật với `main` sau khi #73 (T-041) merge: `docs/agent/JOURNAL.md`
+(append cuối file) và `tests/e2e/nhap-hang.spec.ts` (hai test mới của #72/#73
+cùng chèn sau test T-040c1). Merge `main` vào nhánh, giữ cả hai entry JOURNAL
+theo thứ tự thời gian; test e2e T-040c2 cập nhật theo nav mới của T-041 (phải
+bấm "+ Nhập hàng" sau "Nhập hàng" mới vào màn tạo tay) và thêm route GET
+`/api/phieu-nhap` (danh sách rỗng) vì màn danh sách giờ fetch ngay khi vào.
+`npm run ci` xanh (681 test, build, 16 e2e). Push lên nhánh #72. Theo luật
+"sửa PR cũ rồi dừng" — không chọn task mới.
+PR: #72 (cập nhật, không mở PR mới)
+Tầng: B (không đổi, lý do gốc giữ nguyên)
+Kế tiếp: chờ CI GitHub xanh + người duyệt B cho #72; sau đó T-041b, T-042,
+T-052b, hoặc T-053a.
