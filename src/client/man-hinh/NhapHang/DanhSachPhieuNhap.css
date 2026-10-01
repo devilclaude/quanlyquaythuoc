@@ -1,8 +1,13 @@
 .danh-sach-phieu-nhap {
   display: flex;
-  gap: var(--kc-5);
+  flex-direction: column;
+  gap: var(--kc-4);
   padding: var(--kc-5);
 }
+
+/* Tiêu đề trang nằm trên CẢ cột lọc lẫn nội dung — khớp ảnh gốc "Danh sách nhập hàng". */
+.danh-sach-phieu-nhap__tieu-de { font-size: var(--chu-lg); margin: 0; }
+.danh-sach-phieu-nhap__hang { display: flex; gap: var(--kc-5); }
 
 .danh-sach-phieu-nhap__bo-loc {
   flex: 0 0 220px;
@@ -10,12 +15,7 @@
   flex-direction: column;
   gap: var(--kc-2);
 }
-
-.danh-sach-phieu-nhap__bo-loc h2 {
-  font-size: var(--chu-sm);
-  margin: var(--kc-3) 0 0;
-}
-
+.danh-sach-phieu-nhap__bo-loc h2 { font-size: var(--chu-sm); margin: var(--kc-3) 0 0; }
 .danh-sach-phieu-nhap__nhan-checkbox {
   display: flex;
   align-items: center;
@@ -30,12 +30,6 @@
   flex-direction: column;
   gap: var(--kc-4);
 }
-
-.danh-sach-phieu-nhap__tieu-de {
-  font-size: var(--chu-lg);
-  margin: 0;
-}
-
 .danh-sach-phieu-nhap__thanh-cong-cu {
   display: flex;
   align-items: center;
@@ -43,24 +37,11 @@
   gap: var(--kc-3);
 }
 
-.danh-sach-phieu-nhap__thong-bao {
-  text-align: center;
-  padding: var(--kc-5);
-  color: var(--mau-chu-phu);
-}
-
-.danh-sach-phieu-nhap__thong-bao--loi {
-  color: var(--mau-nguy);
-}
-
-.danh-sach-phieu-nhap__dong--dang-chon {
-  background: var(--mau-chinh-nhat);
-}
-
-.danh-sach-phieu-nhap__chi-tiet {
-  background: var(--mau-nen);
-  padding: var(--kc-4);
-}
+.danh-sach-phieu-nhap__thong-bao { text-align: center; padding: var(--kc-5); color: var(--mau-chu-phu); }
+.danh-sach-phieu-nhap__thong-bao--loi { color: var(--mau-nguy); }
+.danh-sach-phieu-nhap__dong--dang-chon { background: var(--mau-chinh-nhat); }
+.danh-sach-phieu-nhap__dong-tong { font-weight: 600; }
+.danh-sach-phieu-nhap__chi-tiet { background: var(--mau-nen); padding: var(--kc-4); }
 
 .danh-sach-phieu-nhap__quay-lai {
   align-self: flex-start;

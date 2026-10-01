@@ -88,36 +88,45 @@ export function BangDanhSachPhieuNhap({
             </td>
           </tr>
         ) : (
-          duLieu.map((p) => (
-            <Fragment key={p.id}>
-              <tr
-                tabIndex={0}
-                role="button"
-                aria-expanded={phieuChonId === p.id}
-                className={phieuChonId === p.id ? 'danh-sach-phieu-nhap__dong--dang-chon' : undefined}
-                onClick={() => onChonDong(p.id)}
-                onKeyDown={(su) => {
-                  if (su.key === 'Enter') onChonDong(p.id);
-                }}
-              >
-                <td>{p.ma}</td>
-                <td>{dinhDangThoiGianVN(p.thoiGian)}</td>
-                <OSo>{dinhDangTien(dong(p.tongTien))}</OSo>
-                <td>
-                  <BadgeTrangThai mau={MAU_BADGE_TRANG_THAI[p.trangThai]}>
-                    {nhanTrangThaiPhieuNhap(p.trangThai)}
-                  </BadgeTrangThai>
-                </td>
-              </tr>
-              {phieuChonId === p.id ? (
-                <tr>
-                  <td colSpan={4} className="danh-sach-phieu-nhap__chi-tiet">
-                    {renderChiTiet(p.id)}
+          <>
+            {/* Dòng tổng ngay dưới header, thẳng cột với "Tổng tiền" — khớp ảnh gốc "Danh sách nhập hàng". */}
+            <tr className="danh-sach-phieu-nhap__dong-tong">
+              <td></td>
+              <td></td>
+              <OSo>{dinhDangTien(dong(duLieu.reduce((tong, p) => tong + p.tongTien, 0)))}</OSo>
+              <td></td>
+            </tr>
+            {duLieu.map((p) => (
+              <Fragment key={p.id}>
+                <tr
+                  tabIndex={0}
+                  role="button"
+                  aria-expanded={phieuChonId === p.id}
+                  className={phieuChonId === p.id ? 'danh-sach-phieu-nhap__dong--dang-chon' : undefined}
+                  onClick={() => onChonDong(p.id)}
+                  onKeyDown={(su) => {
+                    if (su.key === 'Enter') onChonDong(p.id);
+                  }}
+                >
+                  <td>{p.ma}</td>
+                  <td>{dinhDangThoiGianVN(p.thoiGian)}</td>
+                  <OSo>{dinhDangTien(dong(p.tongTien))}</OSo>
+                  <td>
+                    <BadgeTrangThai mau={MAU_BADGE_TRANG_THAI[p.trangThai]}>
+                      {nhanTrangThaiPhieuNhap(p.trangThai)}
+                    </BadgeTrangThai>
                   </td>
                 </tr>
-              ) : null}
-            </Fragment>
-          ))
+                {phieuChonId === p.id ? (
+                  <tr>
+                    <td colSpan={4} className="danh-sach-phieu-nhap__chi-tiet">
+                      {renderChiTiet(p.id)}
+                    </td>
+                  </tr>
+                ) : null}
+              </Fragment>
+            ))}
+          </>
         )}
       </tbody>
     </Bang>
@@ -193,42 +202,44 @@ export function DanhSachPhieuNhap() {
 
   return (
     <div className="danh-sach-phieu-nhap">
-      <aside className="danh-sach-phieu-nhap__bo-loc">
-        <h2>Trạng thái</h2>
-        {CAC_TRANG_THAI.map((t) => (
-          <label key={t} className="danh-sach-phieu-nhap__nhan-checkbox">
-            <input
-              type="checkbox"
-              checked={trangThaiLoc[t]}
-              onChange={(su) => setTrangThaiLoc((v) => ({ ...v, [t]: su.target.checked }))}
-            />
-            {nhanTrangThaiPhieuNhap(t)}
-          </label>
-        ))}
-      </aside>
+      <h1 className="danh-sach-phieu-nhap__tieu-de">Nhập hàng</h1>
+      <div className="danh-sach-phieu-nhap__hang">
+        <aside className="danh-sach-phieu-nhap__bo-loc">
+          <h2>Trạng thái</h2>
+          {CAC_TRANG_THAI.map((t) => (
+            <label key={t} className="danh-sach-phieu-nhap__nhan-checkbox">
+              <input
+                type="checkbox"
+                checked={trangThaiLoc[t]}
+                onChange={(su) => setTrangThaiLoc((v) => ({ ...v, [t]: su.target.checked }))}
+              />
+              {nhanTrangThaiPhieuNhap(t)}
+            </label>
+          ))}
+        </aside>
 
-      <section className="danh-sach-phieu-nhap__noi-dung">
-        <h1 className="danh-sach-phieu-nhap__tieu-de">Nhập hàng</h1>
-        <div className="danh-sach-phieu-nhap__thanh-cong-cu">
-          <TruongNhap
-            aria-label="Tìm theo mã phiếu nhập"
-            placeholder="Theo mã phiếu nhập"
-            value={tim}
-            onChange={(su) => setTim(su.target.value)}
+        <section className="danh-sach-phieu-nhap__noi-dung">
+          <div className="danh-sach-phieu-nhap__thanh-cong-cu">
+            <TruongNhap
+              aria-label="Tìm theo mã phiếu nhập"
+              placeholder="Theo mã phiếu nhập"
+              value={tim}
+              onChange={(su) => setTim(su.target.value)}
+            />
+            <Nut bienThe="chinh" onClick={() => setDangTaoMoi(true)}>
+              + Nhập hàng
+            </Nut>
+          </div>
+          <BangDanhSachPhieuNhap
+            duLieu={duLieu}
+            dangTai={dangTai}
+            loi={loi}
+            phieuChonId={phieuChonId}
+            onChonDong={(id) => setPhieuChonId((hienTai) => (hienTai === id ? undefined : id))}
+            renderChiTiet={(id) => <ChiTietPhieuNhap id={id} />}
           />
-          <Nut bienThe="chinh" onClick={() => setDangTaoMoi(true)}>
-            + Nhập hàng
-          </Nut>
-        </div>
-        <BangDanhSachPhieuNhap
-          duLieu={duLieu}
-          dangTai={dangTai}
-          loi={loi}
-          phieuChonId={phieuChonId}
-          onChonDong={(id) => setPhieuChonId((hienTai) => (hienTai === id ? undefined : id))}
-          renderChiTiet={(id) => <ChiTietPhieuNhap id={id} />}
-        />
-      </section>
+        </section>
+      </div>
     </div>
   );
 }

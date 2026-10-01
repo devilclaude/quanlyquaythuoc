@@ -46,7 +46,9 @@ export function ThongTinPhieuNhap({ chiTiet }: { chiTiet: PhieuNhapChiTietRes })
           {chiTiet.dong.map((d) => (
             <tr key={d.id}>
               <td>{d.maHang}</td>
-              <td>{d.ten}</td>
+              <td>
+                {d.ten} ({d.donViTen})
+              </td>
               <OSo>{d.soLuong}</OSo>
               <OSo>{dinhDangTien(dong(d.donGia))}</OSo>
               {hienCotLo ? (

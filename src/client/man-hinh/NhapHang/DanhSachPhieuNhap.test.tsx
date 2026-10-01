@@ -87,6 +87,14 @@ describe('BangDanhSachPhieuNhap', () => {
     expect(ve({ loi: 'Không kết nối được máy chủ' })).toContain('Không kết nối được máy chủ');
   });
 
+  it('dòng tổng ngay dưới header cộng đúng tổng tiền các phiếu đang hiện, đứng trước dòng dữ liệu đầu tiên — khớp ảnh gốc', () => {
+    const mucKhac: PhieuNhapDanhSachItem = { ...mucMau, id: 'pn-2', ma: 'PN002222', tongTien: 3_170_000 };
+    const html = ve({ duLieu: [mucMau, mucKhac] });
+
+    expect(html).toContain('15,068,000'); // 11.898.000 + 3.170.000
+    expect(html.indexOf('15,068,000')).toBeLessThan(html.indexOf('PN002221'));
+  });
+
   it('dòng đang chọn render đúng nội dung chi tiết ngay dưới dòng đó, không gọi renderChiTiet cho dòng khác', () => {
     const mucKhac: PhieuNhapDanhSachItem = { ...mucMau, id: 'pn-2', ma: 'PN002222' };
     const html = ve({

@@ -53,8 +53,13 @@ describe('ThongTinPhieuNhap', () => {
     expect(viTri.every((v) => v >= 0)).toBe(true);
     expect(viTri).toEqual([...viTri].sort((a, b) => a - b));
     expect(html).toContain('SP000125');
-    expect(html).toContain('Betaloc 50mg');
     expect(html).toContain('284,000'); // 142.000 × 2
+  });
+
+  it('tên hàng kèm đơn vị tính của dòng nhập — khớp ảnh gốc "Betaloc 50mg (hộp)"', () => {
+    const html = renderToStaticMarkup(<ThongTinPhieuNhap chiTiet={chiTietPhang} />);
+    expect(html).toContain('Betaloc 50mg (hộp)');
+    expect(html).toContain('Cefdina 125 MG (lọ)');
   });
 
   it('tổng tiền hàng và số lượng mặt hàng ở chân bảng', () => {
