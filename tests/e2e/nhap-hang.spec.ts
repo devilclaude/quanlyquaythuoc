@@ -105,47 +105,21 @@ test('nhập hàng: tìm/thêm hàng bằng bàn phím, Lưu tạm ở chế đ�
   ]);
 });
 
-test('danh sách nhập hàng: xem danh sách, mở chi tiết ngay dưới dòng, quay lại danh sách sau khi vào "+ Nhập hàng" (T-041)', async ({
+test('danh sách nhập hàng: xem danh sách, mở chi tiết ngay dưới dòng, quay lại sau khi vào "+ Nhập hàng" (T-041)', async ({
   page,
   context,
 }) => {
-  const PHIEU_MAU = {
-    id: 'pn-1',
-    ma: 'PN002221',
-    chiNhanhId: 'cn-1',
-    trangThai: 'HOAN_THANH',
-    thoiGian: '2026-05-17T03:58:00.000Z',
-    tongTien: 11_898_000,
-  };
+  const PHIEU_MAU = { id: 'pn-1', ma: 'PN002221', chiNhanhId: 'cn-1', trangThai: 'HOAN_THANH', thoiGian: '2026-05-17T03:58:00.000Z', tongTien: 11_898_000 };
+  const DONG_MAU = { id: 'pnd-1', sanPhamId: 'sp-1', maHang: 'SP000125', ten: 'Betaloc 50mg', donViTen: 'hộp', heSo: 1, donGia: 142_000, soLuong: 2, soLo: null, hsd: null };
   await context.route('**/api/phieu-nhap**', async (route) => {
     const url = route.request().url();
     if (route.request().method() !== 'GET') {
       await route.fulfill({ status: 201, json: { id: 'pn-moi', ma: 'PN000002', trangThai: 'PHIEU_TAM' } });
-      return;
+    } else if (url.includes('/api/phieu-nhap/pn-1')) {
+      await route.fulfill({ json: { ...PHIEU_MAU, dong: [DONG_MAU] } });
+    } else {
+      await route.fulfill({ json: { duLieu: [PHIEU_MAU] } });
     }
-    if (url.includes('/api/phieu-nhap/pn-1')) {
-      await route.fulfill({
-        json: {
-          ...PHIEU_MAU,
-          dong: [
-            {
-              id: 'pnd-1',
-              sanPhamId: 'sp-1',
-              maHang: 'SP000125',
-              ten: 'Betaloc 50mg',
-              donViTen: 'hộp',
-              heSo: 1,
-              donGia: 142_000,
-              soLuong: 2,
-              soLo: null,
-              hsd: null,
-            },
-          ],
-        },
-      });
-      return;
-    }
-    await route.fulfill({ json: { duLieu: [PHIEU_MAU] } });
   });
   await context.route('**/api/hang-hoa**', (route) => route.fulfill({ json: { duLieu: [] } }));
   await context.route('**/api/cai-dat/quan-ly-lo', (route) => route.fulfill({ json: { bat: false } }));
@@ -158,12 +132,10 @@ test('danh sách nhập hàng: xem danh sách, mở chi tiết ngay dưới dòn
   await expect(dongPhieu).toContainText('11,898,000');
   await expect(dongPhieu).toContainText('Đã nhập hàng');
 
-  // Bấm dòng mở chi tiết NGAY DƯỚI dòng đó, khớp luồng KiotViet.
+  // Bấm dòng mở chi tiết NGAY DƯỚI dòng đó; "+ Nhập hàng" mở luồng tạo tay (T-040c1), quay lại thấy lại danh sách.
   await dongPhieu.click();
   await expect(page.getByText('Betaloc 50mg')).toBeVisible();
   await expect(page.getByText('284,000')).toBeVisible(); // 142.000 × 2
-
-  // "+ Nhập hàng" mở luồng tạo tay (T-040c1); quay lại thấy lại đúng danh sách.
   await page.getByRole('button', { name: '+ Nhập hàng' }).click();
   await expect(page.getByPlaceholder('Tìm hàng hóa')).toBeVisible();
   await page.getByRole('button', { name: '← Danh sách nhập hàng' }).click();
