@@ -13,12 +13,12 @@ import {
   layGoiYTimHang,
   type GoiYBanHang,
 } from '../BanHang/BanHang';
+import { NhapHangTuExcel } from './NhapHangTuExcel';
 import './NhapHang.css';
 
 // T-040c1 — Phiếu nhập: giao diện (tìm hàng đã có). Tái dùng NGUYÊN khối tìm +
-// gợi ý của T-020 (BanHang.tsx). Khác giỏ hàng bán: chọn một gợi ý LUÔN thêm
-// MỘT DÒNG MỚI, không gộp trùng sản phẩm+đơn vị (mỗi dòng có thể mang lô/HSD
-// khác nhau). Không dựng panel NCC/"Tạo hàng mới ngay trong màn" (T-040c2).
+// gợi ý của T-020. Chọn một gợi ý LUÔN thêm MỘT DÒNG MỚI (không gộp trùng sản
+// phẩm+đơn vị). Không dựng panel NCC/"Tạo hàng mới ngay trong màn" (T-040c2).
 
 export interface DongPhieuNhapUI {
   id: string;
@@ -92,8 +92,7 @@ export function suaHsdDongPhieuNhap(dsDong: DongPhieuNhapUI[], chiSo: number, hs
   return dsDong.map((d, i) => (i === chiSo ? { ...d, hsd: hsdMoi } : d));
 }
 
-/** Đổi đơn vị của một dòng — giá KHÔNG đổi theo (đơn giá nhập tự gõ cho dòng,
- * khác giá bán suy theo hệ số của `doiDonViDongGioHang` bán hàng). */
+/** Đổi đơn vị — giá KHÔNG đổi theo (đơn giá nhập tự gõ, khác `doiDonViDongGioHang` bán hàng). */
 export function doiDonViDongPhieuNhap(
   dsDong: DongPhieuNhapUI[],
   chiSo: number,
@@ -107,8 +106,7 @@ export function doiDonViDongPhieuNhap(
   );
 }
 
-/** Phím F2 (UI-FIDELITY.md nhóm 2, cột "Màn": Bán, Nhập): đổi dòng đang chọn
- * sang đơn vị kế tiếp của sản phẩm, quay vòng. */
+/** Phím F2 (UI-FIDELITY.md nhóm 2): đổi dòng đang chọn sang đơn vị kế tiếp, quay vòng. */
 export function doiDonViKeTiepPhieuNhap(dsDong: DongPhieuNhapUI[], chiSo: number): DongPhieuNhapUI[] {
   const dongHienTai = dsDong[chiSo];
   if (!dongHienTai || dongHienTai.dsDonVi.length < 2) return dsDong;
@@ -122,8 +120,7 @@ export function tinhTongTienHangPhieuNhap(dsDong: DongPhieuNhapUI[]): number {
   return dsDong.reduce((tong, d) => tong + d.donGia * d.soLuong, 0);
 }
 
-/** Validate phía client TRƯỚC khi gọi API hoàn thành — không thay thế 409 thật
- * của server (`ThieuLoHsdError`/`LoHsdKhongDayDuError`), chỉ phản hồi ngay cho lỗi gõ tay phổ biến nhất. */
+/** Validate client TRƯỚC khi gọi API hoàn thành — không thay 409 thật của server. */
 export function validatePhieuNhap(dsDong: DongPhieuNhapUI[]): string | undefined {
   if (dsDong.length === 0) return 'Chưa có hàng nào trong phiếu';
   for (const d of dsDong) {
@@ -137,8 +134,7 @@ export function validatePhieuNhap(dsDong: DongPhieuNhapUI[]): string | undefined
   return undefined;
 }
 
-/** Ánh xạ dòng UI sang `TaoPhieuNhapReq` (T-040b) — lô/HSD chỉ gửi khi người
- * dùng đã gõ (chế độ phẳng để trống, server tự rơi vào lô ngầm định). */
+/** Ánh xạ dòng UI sang `TaoPhieuNhapReq` — lô/HSD chỉ gửi khi đã gõ (phẳng để trống). */
 export function xayDungYeuCauTaoPhieuNhap(dsDong: DongPhieuNhapUI[], hoanThanhNgay: boolean): TaoPhieuNhapReq {
   return {
     hoanThanhNgay,
@@ -171,8 +167,7 @@ interface BangDongPhieuNhapProps {
 }
 
 /** Bảng dòng phiếu nhập — cột khớp ảnh "Đã nhập 2 hàng". Cột "Số lô"/"Hạn dùng"
- * THÊM VÀO (không trong ảnh gốc vì mẫu ảnh tắt quản lý lô), chỉ hiện khi có ít
- * nhất một dòng bật quản lý lô; dòng phẳng khác hiện "—" thay vì ô nhập. */
+ * THÊM VÀO, chỉ hiện khi có ít nhất một dòng bật quản lý lô. */
 export function BangDongPhieuNhap({
   dsDong,
   chiSoDongChon,
@@ -320,8 +315,7 @@ export function BangDongPhieuNhap({
   );
 }
 
-/** Container: ô tìm → gợi ý (tái dùng khối tìm của T-020) → thêm dòng → Lưu
- * tạm (F6) / Hoàn thành, gọi `POST /api/phieu-nhap` (T-040b). */
+/** Container: ô tìm → gợi ý → thêm dòng → Lưu tạm (F6) / Hoàn thành. */
 export function NhapHang() {
   const [tim, setTim] = useState('');
   const [goiYThoBanDau, setGoiYThoBanDau] = useState<GoiYBanHang[]>([]);
@@ -469,8 +463,7 @@ export function NhapHang() {
       return;
     }
 
-    // Ô tìm THỰC SỰ rỗng — phím tác động lên dòng đang chọn (UI-FIDELITY.md
-    // nhóm 2, cùng khuôn T-021). Sai chỗ này nuốt mất ký tự đang gõ dở.
+    // Ô tìm THỰC SỰ rỗng — phím tác động lên dòng đang chọn (UI-FIDELITY.md nhóm 2).
     if (tim.trim() === '' && dsDong.length > 0 && chiSoDongChon >= 0) {
       const dongDangChon = dsDong[chiSoDongChon];
       if (su.key === 'ArrowDown' || su.key === 'ArrowUp') {
@@ -570,6 +563,8 @@ export function NhapHang() {
           </div>
         </aside>
       </div>
+
+      <NhapHangTuExcel />
     </div>
   );
 }

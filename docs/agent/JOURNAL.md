@@ -972,3 +972,10 @@ PR: #67 (cập nhật, không mở PR mới)
 Kế tiếp: chờ CI GitHub xanh + người duyệt B cho #67 và #71; xem lại tiền lệ
 conflict lặp lại 3 lần — có thể #67 nên được ưu tiên duyệt sớm để cắt đứt vòng
 lặp merge-conflict mỗi khi có PR `[A]` mới merge vào main.
+
+## 2026-10-01 — #71 (T-040c1): sửa conflict với #67 sau khi người duyệt merge main
+Làm: Dương merge `main` vào #71 — union sinh JSX lỗi (hai `<NhapHang/>
+<NhapHangTuExcel/>` không bọc Fragment), CI đỏ. Đúng việc BACKLOG.md T-043 đã
+ghi trước: gộp khối Excel xuống dưới bảng dòng tạo tay, bỏ `<h1>` trùng tiêu
+đề. `npm run ci` xanh lại, push.
+PR: #71 · Kế tiếp: chờ CI + người duyệt B.

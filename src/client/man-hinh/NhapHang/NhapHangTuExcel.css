@@ -1,10 +1,7 @@
 .nhap-hang-excel {
   max-width: 640px;
-}
-
-.nhap-hang-excel__tieu-de {
-  margin: 0 0 var(--kc-4);
-  font-size: var(--chu-lg);
+  padding: var(--kc-4) var(--kc-3);
+  border-top: var(--vien);
 }
 
 .nhap-hang-excel__khoi {

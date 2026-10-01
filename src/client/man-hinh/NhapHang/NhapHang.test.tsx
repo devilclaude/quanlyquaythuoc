@@ -79,15 +79,13 @@ it('xoaDongPhieuNhap xoá đúng dòng theo chỉ số, giữ nguyên các dòng
   expect(xoaDongPhieuNhap(ds, 1).map((d) => d.id)).toEqual(['a', 'c']);
 });
 
-describe('suaSoLuongDongPhieuNhap — chỉ nhận số nguyên >= 1', () => {
-  it.each([
-    [5, 5],
-    [0, 2], // số lượng 0 bị từ chối, giữ nguyên cũ
-    [-1, 2], // âm bị từ chối
-    [1.5, 2], // không nguyên bị từ chối
-  ])('sửa thành %i -> %i', (moi, kyVong) => {
-    expect(suaSoLuongDongPhieuNhap([dongMau({ soLuong: 2 })], 0, moi)[0]!.soLuong).toBe(kyVong);
-  });
+it.each([
+  [5, 5],
+  [0, 2], // số lượng 0 bị từ chối, giữ nguyên cũ
+  [-1, 2], // âm bị từ chối
+  [1.5, 2], // không nguyên bị từ chối
+])('suaSoLuongDongPhieuNhap — chỉ nhận số nguyên >= 1: sửa thành %i -> %i', (moi, kyVong) => {
+  expect(suaSoLuongDongPhieuNhap([dongMau({ soLuong: 2 })], 0, moi)[0]!.soLuong).toBe(kyVong);
 });
 
 it('suaDonGiaDongPhieuNhap: chỉ nhận số nguyên >= 0 (0 hợp lệ — hàng khuyến mãi; âm bị từ chối)', () => {
@@ -95,26 +93,20 @@ it('suaDonGiaDongPhieuNhap: chỉ nhận số nguyên >= 0 (0 hợp lệ — hà
   expect(suaDonGiaDongPhieuNhap([dongMau({ donGia: 1000 })], 0, -500)[0]!.donGia).toBe(1000);
 });
 
-describe('doiDonViDongPhieuNhap / doiDonViKeTiepPhieuNhap', () => {
-  it('đổi đơn vị KHÔNG đổi đơn giá theo (đơn giá là số tự gõ cho dòng, khác giá bán suy theo hệ số)', () => {
-    const ketQua = doiDonViDongPhieuNhap([dongMau({ donViTinhId: donViVi.id, donGia: 16000 })], 0, donViHop.id);
-    expect(ketQua[0]).toMatchObject({ donViTinhId: donViHop.id, heSo: 15, donGia: 16000 });
-  });
+it('doiDonViDongPhieuNhap/doiDonViKeTiepPhieuNhap: đổi đơn vị KHÔNG đổi đơn giá theo (đơn giá tự gõ, khác giá bán suy theo hệ số); id lạ thì không đổi gì; F2 quay vòng, một đơn vị thì không đổi', () => {
+  const ketQua = doiDonViDongPhieuNhap([dongMau({ donViTinhId: donViVi.id, donGia: 16000 })], 0, donViHop.id);
+  expect(ketQua[0]).toMatchObject({ donViTinhId: donViHop.id, heSo: 15, donGia: 16000 });
 
-  it('id đơn vị không thuộc sản phẩm của dòng thì không đổi gì', () => {
-    const ds = [dongMau({ donViTinhId: donViVi.id })];
-    expect(doiDonViDongPhieuNhap(ds, 0, 'khong-ton-tai')).toEqual(ds);
-  });
+  const ds = [dongMau({ donViTinhId: donViVi.id })];
+  expect(doiDonViDongPhieuNhap(ds, 0, 'khong-ton-tai')).toEqual(ds);
 
-  it('F2 quay vòng qua đơn vị kế tiếp, sản phẩm một đơn vị thì không đổi gì', () => {
-    const ds = [dongMau({ donViTinhId: donViVi.id, dsDonVi: [donViVi, donViHop] })];
-    const sauMotLan = doiDonViKeTiepPhieuNhap(ds, 0);
-    expect(sauMotLan[0]!.donViTinhId).toBe(donViHop.id);
-    expect(doiDonViKeTiepPhieuNhap(sauMotLan, 0)[0]!.donViTinhId).toBe(donViVi.id);
+  const dsHaiDv = [dongMau({ donViTinhId: donViVi.id, dsDonVi: [donViVi, donViHop] })];
+  const sauMotLan = doiDonViKeTiepPhieuNhap(dsHaiDv, 0);
+  expect(sauMotLan[0]!.donViTinhId).toBe(donViHop.id);
+  expect(doiDonViKeTiepPhieuNhap(sauMotLan, 0)[0]!.donViTinhId).toBe(donViVi.id);
 
-    const motDonVi = [dongMau({ dsDonVi: [donViVi] })];
-    expect(doiDonViKeTiepPhieuNhap(motDonVi, 0)).toEqual(motDonVi);
-  });
+  const motDonVi = [dongMau({ dsDonVi: [donViVi] })];
+  expect(doiDonViKeTiepPhieuNhap(motDonVi, 0)).toEqual(motDonVi);
 });
 
 it('tinhTongTienHangPhieuNhap: tổng = Σ đơn giá × số lượng từng dòng; phiếu rỗng ra 0', () => {

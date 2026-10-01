@@ -5,10 +5,9 @@ import { KhoiNhapTuExcel } from './NhapHangTuExcel';
 const trangThaiRong = { dangTai: false, ketQua: undefined, loiTai: undefined };
 
 describe('KhoiNhapTuExcel', () => {
-  it('khớp screenshot: tiêu đề, liên kết tải file mẫu, nút chọn file', () => {
+  it('khớp screenshot: tiêu đề khối, liên kết tải file mẫu, nút chọn file', () => {
     const html = renderToStaticMarkup(<KhoiNhapTuExcel {...trangThaiRong} onChonFile={() => {}} />);
 
-    expect(html).toContain('Nhập hàng');
     expect(html).toContain('Thêm sản phẩm từ file excel');
     expect(html).toContain('href="/api/phieu-nhap/mau-excel"');
     expect(html).toContain('Excel file');
