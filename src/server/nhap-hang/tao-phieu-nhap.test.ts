@@ -438,6 +438,66 @@ describe('layDanhSachPhieuNhap và layChiTietPhieuNhap', () => {
     expect(danhSach.map((p) => p.id).sort()).toEqual(['pn-1', 'pn-2']);
   });
 
+  it('mỗi phiếu kèm tổng tiền = tổng (đơn giá × số lượng) các dòng, không phải số lượng dòng', () => {
+    taoSanPham('sp-1', 'SP001');
+    taoPhieuNhap(db, {
+      id: 'pn-1',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-09-27T07:00:00.000Z',
+      dong: [
+        { id: 'pnd-1', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 1_500, soLuong: 10 },
+        { id: 'pnd-2', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 2_000, soLuong: 3 },
+      ],
+    });
+
+    const [phieu] = layDanhSachPhieuNhap(db);
+
+    expect(phieu?.tongTien).toBe(21_000); // 1.500×10 + 2.000×3
+  });
+
+  it('lọc theo mã phiếu (khớp một phần, T-041 ô tìm "Theo mã phiếu nhập")', () => {
+    taoSanPham('sp-1', 'SP001');
+    const pn1 = taoPhieuNhap(db, {
+      id: 'pn-1',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-09-27T07:00:00.000Z',
+      dong: [{ id: 'pnd-1', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 1_500, soLuong: 10 }],
+    });
+    taoPhieuNhap(db, {
+      id: 'pn-2',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-09-27T08:00:00.000Z',
+      dong: [{ id: 'pnd-2', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 1_500, soLuong: 5 }],
+    });
+
+    const danhSach = layDanhSachPhieuNhap(db, { tim: pn1.ma.slice(-3) });
+
+    expect(danhSach.map((p) => p.id)).toEqual(['pn-1']);
+  });
+
+  it('lọc theo trạng thái — chỉ trả về phiếu khớp một trong các trạng thái đã chọn', () => {
+    taoSanPham('sp-1', 'SP001');
+    taoPhieuNhap(db, {
+      id: 'pn-1',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-09-27T07:00:00.000Z',
+      hoanThanhNgay: true,
+      dong: [{ id: 'pnd-1', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 1_500, soLuong: 10 }],
+    });
+    taoPhieuNhap(db, {
+      id: 'pn-2',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-09-27T08:00:00.000Z',
+      dong: [{ id: 'pnd-2', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 1_500, soLuong: 5 }],
+    });
+
+    const chiHoanThanh = layDanhSachPhieuNhap(db, { trangThai: ['HOAN_THANH'] });
+    const chiTam = layDanhSachPhieuNhap(db, { trangThai: ['PHIEU_TAM'] });
+
+    expect(chiHoanThanh.map((p) => p.id)).toEqual(['pn-1']);
+    expect(chiTam.map((p) => p.id)).toEqual(['pn-2']);
+  });
+
   it('chi tiết trả về đúng dòng kèm lô/HSD đã khai', () => {
     taoSanPham('sp-1', 'SP001', 'BAT');
     taoPhieuNhap(db, {
@@ -466,6 +526,8 @@ describe('layDanhSachPhieuNhap và layChiTietPhieuNhap', () => {
       {
         id: 'pnd-1',
         sanPhamId: 'sp-1',
+        maHang: 'SP001',
+        ten: 'Paracetamol 500mg',
         donViTen: 'hộp',
         heSo: 180,
         donGia: 260_000,
@@ -474,6 +536,21 @@ describe('layDanhSachPhieuNhap và layChiTietPhieuNhap', () => {
         hsd: '2027-01-01',
       },
     ]);
+  });
+
+  it('chi tiết hiện mã hàng/tên hàng HIỆN TẠI của sản phẩm (tra JOIN lúc đọc, không snapshot — cùng tiền lệ hoa_don_dong)', () => {
+    taoSanPham('sp-1', 'SP002');
+    taoPhieuNhap(db, {
+      id: 'pn-1',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-09-27T07:00:00.000Z',
+      dong: [{ id: 'pnd-1', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 500, soLuong: 1 }],
+    });
+    db.update(sanPham).set({ ten: 'Tên mới sau khi sửa' }).where(eq(sanPham.id, 'sp-1')).run();
+
+    const chiTiet = layChiTietPhieuNhap(db, 'pn-1');
+
+    expect(chiTiet?.dong[0]?.ten).toBe('Tên mới sau khi sửa');
   });
 
   it('chi tiết trả về undefined khi phiếu không tồn tại', () => {

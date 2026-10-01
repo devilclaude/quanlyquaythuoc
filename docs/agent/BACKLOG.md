@@ -392,9 +392,23 @@ thẳng vào phiếu đang soạn (cùng đường thêm dòng đã có ở T-04
 Ghi chú: đây là phần bị chẻ khỏi T-040c gốc — xem ghi chú chẻ ở T-040c1.
 
 ### T-041 [A] prio:41 — Danh sách và chi tiết phiếu nhập
-Trạng thái: TODO · Phụ thuộc: T-040b
-Xong khi: thứ tự cột và bộ lọc khớp screenshot "Danh sách nhập hàng"; chi tiết mở
-ra ngay dưới dòng như KiotViet.
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-040b
+Xong khi: cột bảng danh sách + bộ lọc Trạng thái + ô tìm theo mã khớp screenshot
+"Danh sách nhập hàng"; chi tiết (chỉ đọc) mở ngay dưới dòng như KiotViet; nav
+"Nhập hàng" vào thẳng danh sách này, nút "+ Nhập hàng" mở luồng tạo tay đã có
+(T-040c1/T-040c2).
+Ghi chú: build full "Xong khi" gốc (gồm cả bộ lọc "Thời gian") ra ~1136 dòng,
+vượt ngưỡng — chẻ ngay, gỡ bộ lọc Thời gian sang T-041b (còn lại ~960 dòng).
+"Cần trả NCC" đổi thành "Tổng tiền" (chưa có công nợ NCC); không có trạng thái
+lọc "Đã hủy" hay bộ lọc "Người tạo"/"Người nhập" (quầy một người dùng — v1.1).
+
+### T-041b [A] prio:41.5 — Danh sách phiếu nhập: bộ lọc Thời gian
+Trạng thái: TODO · Phụ thuộc: T-041
+Xong khi: bộ lọc "Thời gian" (radio "Tháng này" mặc định / "Tùy chỉnh" hai ô
+ngày) trong ảnh "Danh sách nhập hàng" hoạt động, gửi khoảng ngày (quy đổi đúng
+giờ Việt Nam UTC+7) vào `GET /api/phieu-nhap`.
+Ghi chú: rã khỏi T-041 lúc build (xem ghi chú T-041) — không còn code cũ để
+tham khảo (đã gỡ khỏi PR đó), viết lại từ đầu theo TDD.
 
 ### T-042 [A] prio:42 — In tem mã
 Trạng thái: TODO · Phụ thuộc: T-040c1
