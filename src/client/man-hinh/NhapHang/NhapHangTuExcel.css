@@ -1,0 +1,80 @@
+.nhap-hang-excel {
+  max-width: 640px;
+}
+
+.nhap-hang-excel__tieu-de {
+  margin: 0 0 var(--kc-4);
+  font-size: var(--chu-lg);
+}
+
+.nhap-hang-excel__khoi {
+  padding: var(--kc-5);
+  background: var(--mau-nen-the);
+  border: var(--vien);
+  border-radius: var(--bo-goc);
+  text-align: center;
+}
+
+.nhap-hang-excel__mo-ta {
+  margin: 0 0 var(--kc-2);
+  font-weight: 500;
+  font-size: var(--chu-lg);
+}
+
+.nhap-hang-excel__mau {
+  margin: 0 0 var(--kc-4);
+  color: var(--mau-chu-phu);
+  font-size: var(--chu-sm);
+}
+
+.nhap-hang-excel__chon-file {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--kc-4);
+}
+
+.nhap-hang-excel__input-file {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.nhap-hang-excel__trang-thai {
+  margin: var(--kc-4) 0 0;
+  color: var(--mau-chu-phu);
+  font-size: var(--chu-sm);
+}
+
+.nhap-hang-excel__loi {
+  margin: var(--kc-4) 0 0;
+  color: var(--mau-nguy);
+  font-size: var(--chu-sm);
+}
+
+.nhap-hang-excel__thanh-cong {
+  margin: var(--kc-4) 0 0;
+  padding: var(--kc-3);
+  background: var(--mau-tot-nen);
+  color: var(--mau-tot);
+  border-radius: var(--bo-goc);
+  font-size: var(--chu-sm);
+}
+
+.nhap-hang-excel__danh-sach-loi {
+  margin: var(--kc-4) 0 0;
+  padding: var(--kc-3) var(--kc-3) var(--kc-3) var(--kc-5);
+  background: var(--mau-nguy-nen);
+  color: var(--mau-nguy);
+  border-radius: var(--bo-goc);
+  text-align: left;
+  font-size: var(--chu-sm);
+}
+
+.nhap-hang-excel__danh-sach-loi li + li {
+  margin-top: var(--kc-1);
+}

@@ -3,6 +3,7 @@ import { BanHang } from './man-hinh/BanHang/BanHang';
 import { CaiDat } from './man-hinh/CaiDat/CaiDat';
 import { DanhSachHangHoa } from './man-hinh/HangHoa/DanhSachHangHoa';
 import { NhapHang } from './man-hinh/NhapHang/NhapHang';
+import { NhapHangTuExcel } from './man-hinh/NhapHang/NhapHangTuExcel';
 import { TongQuan } from './man-hinh/TongQuan/TongQuan';
 import { Nut } from './thanh-phan';
 import './App.css';
@@ -12,7 +13,8 @@ type Man = 'ban-hang' | 'hang-hoa' | 'nhap-hang' | 'tong-quan' | 'cai-dat';
 // Bộ chuyển màn tối thiểu — KHÔNG bám sidebar đầy đủ của KiotViet (chưa có task
 // dựng nav thật trong BACKLOG.md). Chỉ để "Hàng hoá" (T-009) không biến mất khỏi
 // giao diện từ khi T-020 thêm màn thứ hai; mặc định "Bán hàng" vì đó là việc
-// dược sĩ làm cả ngày.
+// dược sĩ làm cả ngày. "Nhập hàng" (T-043) hiện CHỈ có luồng nhập từ Excel —
+// màn nhập tay tìm-hàng-đã-có (T-040c) chưa build, sẽ nối vào cùng mục nav này.
 export function App() {
   const [man, setMan] = useState<Man>('ban-hang');
 
@@ -42,6 +44,7 @@ export function App() {
         <DanhSachHangHoa />
       ) : man === 'nhap-hang' ? (
         <NhapHang />
+        <NhapHangTuExcel />
       ) : man === 'tong-quan' ? (
         <TongQuan />
       ) : (

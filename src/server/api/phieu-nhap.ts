@@ -10,6 +10,7 @@ import {
 } from '../../shared/hop-dong/phieu-nhap';
 import { taoUlid } from '../../shared/kieu/ulid';
 import { layChiNhanhMacDinh } from '../db/chi-nhanh';
+import { nhapHangTuFileExcel, taoMauExcelNhapHang } from '../nhap-hang/nhap-tu-excel';
 import {
   DongPhieuNhapRongError,
   LoHsdKhongDayDuError,
@@ -50,6 +51,27 @@ export function dangKyPhieuNhapRoutes(app: Hono, db: Db): void {
   app.get('/', (c) => {
     const res = DanhSachPhieuNhapResSchema.parse({ duLieu: layDanhSachPhieuNhap(db) });
     return c.json(res);
+  });
+
+  // Đăng ký TRƯỚC `/:id` — nếu không, `mau-excel`/`tu-excel` sẽ khớp nhầm vào
+  // tham số `:id` của route đó.
+  app.get('/mau-excel', async (c) => {
+    const buf = await taoMauExcelNhapHang();
+    c.header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    c.header('Content-Disposition', 'attachment; filename="mau-nhap-hang.xlsx"');
+    return c.body(buf);
+  });
+
+  app.post('/tu-excel', async (c) => {
+    const than = await c.req.parseBody();
+    const file = than['file'];
+    if (!(file instanceof File)) {
+      return c.json({ thanhCong: false, loi: [{ dong: 0, thongDiep: 'Thiếu file — chọn một file .xlsx để tải lên' }] }, 400);
+    }
+
+    const buf = new Uint8Array(await file.arrayBuffer());
+    const ketQua = await nhapHangTuFileExcel(db, buf, layChiNhanhMacDinh(db), new Date().toISOString());
+    return c.json(ketQua, ketQua.thanhCong ? 201 : 400);
   });
 
   app.get('/:id', (c) => {
