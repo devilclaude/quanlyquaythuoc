@@ -393,31 +393,22 @@ Ghi chú: đây là phần bị chẻ khỏi T-040c gốc — xem ghi chú chẻ
 
 ### T-041 [A] prio:41 — Danh sách và chi tiết phiếu nhập
 Trạng thái: CHỜ MERGE · Phụ thuộc: T-040b
-Xong khi: thứ tự cột bảng danh sách và bộ lọc Trạng thái + ô tìm theo mã khớp
-screenshot "Danh sách nhập hàng"; chi tiết (chỉ đọc) mở ra ngay dưới dòng như
-KiotViet; nav "Nhập hàng" vào thẳng danh sách này, nút "+ Nhập hàng" mở luồng
-tạo tay đã có (T-040c1/T-040c2).
-Ghi chú: đo lúc build full "Xong khi" gốc (gồm cả bộ lọc "Thời gian" — Tháng
-này/Tùy chỉnh) ra ~1136 dòng/15 file, vượt ngưỡng 1000 dòng/PR. Đã chẻ ngay khi
-phát hiện (không bỏ hết code — bộ lọc Trạng thái/ô tìm/chi tiết là một lát cắt
-tách được sạch khỏi bộ lọc Thời gian): giữ nguyên phần trong ngưỡng ở T-041 này
-(~947 dòng/15 file), chuyển bộ lọc "Thời gian" sang T-041b. Cột "Cần trả NCC"
-đổi thành "Tổng tiền" (không có công nợ NCC trong v1); không có trạng thái lọc
-"Đã hủy" (chưa có luồng huỷ phiếu nhập) hay bộ lọc "Người tạo"/"Người nhập"
-(quầy chỉ có một người dùng — v1.1).
+Xong khi: cột bảng danh sách + bộ lọc Trạng thái + ô tìm theo mã khớp screenshot
+"Danh sách nhập hàng"; chi tiết (chỉ đọc) mở ngay dưới dòng như KiotViet; nav
+"Nhập hàng" vào thẳng danh sách này, nút "+ Nhập hàng" mở luồng tạo tay đã có
+(T-040c1/T-040c2).
+Ghi chú: build full "Xong khi" gốc (gồm cả bộ lọc "Thời gian") ra ~1136 dòng,
+vượt ngưỡng — chẻ ngay, gỡ bộ lọc Thời gian sang T-041b (còn lại ~960 dòng).
+"Cần trả NCC" đổi thành "Tổng tiền" (chưa có công nợ NCC); không có trạng thái
+lọc "Đã hủy" hay bộ lọc "Người tạo"/"Người nhập" (quầy một người dùng — v1.1).
 
 ### T-041b [A] prio:41.5 — Danh sách phiếu nhập: bộ lọc Thời gian
 Trạng thái: TODO · Phụ thuộc: T-041
-Xong khi: bộ lọc "Thời gian" (radio "Tháng này" mặc định chọn / "Tùy chỉnh" với
-hai ô ngày) trong ảnh "Danh sách nhập hàng" hoạt động, gửi kèm khoảng ngày
-(quy đổi đúng giờ Việt Nam UTC+7) vào `GET /api/phieu-nhap`.
-Ghi chú: phần đã rã ra khỏi T-041 lúc build — xem ghi chú T-041. Có thể tái sử
-dụng ý tưởng `src/shared/thoi-gian/khoang-ngay.ts` (batDauNgayVN/ketThucNgayVN/
-thangNayVN — quy đổi ngày VN sang mốc ISO UTC để lọc theo `thoiGian`) và
-`LocPhieuNhap.tuThoiGian`/`denThoiGian` + `gte`/`lte` ở `layDanhSachPhieuNhap`
-(src/server/nhap-hang/tao-phieu-nhap.ts) đã viết và test xanh trong lúc build
-T-041 rồi bị gỡ khỏi PR đó để về dưới ngưỡng — không còn trong code, phải viết
-lại từ đầu (TDD, không copy nguyên văn từ lịch sử git PR cũ).
+Xong khi: bộ lọc "Thời gian" (radio "Tháng này" mặc định / "Tùy chỉnh" hai ô
+ngày) trong ảnh "Danh sách nhập hàng" hoạt động, gửi khoảng ngày (quy đổi đúng
+giờ Việt Nam UTC+7) vào `GET /api/phieu-nhap`.
+Ghi chú: rã khỏi T-041 lúc build (xem ghi chú T-041) — không còn code cũ để
+tham khảo (đã gỡ khỏi PR đó), viết lại từ đầu theo TDD.
 
 ### T-042 [A] prio:42 — In tem mã
 Trạng thái: TODO · Phụ thuộc: T-040c1
