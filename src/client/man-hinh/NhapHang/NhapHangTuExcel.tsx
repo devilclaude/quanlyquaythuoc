@@ -13,18 +13,17 @@ interface KhoiNhapTuExcelProps {
 /**
  * Phần hiển thị thuần (T-043, SPEC.md §6.2 "Có đường nhập hàng loạt từ file
  * Excel"). Đối chiếu `docs/reference/kiotviet/Quản trị/Nhập hàng/Giao diện
- * chọn file nhập hàng.png`: tiêu đề "Nhập hàng", khối "Thêm sản phẩm từ file
- * excel" kèm liên kết tải file mẫu và nút "Chọn file dữ liệu". Màn đầy đủ
- * trong ảnh (bảng dòng đã nhập, panel nhà cung cấp/mã phiếu) thuộc T-040c —
- * CHƯA build (BACKLOG.md T-040c vẫn TODO) — slice này chỉ dựng đúng khối nhập
- * từ Excel, không dựng lại toàn bộ khung màn nhập hàng thủ công.
+ * chọn file nhập hàng.png`: khối "Thêm sản phẩm từ file excel" kèm liên kết
+ * tải file mẫu và nút "Chọn file dữ liệu". Gắn liền bên dưới màn Nhập hàng
+ * tạo tay (T-040c1, `NhapHang.tsx`) — không còn tiêu đề "Nhập hàng" riêng
+ * (trùng với tiêu đề màn cha); BACKLOG.md T-043 đã ghi sẵn "khi T-040c build,
+ * hai màn nên gộp lại" — đây là chỗ gộp.
  */
 export function KhoiNhapTuExcel({ dangTai, ketQua, loiTai, onChonFile }: KhoiNhapTuExcelProps) {
   return (
     <section className="nhap-hang-excel">
-      <h1 className="nhap-hang-excel__tieu-de">Nhập hàng</h1>
       <div className="nhap-hang-excel__khoi">
-        <p className="nhap-hang-excel__mo-ta">Thêm sản phẩm từ file excel</p>
+        <h2 className="nhap-hang-excel__mo-ta">Thêm sản phẩm từ file excel</h2>
         <p className="nhap-hang-excel__mau">
           (Tải về file mẫu: <a href="/api/phieu-nhap/mau-excel">Excel file</a>)
         </p>

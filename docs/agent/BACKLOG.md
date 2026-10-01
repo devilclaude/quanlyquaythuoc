@@ -368,7 +368,7 @@ ULID mới cho từng dòng. Không kiểm tra bắt buộc lô/HSD lúc sửa (
 Hoàn thành, giống lúc tạo phiếu tạm).
 
 ### T-040c1 [B] prio:40.31 — Phiếu nhập: giao diện (hàng đã có)
-Trạng thái: TODO · Phụ thuộc: T-040b
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-040b
 Xong khi: khớp luồng trong screenshots "Giao diện tìm kiếm hàng đã có để nhập" và
 "Đã nhập 2 hàng" (`docs/reference/kiotviet/Quản trị/Nhập hàng/`) cho phần TÌM HÀNG
 ĐÃ CÓ; tìm hàng qua ô tìm (giống màn bán hàng); nhập số lượng/đơn giá; ô lô + HSD
@@ -408,14 +408,12 @@ thành" ngay trong màn nhập hàng thật (SPEC.md §6.2 bước 4), không ph
 T-040c2 (tạo hàng mới ngay trong màn).
 
 ### T-043 [B] prio:43 — Nhập hàng từ file Excel
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-040a
+Trạng thái: DONE · Phụ thuộc: T-040a
 Xong khi: có file mẫu tải về; báo lỗi theo từng dòng; **file lỗi không làm hỏng
 kho** — hoặc vào hết hoặc không vào gì.
-Ghi chú: màn đầy đủ trong screenshot "Giao diện chọn file nhập hàng.png" là một
-khối bên trong màn Nhập hàng tạo tay (T-040c, vẫn TODO) — slice này chỉ dựng
-đúng khối "Thêm sản phẩm từ file excel" (link tải mẫu + nút chọn file) thành
-một màn độc lập dưới nav "Nhập hàng", không dựng lại bảng dòng/panel NCC thuộc
-T-040c. Khi T-040c build, hai màn nên gộp lại — ghi chú lại đây cho run sau.
+Ghi chú: slice gốc dựng khối "Thêm sản phẩm từ file excel" thành một màn độc
+lập dưới nav "Nhập hàng". Đã gộp vào T-040c1 khi màn đó build (JOURNAL.md
+2026-10-01): khối Excel nối xuống dưới bảng dòng tạo tay, bỏ `<h1>` riêng.
 File mẫu do phần mềm này tự định nghĩa (6 cột: Mã hàng, Tên đơn vị, Số lượng,
 Đơn giá, Số lô, Hạn dùng yyyy-mm-dd) — không phải bản xuất KiotViet thật nên
 không bị chặn như T-060. Thư viện Excel: chọn `exceljs` thay vì `xlsx` (SheetJS)
