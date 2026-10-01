@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, like, sql } from 'drizzle-orm';
+import { and, desc, eq, gte, inArray, like, lte, sql } from 'drizzle-orm';
 import type { drizzle } from 'drizzle-orm/better-sqlite3';
 import { giaiNghiaCaiDatQuanLyLo, type GhiDeQuanLyLo } from '../../shared/cai-dat/giai-nghia';
 import { quyDoiSangCoSo } from '../../shared/don-vi/quy-doi';
@@ -128,6 +128,9 @@ export interface LocPhieuNhap {
   /** Theo mã phiếu, khớp một phần (ô tìm "Theo mã phiếu nhập" — T-041). */
   tim?: string;
   trangThai?: readonly TrangThaiPhieuNhap[];
+  /** Khoảng thời gian (ISO UTC, hai đầu bao gồm) lọc theo `thoiGian` — bộ lọc "Thời gian" T-041b. */
+  tu?: string;
+  den?: string;
 }
 
 export interface PhieuNhapChiTiet extends PhieuNhapDanhSachItem {
@@ -350,6 +353,8 @@ export function layDanhSachPhieuNhap(db: Db, loc: LocPhieuNhap = {}): PhieuNhapD
   const dieuKien = [];
   if (loc.tim) dieuKien.push(like(phieuNhap.ma, `%${loc.tim}%`));
   if (loc.trangThai && loc.trangThai.length > 0) dieuKien.push(inArray(phieuNhap.trangThai, loc.trangThai));
+  if (loc.tu) dieuKien.push(gte(phieuNhap.thoiGian, loc.tu));
+  if (loc.den) dieuKien.push(lte(phieuNhap.thoiGian, loc.den));
 
   const hang = db
     .select({

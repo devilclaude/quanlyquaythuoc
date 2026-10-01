@@ -16,11 +16,19 @@
   gap: var(--kc-2);
 }
 .danh-sach-phieu-nhap__bo-loc h2 { font-size: var(--chu-sm); margin: var(--kc-3) 0 0; }
-.danh-sach-phieu-nhap__nhan-checkbox {
+.danh-sach-phieu-nhap__nhan-checkbox,
+.danh-sach-phieu-nhap__nhan-radio {
   display: flex;
   align-items: center;
   gap: var(--kc-1);
   font-size: var(--chu-sm);
+}
+
+.danh-sach-phieu-nhap__tuy-chinh-ngay {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kc-1);
+  margin-left: var(--kc-4);
 }
 
 .danh-sach-phieu-nhap__noi-dung {

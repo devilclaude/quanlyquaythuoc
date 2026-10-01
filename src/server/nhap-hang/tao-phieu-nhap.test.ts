@@ -498,6 +498,44 @@ describe('layDanhSachPhieuNhap và layChiTietPhieuNhap', () => {
     expect(chiTam.map((p) => p.id)).toEqual(['pn-2']);
   });
 
+  it('lọc theo khoảng thời gian (T-041b) — bao gồm biên, loại phiếu ngoài khoảng', () => {
+    taoSanPham('sp-1', 'SP001');
+    taoPhieuNhap(db, {
+      id: 'pn-truoc',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-09-30T23:59:59.999Z', // ngay trước biên dưới — loại
+      dong: [{ id: 'pnd-1', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 1_500, soLuong: 10 }],
+    });
+    taoPhieuNhap(db, {
+      id: 'pn-bien-duoi',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-10-01T00:00:00.000Z', // đúng biên dưới — giữ
+      dong: [{ id: 'pnd-2', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 1_500, soLuong: 10 }],
+    });
+    taoPhieuNhap(db, {
+      id: 'pn-giua',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-10-15T12:00:00.000Z', // giữa khoảng — giữ
+      dong: [{ id: 'pnd-3', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 1_500, soLuong: 10 }],
+    });
+    taoPhieuNhap(db, {
+      id: 'pn-bien-tren',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-10-31T23:59:59.999Z', // đúng biên trên — giữ
+      dong: [{ id: 'pnd-4', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 1_500, soLuong: 10 }],
+    });
+    taoPhieuNhap(db, {
+      id: 'pn-sau',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-11-01T00:00:00.000Z', // ngay sau biên trên — loại
+      dong: [{ id: 'pnd-5', sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 1_500, soLuong: 10 }],
+    });
+
+    const danhSach = layDanhSachPhieuNhap(db, { tu: '2026-10-01T00:00:00.000Z', den: '2026-10-31T23:59:59.999Z' });
+
+    expect(danhSach.map((p) => p.id).sort()).toEqual(['pn-bien-duoi', 'pn-bien-tren', 'pn-giua']);
+  });
+
   it('chi tiết trả về đúng dòng kèm lô/HSD đã khai', () => {
     taoSanPham('sp-1', 'SP001', 'BAT');
     taoPhieuNhap(db, {

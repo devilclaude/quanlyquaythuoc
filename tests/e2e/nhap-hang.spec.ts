@@ -141,3 +141,35 @@ test('danh sách nhập hàng: xem danh sách, mở chi tiết ngay dưới dòn
   await page.getByRole('button', { name: '← Danh sách nhập hàng' }).click();
   await expect(dongPhieu).toBeVisible();
 });
+
+test('danh sách nhập hàng: bộ lọc "Thời gian" — Tháng này mặc định, Tùy chỉnh gửi đúng khoảng ngày giờ Việt Nam (T-041b)', async ({
+  page,
+  context,
+}) => {
+  const urlsDaGoi: string[] = [];
+  await context.route('**/api/phieu-nhap**', async (route) => {
+    if (route.request().method() !== 'GET') return route.fulfill({ status: 201, json: {} });
+    urlsDaGoi.push(route.request().url());
+    return route.fulfill({ json: { duLieu: [] } });
+  });
+  await context.route('**/api/hang-hoa**', (route) => route.fulfill({ json: { duLieu: [] } }));
+  await context.route('**/api/cai-dat/quan-ly-lo', (route) => route.fulfill({ json: { bat: false } }));
+
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Nhập hàng' }).click();
+
+  // Mặc định "Tháng này" đã được chọn — lần gọi đầu tiên không có nhóm nút "Tùy chỉnh" mở ra.
+  await expect(page.getByRole('radio', { name: 'Tháng này' })).toBeChecked();
+  await expect(page.getByLabel('Từ ngày')).toHaveCount(0);
+
+  urlsDaGoi.length = 0;
+  await page.getByRole('radio', { name: 'Tùy chỉnh' }).click();
+  await page.getByLabel('Từ ngày').fill('2026-10-01');
+  await page.getByLabel('Đến ngày').fill('2026-10-31');
+
+  await expect
+    .poll(() => urlsDaGoi.at(-1))
+    .toContain(`tu=${encodeURIComponent('2026-09-30T17:00:00.000Z')}`);
+  const urlCuoi = urlsDaGoi.at(-1) ?? '';
+  expect(urlCuoi).toContain(`den=${encodeURIComponent('2026-10-31T16:59:59.999Z')}`);
+});
