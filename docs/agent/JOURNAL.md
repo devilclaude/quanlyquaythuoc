@@ -989,3 +989,13 @@ tiết chỉ đọc trong PR này (~947 dòng/15 file). Nav "Nhập hàng" nay v
 trước, "+ Nhập hàng" mới mở luồng tạo tay cũ (T-040c1/c2) — cập nhật e2e theo.
 PR: (xem mô tả PR) · Tầng A: chỉ đọc dữ liệu phiếu nhập đã có.
 Kế tiếp: T-041b, T-042, T-052b, hoặc T-053a.
+
+## 2026-10-02 (run kế) — T-041b (bộ lọc Thời gian)
+Làm: #72 (T-040c2) vẫn xanh, không comment/conflict, chờ duyệt B — không sửa.
+#73 (T-041) đã merge → BACKLOG chuyển DONE. Chọn T-041b: hàm thuần quy đổi
+ngày/tháng VN→UTC (`shared/thoi-gian/khoang-ngay-vn.ts`), lọc `tu`/`den` trên
+`phieuNhap.thoiGian` ở lớp kho + route, radio "Tháng này" (mặc định)/"Tùy
+chỉnh" (hai ô ngày) trong cột lọc. TDD cho cả 3 tầng (hàm thuần, lớp nghiệp
+vụ, route) + 1 e2e. doi-chieu-ui xác nhận không vi phạm.
+PR: (xem mô tả PR) · Tầng A: chỉ đọc, không ghi kho/tiền.
+Kế tiếp: T-042, T-052b, hoặc T-053a.
