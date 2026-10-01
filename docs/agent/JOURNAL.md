@@ -979,3 +979,14 @@ Làm: Dương merge `main` vào #71 — union sinh JSX lỗi (hai `<NhapHang/>
 ghi trước: gộp khối Excel xuống dưới bảng dòng tạo tay, bỏ `<h1>` trùng tiêu
 đề. `npm run ci` xanh lại, push.
 PR: #71 · Kế tiếp: chờ CI + người duyệt B.
+
+## 2026-10-01 (run kế) — dọn PR + T-040c2
+Làm: #71 (T-040c1) đã merge → DONE (sửa BACKLOG, PR#69/T-034 cũng đã merge từ
+trước nhưng chưa được chuyển DONE — sửa luôn). Không còn PR agent nào mở.
+Chọn T-040c2: nút "+" cạnh ô tìm (khớp ảnh "Giao diện tìm kiếm... có nút tạo
+hàng mới") mở `TaoMoiHangHoa` (T-009b) làm overlay ngay trong màn, không rời
+màn; tạo xong gọi lại đúng `chon()` đã có (đơn vị cơ sở) để thêm thẳng vào
+phiếu — không viết lại logic thêm dòng. doi-chieu-ui xác nhận không vi phạm.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-041, T-042, T-052b, hoặc T-053a — đều đủ điều kiện sau khi PR này merge.

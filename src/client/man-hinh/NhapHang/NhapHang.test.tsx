@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import type { HangHoaChiTietRes } from '../../../shared/hop-dong/hang-hoa';
 import type { GoiYBanHang } from '../BanHang/BanHang';
 import {
   BangDongPhieuNhap,
@@ -12,6 +13,7 @@ import {
   themDongPhieuNhap,
   tinhTongTienHangPhieuNhap,
   validatePhieuNhap,
+  xayDungGoiYTuHangMoiTao,
   xayDungYeuCauTaoPhieuNhap,
   xoaDongPhieuNhap,
   type DongPhieuNhapUI,
@@ -77,6 +79,44 @@ it('themDongPhieuNhap: dòng mới số lượng 1/đơn giá 0; chọn cùng g�
 it('xoaDongPhieuNhap xoá đúng dòng theo chỉ số, giữ nguyên các dòng khác', () => {
   const ds = [dongMau({ id: 'a' }), dongMau({ id: 'b' }), dongMau({ id: 'c' })];
   expect(xoaDongPhieuNhap(ds, 1).map((d) => d.id)).toEqual(['a', 'c']);
+});
+
+describe('xayDungGoiYTuHangMoiTao (T-040c2 — hàng vừa tạo ngay trong màn)', () => {
+  const chiTietMau: HangHoaChiTietRes = {
+    id: 'sp-moi',
+    maHang: 'SP000999',
+    ten: 'Vitamin C 500mg',
+    giaBan: 2000,
+    giaVon: 0,
+    tonKho: 0,
+    ngayTao: '2026-10-01T00:00:00.000Z',
+    donViTinh: [
+      { id: 'dvt-vien', ten: 'viên', heSo: 1, laCoSo: true, giaBan: 2000 },
+      { id: 'dvt-hop', ten: 'hộp', heSo: 100, laCoSo: false, giaBan: 180000 },
+    ],
+    trangThai: 'HOAT_DONG',
+    coTheXoaCung: true,
+    quanLyLoGhiDe: 'KE_THUA',
+  };
+
+  it('lấy đúng đơn vị CƠ SỞ (không phải đơn vị khác) làm gợi ý duy nhất', () => {
+    expect(xayDungGoiYTuHangMoiTao(chiTietMau)).toEqual({
+      sanPhamId: 'sp-moi',
+      maHang: 'SP000999',
+      ten: 'Vitamin C 500mg',
+      donViTinhId: 'dvt-vien',
+      donViTen: 'viên',
+      heSo: 1,
+      giaBan: 2000,
+      tonKhoCoSo: 0,
+      dsDonVi: chiTietMau.donViTinh,
+    });
+  });
+
+  it('không có đơn vị cơ sở (không xảy ra trong luồng thật) thì trả undefined, không ném lỗi', () => {
+    const khongCoSo = { ...chiTietMau, donViTinh: chiTietMau.donViTinh.map((d) => ({ ...d, laCoSo: false })) };
+    expect(xayDungGoiYTuHangMoiTao(khongCoSo)).toBeUndefined();
+  });
 });
 
 it.each([

@@ -14,12 +14,26 @@
   background: var(--mau-nen-the);
   border-bottom: var(--vien);
   padding: var(--kc-2) var(--kc-3);
+  display: flex;
+  align-items: center;
+  gap: var(--kc-2);
 }
 
 .nhap-hang__o-tim {
   position: relative;
   flex: 0 1 420px;
   min-width: 240px;
+}
+
+/* T-040c2 — nút "+" cạnh ô tìm, khớp vị trí ảnh "Giao diện tìm kiếm hàng đã
+ * có để nhập (có nút để tạo hàng mới...)". */
+.nhap-hang__nut-tao-moi {
+  flex: 0 0 auto;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  font-size: var(--chu-lg);
+  line-height: 1;
 }
 
 .nhap-hang__than {
