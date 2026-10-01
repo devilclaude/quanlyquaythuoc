@@ -124,6 +124,55 @@ describe('dangKyPhieuNhapRoutes', () => {
     expect(json.duLieu).toHaveLength(2);
   });
 
+  it('GET / mang theo tongTien đúng tổng (đơn giá × số lượng) các dòng', async () => {
+    taoSanPham('sp-1', 'SP001');
+    await gui('/', 'POST', { dong: [dongMau] }); // 260.000 × 5 = 1.300.000
+
+    const res = await gui('/', 'GET');
+
+    const json = (await res.json()) as { duLieu: { tongTien: number }[] };
+    expect(json.duLieu[0]?.tongTien).toBe(1_300_000);
+  });
+
+  it('GET /?tim= lọc theo mã phiếu, khớp một phần (T-041)', async () => {
+    taoSanPham('sp-1', 'SP001');
+    const resTao1 = await gui('/', 'POST', { dong: [dongMau] });
+    const { ma } = (await resTao1.json()) as { ma: string };
+    await gui('/', 'POST', { dong: [dongMau] });
+
+    const res = await gui(`/?tim=${ma}`, 'GET');
+
+    const json = (await res.json()) as { duLieu: { ma: string }[] };
+    expect(json.duLieu).toHaveLength(1);
+    expect(json.duLieu[0]?.ma).toBe(ma);
+  });
+
+  it('GET /?trangThai= lọc theo trạng thái, nhận nhiều giá trị lặp lại', async () => {
+    taoSanPham('sp-1', 'SP001');
+    await gui('/', 'POST', { hoanThanhNgay: true, dong: [dongMau] });
+    await gui('/', 'POST', { dong: [dongMau] });
+
+    const resHoanThanh = await gui('/?trangThai=HOAN_THANH', 'GET');
+    const jsonHoanThanh = (await resHoanThanh.json()) as { duLieu: { trangThai: string }[] };
+    expect(jsonHoanThanh.duLieu).toHaveLength(1);
+    expect(jsonHoanThanh.duLieu[0]?.trangThai).toBe('HOAN_THANH');
+
+    const resCaHai = await gui('/?trangThai=HOAN_THANH&trangThai=PHIEU_TAM', 'GET');
+    const jsonCaHai = (await resCaHai.json()) as { duLieu: unknown[] };
+    expect(jsonCaHai.duLieu).toHaveLength(2);
+  });
+
+  it('GET /?trangThai=<giá trị rác> bỏ qua thay vì 500, coi như không lọc', async () => {
+    taoSanPham('sp-1', 'SP001');
+    await gui('/', 'POST', { dong: [dongMau] });
+
+    const res = await gui('/?trangThai=KHONG_HOP_LE', 'GET');
+
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as { duLieu: unknown[] };
+    expect(json.duLieu).toHaveLength(1);
+  });
+
   it('GET /:id trả về chi tiết đúng, 404 khi không tồn tại', async () => {
     taoSanPham('sp-1', 'SP001');
     const resTao = await gui('/', 'POST', { dong: [dongMau] });

@@ -979,3 +979,13 @@ Làm: Dương merge `main` vào #71 — union sinh JSX lỗi (hai `<NhapHang/>
 ghi trước: gộp khối Excel xuống dưới bảng dòng tạo tay, bỏ `<h1>` trùng tiêu
 đề. `npm run ci` xanh lại, push.
 PR: #71 · Kế tiếp: chờ CI + người duyệt B.
+
+## 2026-10-01 (run kế) — T-041 (Danh sách và chi tiết phiếu nhập)
+Làm: #72 (T-040c2) xanh, không comment, không conflict, chờ duyệt B — không sửa.
+Chọn T-041: dựng xong full "Xong khi" (gồm cả bộ lọc Thời gian) rồi đo mới phát
+hiện ~1136 dòng/15 file, vượt ngưỡng — chẻ ngay: gỡ bộ lọc "Thời gian" (Tháng
+này/Tùy chỉnh) sang T-041b (TODO mới), giữ lại bộ lọc Trạng thái + ô tìm + chi
+tiết chỉ đọc trong PR này (~947 dòng/15 file). Nav "Nhập hàng" nay vào DANH SÁCH
+trước, "+ Nhập hàng" mới mở luồng tạo tay cũ (T-040c1/c2) — cập nhật e2e theo.
+PR: (xem mô tả PR) · Tầng A: chỉ đọc dữ liệu phiếu nhập đã có.
+Kế tiếp: T-041b, T-042, T-052b, hoặc T-053a.

@@ -1,4 +1,4 @@
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, inArray, like, sql } from 'drizzle-orm';
 import type { drizzle } from 'drizzle-orm/better-sqlite3';
 import { giaiNghiaCaiDatQuanLyLo, type GhiDeQuanLyLo } from '../../shared/cai-dat/giai-nghia';
 import { quyDoiSangCoSo } from '../../shared/don-vi/quy-doi';
@@ -103,6 +103,9 @@ export interface PhieuNhapDaTao {
 export interface PhieuNhapDongChiTiet {
   id: string;
   sanPhamId: string;
+  /** Mã/tên sản phẩm HIỆN TẠI, tra qua JOIN lúc đọc — không snapshot (cùng tiền lệ `hoa_don_dong`, chỉ giá/đơn vị mới sao chép). */
+  maHang: string;
+  ten: string;
   donViTen: string;
   heSo: number;
   donGia: number;
@@ -117,6 +120,14 @@ export interface PhieuNhapDanhSachItem {
   chiNhanhId: string;
   trangThai: TrangThaiPhieuNhap;
   thoiGian: string;
+  /** Tổng tiền hàng = Σ (đơn giá × số lượng) các dòng (T-041, không phải "Cần trả NCC" — chưa có công nợ NCC). */
+  tongTien: number;
+}
+
+export interface LocPhieuNhap {
+  /** Theo mã phiếu, khớp một phần (ô tìm "Theo mã phiếu nhập" — T-041). */
+  tim?: string;
+  trangThai?: readonly TrangThaiPhieuNhap[];
 }
 
 export interface PhieuNhapChiTiet extends PhieuNhapDanhSachItem {
@@ -329,9 +340,18 @@ export function suaPhieuNhap(db: Db, phieuId: string, dong: readonly DongPhieuNh
   });
 }
 
-/** Danh sách phiếu nhập, mới nhất trước (T-040b). Không có bộ lọc — T-041 sẽ mở rộng khi dựng UI. */
-export function layDanhSachPhieuNhap(db: Db): PhieuNhapDanhSachItem[] {
-  return db
+/**
+ * Danh sách phiếu nhập, mới nhất trước (T-040b/T-041). Lọc theo mã (một phần)
+ * và/hoặc trạng thái — khớp phần bộ lọc màn "Danh sách nhập hàng" đã dựng ở
+ * slice này (lọc theo khoảng thời gian chẻ sang T-041b, xem BACKLOG.md).
+ * `tongTien` tính bằng một truy vấn gộp riêng (không N+1 theo từng phiếu).
+ */
+export function layDanhSachPhieuNhap(db: Db, loc: LocPhieuNhap = {}): PhieuNhapDanhSachItem[] {
+  const dieuKien = [];
+  if (loc.tim) dieuKien.push(like(phieuNhap.ma, `%${loc.tim}%`));
+  if (loc.trangThai && loc.trangThai.length > 0) dieuKien.push(inArray(phieuNhap.trangThai, loc.trangThai));
+
+  const hang = db
     .select({
       id: phieuNhap.id,
       ma: phieuNhap.ma,
@@ -340,8 +360,23 @@ export function layDanhSachPhieuNhap(db: Db): PhieuNhapDanhSachItem[] {
       thoiGian: phieuNhap.thoiGian,
     })
     .from(phieuNhap)
+    .where(dieuKien.length > 0 ? and(...dieuKien) : undefined)
     .orderBy(desc(phieuNhap.thoiGianMayChu))
     .all();
+
+  const tongTheoPhieu = new Map(
+    db
+      .select({
+        phieuId: phieuNhapDong.phieuId,
+        tongTien: sql<number>`SUM(${phieuNhapDong.donGia} * ${phieuNhapDong.soLuong})`,
+      })
+      .from(phieuNhapDong)
+      .groupBy(phieuNhapDong.phieuId)
+      .all()
+      .map((r) => [r.phieuId, Number(r.tongTien)]),
+  );
+
+  return hang.map((p) => ({ ...p, tongTien: tongTheoPhieu.get(p.id) ?? 0 }));
 }
 
 /** Chi tiết một phiếu nhập kèm toàn bộ dòng (T-040b). */
@@ -349,7 +384,23 @@ export function layChiTietPhieuNhap(db: Db, id: string): PhieuNhapChiTiet | unde
   const [phieu] = db.select().from(phieuNhap).where(eq(phieuNhap.id, id)).all();
   if (!phieu) return undefined;
 
-  const dong = db.select().from(phieuNhapDong).where(eq(phieuNhapDong.phieuId, id)).all();
+  const dong = db
+    .select({
+      id: phieuNhapDong.id,
+      sanPhamId: phieuNhapDong.sanPhamId,
+      maHang: sanPham.maHang,
+      ten: sanPham.ten,
+      donViTen: phieuNhapDong.donViTen,
+      heSo: phieuNhapDong.heSo,
+      donGia: phieuNhapDong.donGia,
+      soLuong: phieuNhapDong.soLuong,
+      soLo: phieuNhapDong.soLo,
+      hsd: phieuNhapDong.hsd,
+    })
+    .from(phieuNhapDong)
+    .innerJoin(sanPham, eq(sanPham.id, phieuNhapDong.sanPhamId))
+    .where(eq(phieuNhapDong.phieuId, id))
+    .all();
 
   return {
     id: phieu.id,
@@ -357,15 +408,7 @@ export function layChiTietPhieuNhap(db: Db, id: string): PhieuNhapChiTiet | unde
     chiNhanhId: phieu.chiNhanhId,
     trangThai: phieu.trangThai,
     thoiGian: phieu.thoiGian,
-    dong: dong.map((d) => ({
-      id: d.id,
-      sanPhamId: d.sanPhamId,
-      donViTen: d.donViTen,
-      heSo: d.heSo,
-      donGia: d.donGia,
-      soLuong: d.soLuong,
-      soLo: d.soLo,
-      hsd: d.hsd,
-    })),
+    tongTien: dong.reduce((tong, d) => tong + d.donGia * d.soLuong, 0),
+    dong,
   };
 }

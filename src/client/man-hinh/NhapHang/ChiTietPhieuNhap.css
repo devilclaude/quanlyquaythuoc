@@ -1,0 +1,37 @@
+.thong-tin-phieu-nhap__dau {
+  display: flex;
+  align-items: center;
+  gap: var(--kc-3);
+  margin-bottom: var(--kc-3);
+}
+
+.thong-tin-phieu-nhap__ma {
+  font-size: var(--chu-lg);
+  margin: 0;
+}
+
+.thong-tin-phieu-nhap__tong {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kc-1);
+  margin-top: var(--kc-3);
+  align-items: flex-end;
+}
+
+.thong-tin-phieu-nhap__tong div {
+  display: flex;
+  gap: var(--kc-3);
+}
+
+.thong-tin-phieu-nhap__tong dt {
+  color: var(--mau-chu-phu);
+}
+
+.thong-tin-phieu-nhap__tong dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.thong-tin-phieu-nhap__loi {
+  color: var(--mau-nguy);
+}
