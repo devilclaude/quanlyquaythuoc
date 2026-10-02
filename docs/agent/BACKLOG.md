@@ -384,7 +384,7 @@ nối API đã duyệt B — ở đây UI còn tự quyết thời điểm gọi
 validate lô/HSD bắt buộc ngay tại form, không chỉ dựa 409 từ server).
 
 ### T-040c2 [B] prio:40.32 — Phiếu nhập: tạo hàng mới ngay trong màn
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-040c1, T-009b
+Trạng thái: DONE · Phụ thuộc: T-040c1, T-009b
 Xong khi: nút "+" cạnh ô tìm (khớp vị trí ảnh "Giao diện tìm kiếm hàng đã có để
 nhập") mở form tạo hàng hoá NGAY TRONG màn nhập, không rời màn (nhúng lại
 `FormTaoHangHoa`/`TaoMoiHangHoa` của T-009b); tạo xong thì hàng mới được thêm
@@ -403,7 +403,7 @@ vượt ngưỡng — chẻ ngay, gỡ bộ lọc Thời gian sang T-041b (còn 
 lọc "Đã hủy" hay bộ lọc "Người tạo"/"Người nhập" (quầy một người dùng — v1.1).
 
 ### T-041b [A] prio:41.5 — Danh sách phiếu nhập: bộ lọc Thời gian
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-041
+Trạng thái: DONE · Phụ thuộc: T-041
 Xong khi: bộ lọc "Thời gian" (radio "Tháng này" mặc định / "Tùy chỉnh" hai ô
 ngày) trong ảnh "Danh sách nhập hàng" hoạt động, gửi khoảng ngày (quy đổi đúng
 giờ Việt Nam UTC+7) vào `GET /api/phieu-nhap`.
