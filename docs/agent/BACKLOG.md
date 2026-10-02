@@ -411,7 +411,7 @@ Ghi chú: rã khỏi T-041 lúc build (xem ghi chú T-041) — không còn code 
 tham khảo (đã gỡ khỏi PR đó), viết lại từ đầu theo TDD.
 
 ### T-042 [A] prio:42 — In tem mã
-Trạng thái: TODO · Phụ thuộc: T-040c1
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-040c1
 Xong khi: chọn khổ giấy, sửa số lượng tem từng dòng, preview, in — đối chiếu
 screenshots và file PDF mẫu trong `docs/reference/kiotviet/`; **bỏ dấu tiếng Việt
 trên tem** vì máy in tem không in được chữ có dấu (ghi chú này lấy nguyên văn từ
@@ -420,6 +420,11 @@ Ghi chú: phụ thuộc T-040c1 (không chỉ T-040b) vì điểm gọi in tem l
 thành" ngay trong màn nhập hàng thật (SPEC.md §6.2 bước 4), không phải một màn
 độc lập. Chỉ cần T-040c1 (luồng hàng đã có) — nút Hoàn thành không phụ thuộc
 T-040c2 (tạo hàng mới ngay trong màn).
+Ghi chú (sửa lúc làm): chỉ 2 khổ giấy (không phải 8 như ảnh "Chọn loại giấy in
+tem mã") và gộp bước "Chọn loại giấy"+"Xem bản in" của KiotViet thành một màn
+preview sống — xem lý do trong `InTemMa.tsx`. Bỏ dấu tiếng Việt chỉ áp dụng cho
+NỘI DUNG IN THẬT (bước xem trước) — bước hỏi danh sách trước đó vẫn hiện đầy đủ
+dấu để dược sĩ nhận ra đúng hàng.
 
 ### T-043 [B] prio:43 — Nhập hàng từ file Excel
 Trạng thái: DONE · Phụ thuộc: T-040a

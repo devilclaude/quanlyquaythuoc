@@ -1042,3 +1042,13 @@ PR: (xem mô tả PR)
 Tầng: A — chỉ sửa bug chỉ số UI trong luồng đã duyệt, không đổi hợp đồng API,
 không thêm quyết định kiến trúc (tiền lệ T-021/T-024).
 Kế tiếp: T-042, T-052b, hoặc T-053a.
+
+## 2026-10-02 (run kế 3) — T-042 (In tem mã)
+Làm: không còn PR agent nào mở. Chọn T-042: modal "In tem mã" (sửa số lượng
+tem/dòng) mở ngay sau Hoàn thành, rồi "Xem trước tem mã" (mã vạch qua
+`jsbarcode`) — gộp hai bước "Chọn loại giấy"+"Xem bản in" của KiotViet thành
+một màn, tiền lệ InHoaDon K57/K80. Chỉ 2 khổ giấy (không phải 8) — chưa biết
+máy in tem thật của quầy. Bỏ dấu tiếng Việt CHỈ ở nội dung in thật, bước hỏi
+danh sách vẫn giữ dấu. Giá trên tem là giá BÁN, không phải đơn giá nhập.
+PR: (xem mô tả PR) · Tầng: A — chỉ trình bày lại dữ liệu đã có.
+Kế tiếp: T-052b hoặc T-053a.
