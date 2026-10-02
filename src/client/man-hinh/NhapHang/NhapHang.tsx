@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { giaiNghiaCaiDatQuanLyLo, type GhiDeQuanLyLo } from '../../../shared/cai-dat/giai-nghia';
 import { CaiDatToanCucResSchema } from '../../../shared/hop-dong/cai-dat';
-import { DanhSachHangHoaResSchema, HangHoaChiTietResSchema } from '../../../shared/hop-dong/hang-hoa';
+import {
+  DanhSachHangHoaResSchema,
+  HangHoaChiTietResSchema,
+  type HangHoaChiTietRes,
+} from '../../../shared/hop-dong/hang-hoa';
 import { PhieuNhapResSchema, type TaoPhieuNhapReq } from '../../../shared/hop-dong/phieu-nhap';
 import { dong } from '../../../shared/kieu/dong';
 import { dinhDangTien } from '../../../shared/tien/dinh-dang';
 import { Bang, Nut, OSo, TruongNhap } from '../../thanh-phan';
+import { TaoMoiHangHoa } from '../HangHoa/TaoMoiHangHoa';
 import {
   DanhSachGoiY,
   capNhatEsc,
@@ -18,7 +23,9 @@ import './NhapHang.css';
 
 // T-040c1 — Phiếu nhập: giao diện (tìm hàng đã có). Tái dùng NGUYÊN khối tìm +
 // gợi ý của T-020. Chọn một gợi ý LUÔN thêm MỘT DÒNG MỚI (không gộp trùng sản
-// phẩm+đơn vị). Không dựng panel NCC/"Tạo hàng mới ngay trong màn" (T-040c2).
+// phẩm+đơn vị). T-040c2 — nút "+" cạnh ô tìm mở `TaoMoiHangHoa` (T-009b) NGAY
+// TRONG màn, không rời màn; tạo xong thêm thẳng vào phiếu qua cùng đường
+// `chon()` đã có (đơn vị cơ sở của hàng vừa tạo).
 
 export interface DongPhieuNhapUI {
   id: string;
@@ -66,6 +73,26 @@ export function themDongPhieuNhap(
 
 export function xoaDongPhieuNhap(dsDong: DongPhieuNhapUI[], chiSo: number): DongPhieuNhapUI[] {
   return dsDong.filter((_, i) => i !== chiSo);
+}
+
+/** Gợi ý MỘT đơn vị (cơ sở) từ hàng hoá vừa tạo ngay trong màn (T-040c2) —
+ * khác gợi ý tìm-đã-có vì chỉ có một hàng vừa tạo, không cần chọn giữa nhiều
+ * đơn vị. `undefined` khi hàng hoá không có đơn vị cơ sở nào (không xảy ra
+ * trong luồng bình thường — `POST /api/hang-hoa` luôn tạo đúng một). */
+export function xayDungGoiYTuHangMoiTao(chiTiet: HangHoaChiTietRes): GoiYBanHang | undefined {
+  const donViCoSo = chiTiet.donViTinh.find((d) => d.laCoSo);
+  if (!donViCoSo) return undefined;
+  return {
+    sanPhamId: chiTiet.id,
+    maHang: chiTiet.maHang,
+    ten: chiTiet.ten,
+    donViTinhId: donViCoSo.id,
+    donViTen: donViCoSo.ten,
+    heSo: donViCoSo.heSo,
+    giaBan: donViCoSo.giaBan,
+    tonKhoCoSo: chiTiet.tonKho,
+    dsDonVi: chiTiet.donViTinh,
+  };
 }
 
 /** Chỉ nhận số nguyên >= 1 — số lượng 0 hay âm không hợp lệ cho một dòng nhập. */
@@ -328,6 +355,7 @@ export function NhapHang() {
   const [dangGui, setDangGui] = useState(false);
   const [loi, setLoi] = useState<string | undefined>(undefined);
   const [thongBao, setThongBao] = useState<string | undefined>(undefined);
+  const [dangTaoHangMoi, setDangTaoHangMoi] = useState(false);
   const oTimRef = useRef<HTMLInputElement>(null);
   const truyVanHienTaiRef = useRef('');
   const goiY = tim.trim() ? goiYThoBanDau : [];
@@ -394,6 +422,20 @@ export function NhapHang() {
         setChiSoDongChon(chiSoMoi);
       })
       .catch(() => setLoi('Không thêm được hàng vào phiếu — thử lại'));
+  }
+
+  /** T-040c2: hàng vừa tạo (`TaoMoiHangHoa`) thêm thẳng vào phiếu qua ĐÚNG
+   * đường `chon()` đã có (đơn vị cơ sở) — không viết lại logic thêm dòng. */
+  function themHangMoiVaoPhieu(id: string) {
+    setDangTaoHangMoi(false);
+    fetch(`/api/hang-hoa/${id}`)
+      .then((res) => res.json())
+      .then((json) => {
+        const g = xayDungGoiYTuHangMoiTao(HangHoaChiTietResSchema.parse(json));
+        if (!g) throw new Error();
+        chon(g);
+      })
+      .catch(() => setLoi('Đã tạo hàng hoá nhưng không thêm được vào phiếu — tìm lại bằng ô tìm'));
   }
 
   function xoaDong(chiSo: number) {
@@ -518,7 +560,19 @@ export function NhapHang() {
           />
           <DanhSachGoiY tuKhoa={tim} goiY={goiY} dangTai={dangTai} loi={loiTim} chiSoChon={chiSoChon} onChon={chon} />
         </div>
+        <Nut
+          bienThe="phu"
+          className="nhap-hang__nut-tao-moi"
+          aria-label="Tạo hàng mới"
+          onClick={() => setDangTaoHangMoi(true)}
+        >
+          +
+        </Nut>
       </div>
+
+      {dangTaoHangMoi ? (
+        <TaoMoiHangHoa onHuy={() => setDangTaoHangMoi(false)} onTaoXong={themHangMoiVaoPhieu} />
+      ) : null}
 
       <div className="nhap-hang__than">
         <div className="ban-hang__gio">

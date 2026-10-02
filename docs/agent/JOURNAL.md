@@ -980,6 +980,17 @@ ghi trước: gộp khối Excel xuống dưới bảng dòng tạo tay, bỏ `<
 đề. `npm run ci` xanh lại, push.
 PR: #71 · Kế tiếp: chờ CI + người duyệt B.
 
+## 2026-10-01 (run kế) — dọn PR + T-040c2
+Làm: #71 (T-040c1) đã merge → DONE (sửa BACKLOG, PR#69/T-034 cũng đã merge từ
+trước nhưng chưa được chuyển DONE — sửa luôn). Không còn PR agent nào mở.
+Chọn T-040c2: nút "+" cạnh ô tìm (khớp ảnh "Giao diện tìm kiếm... có nút tạo
+hàng mới") mở `TaoMoiHangHoa` (T-009b) làm overlay ngay trong màn, không rời
+màn; tạo xong gọi lại đúng `chon()` đã có (đơn vị cơ sở) để thêm thẳng vào
+phiếu — không viết lại logic thêm dòng. doi-chieu-ui xác nhận không vi phạm.
+PR: (xem mô tả PR)
+Tầng: B
+Kế tiếp: T-041, T-042, T-052b, hoặc T-053a — đều đủ điều kiện sau khi PR này merge.
+
 ## 2026-10-01 (run kế) — T-041 (Danh sách và chi tiết phiếu nhập)
 Làm: #72 (T-040c2) xanh, không comment, không conflict, chờ duyệt B — không sửa.
 Chọn T-041: dựng xong full "Xong khi" (gồm cả bộ lọc Thời gian) rồi đo mới phát
@@ -990,6 +1001,20 @@ trước, "+ Nhập hàng" mới mở luồng tạo tay cũ (T-040c1/c2) — c�
 PR: (xem mô tả PR) · Tầng A: chỉ đọc dữ liệu phiếu nhập đã có.
 Kế tiếp: T-041b, T-042, T-052b, hoặc T-053a.
 
+## 2026-10-02 — dọn PR: sửa conflict #72 (main vượt qua do #73/T-041 merge), dừng run
+Làm: #72 (T-040c2) CI xanh, không comment, nhưng `mergeable_state: dirty` —
+conflict thật với `main` sau khi #73 (T-041) merge: `docs/agent/JOURNAL.md`
+(append cuối file) và `tests/e2e/nhap-hang.spec.ts` (hai test mới của #72/#73
+cùng chèn sau test T-040c1). Merge `main` vào nhánh, giữ cả hai entry JOURNAL
+theo thứ tự thời gian; test e2e T-040c2 cập nhật theo nav mới của T-041 (phải
+bấm "+ Nhập hàng" sau "Nhập hàng" mới vào màn tạo tay) và thêm route GET
+`/api/phieu-nhap` (danh sách rỗng) vì màn danh sách giờ fetch ngay khi vào.
+`npm run ci` xanh (681 test, build, 16 e2e). Push lên nhánh #72. Theo luật
+"sửa PR cũ rồi dừng" — không chọn task mới.
+PR: #72 (cập nhật, không mở PR mới)
+Tầng: B (không đổi, lý do gốc giữ nguyên)
+Kế tiếp: chờ CI GitHub xanh + người duyệt B cho #72; sau đó T-041b, T-042,
+T-052b, hoặc T-053a.
 ## 2026-10-02 (run kế) — T-041b (bộ lọc Thời gian)
 Làm: #72 (T-040c2) vẫn xanh, không comment/conflict, chờ duyệt B — không sửa.
 #73 (T-041) đã merge → BACKLOG chuyển DONE. Chọn T-041b: hàm thuần quy đổi

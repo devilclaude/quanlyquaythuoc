@@ -309,7 +309,7 @@ Xong khi: máy chủ nhận hàng đợi, áp dụng theo thứ tự đến, ide
 không hồi tố; test đơn offline về muộn không làm đổi số đã hiển thị.
 
 ### T-034 [A] prio:34 — Cảnh báo lệch kho
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-033
+Trạng thái: DONE · Phụ thuộc: T-033
 Xong khi: hợp nhất ra tồn âm thì sinh cảnh báo yêu cầu kiểm kê, không tự sửa và
 không im lặng; cảnh báo hiện ở màn tổng quan; test hai thiết bị cùng bán hộp cuối
 khi offline.
@@ -368,7 +368,7 @@ ULID mới cho từng dòng. Không kiểm tra bắt buộc lô/HSD lúc sửa (
 Hoàn thành, giống lúc tạo phiếu tạm).
 
 ### T-040c1 [B] prio:40.31 — Phiếu nhập: giao diện (hàng đã có)
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-040b
+Trạng thái: DONE · Phụ thuộc: T-040b
 Xong khi: khớp luồng trong screenshots "Giao diện tìm kiếm hàng đã có để nhập" và
 "Đã nhập 2 hàng" (`docs/reference/kiotviet/Quản trị/Nhập hàng/`) cho phần TÌM HÀNG
 ĐÃ CÓ; tìm hàng qua ô tìm (giống màn bán hàng); nhập số lượng/đơn giá; ô lô + HSD
@@ -384,7 +384,7 @@ nối API đã duyệt B — ở đây UI còn tự quyết thời điểm gọi
 validate lô/HSD bắt buộc ngay tại form, không chỉ dựa 409 từ server).
 
 ### T-040c2 [B] prio:40.32 — Phiếu nhập: tạo hàng mới ngay trong màn
-Trạng thái: TODO · Phụ thuộc: T-040c1, T-009b
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-040c1, T-009b
 Xong khi: nút "+" cạnh ô tìm (khớp vị trí ảnh "Giao diện tìm kiếm hàng đã có để
 nhập") mở form tạo hàng hoá NGAY TRONG màn nhập, không rời màn (nhúng lại
 `FormTaoHangHoa`/`TaoMoiHangHoa` của T-009b); tạo xong thì hàng mới được thêm

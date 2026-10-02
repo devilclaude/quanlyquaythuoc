@@ -105,6 +105,61 @@ test('nhập hàng: tìm/thêm hàng bằng bàn phím, Lưu tạm ở chế đ�
   ]);
 });
 
+test('nhập hàng: nút "+" tạo hàng mới ngay trong màn, thêm thẳng vào phiếu đang soạn (T-040c2)', async ({
+  page,
+  context,
+}) => {
+  const HANG_MOI = {
+    id: 'sp-moi',
+    maHang: 'SP000999',
+    ten: 'Vitamin C 500mg',
+    giaBan: 2000,
+    giaVon: 0,
+    tonKho: 0,
+    ngayTao: '2026-10-01T00:00:00.000Z',
+    donViTinh: [{ id: 'dvt-vien', ten: 'viên', heSo: 1, laCoSo: true, giaBan: 2000 }],
+    trangThai: 'HOAT_DONG' as const,
+    coTheXoaCung: true,
+    quanLyLoGhiDe: 'KE_THUA' as const,
+  };
+  let thanGuiTaoHangHoa: unknown;
+  await context.route('**/api/hang-hoa**', (route) => {
+    const url = route.request().url();
+    if (route.request().method() === 'POST') {
+      thanGuiTaoHangHoa = route.request().postDataJSON();
+      return route.fulfill({ status: 201, json: HANG_MOI });
+    }
+    return route.fulfill({
+      json: url.includes('/api/hang-hoa/') ? HANG_MOI : { duLieu: [] },
+    });
+  });
+  await context.route('**/api/cai-dat/quan-ly-lo', (route) => route.fulfill({ json: { bat: false } }));
+  await context.route('**/api/phieu-nhap**', (route) =>
+    route.fulfill({ json: route.request().method() === 'GET' ? { duLieu: [] } : {} }),
+  );
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Nhập hàng' }).click();
+  // T-041: nav "Nhập hàng" vào DANH SÁCH trước — "+ Nhập hàng" mới mở luồng tạo tay.
+  await page.getByRole('button', { name: '+ Nhập hàng' }).click();
+
+  const dongPhieu = page.locator('tbody tr');
+  await page.getByRole('button', { name: 'Tạo hàng mới' }).click();
+  await expect(page.getByRole('dialog', { name: 'Tạo hàng hóa' })).toBeVisible();
+
+  await page.getByLabel('Tên hàng').fill(HANG_MOI.ten);
+  await page.getByLabel('Tên đơn vị cơ sở').fill('viên');
+  await page.getByLabel('Giá bán', { exact: true }).fill('2000');
+  await page.getByRole('button', { name: 'Lưu', exact: true }).click();
+
+  expect(thanGuiTaoHangHoa).toMatchObject({ ten: HANG_MOI.ten, donViCoSoTen: 'viên', giaBan: 2000 });
+  await expect(page.getByRole('dialog', { name: 'Tạo hàng hóa' })).toHaveCount(0);
+  await expect(dongPhieu).toHaveCount(1);
+  await expect(dongPhieu).toContainText('SP000999');
+  await expect(dongPhieu).toContainText('viên');
+  const oTim = page.getByPlaceholder('Tìm hàng hóa');
+  await expect(oTim).toBeFocused();
+});
+
 test('danh sách nhập hàng: xem danh sách, mở chi tiết ngay dưới dòng, quay lại sau khi vào "+ Nhập hàng" (T-041)', async ({
   page,
   context,
