@@ -1024,3 +1024,21 @@ chỉnh" (hai ô ngày) trong cột lọc. TDD cho cả 3 tầng (hàm thuần, 
 vụ, route) + 1 e2e. doi-chieu-ui xác nhận không vi phạm.
 PR: (xem mô tả PR) · Tầng A: chỉ đọc, không ghi kho/tiền.
 Kế tiếp: T-042, T-052b, hoặc T-053a.
+
+## 2026-10-02 (run kế 2) — chỉ đạo #quaythuoc-admin: sửa bug PR #71, không chọn task mới
+Làm: #72 (T-040c2)/#74 (T-041b) đã merge → chuyển DONE. Không còn PR agent mở.
+Chỉ đạo Dương (#quaythuoc-admin, 2026-10-01 20:54) "Sửa lỗi ở PR #71" không kèm
+chi tiết và không có comment nào trên PR #71 (đã merge, không sửa lại được) —
+đọc lại code T-040c1 tìm bug thật: `chon()` trong `NhapHang.tsx` tính
+`chiSoDongChon` = `dsDong.length` TRƯỚC khi `await` tra cứu ghi đè quản lý lô
+(`layGhiDeQuanLyLo`) — chọn liên tiếp hai gợi ý mà lượt tra cứu của dòng ĐẦU về
+SAU lượt hai thì dòng đang chọn kẹt ở dòng đầu, không nhảy sang dòng vừa thêm
+sau cùng (ảnh hưởng bàn phím +/-/F2/Delete tác động nhầm dòng). Khác BanHang
+(T-021, không có tra cứu bất đồng bộ nên không có race). Viết e2e tái hiện
+TRƯỚC (đỏ), sửa: sinh `idMoi` trước khi gọi API, chọn dòng bằng `findIndex`
+theo id sau khi `dsDong` đã chứa nó (qua `useEffect`), không suy từ độ dài mảng
+lúc gọi.
+PR: (xem mô tả PR)
+Tầng: A — chỉ sửa bug chỉ số UI trong luồng đã duyệt, không đổi hợp đồng API,
+không thêm quyết định kiến trúc (tiền lệ T-021/T-024).
+Kế tiếp: T-042, T-052b, hoặc T-053a.

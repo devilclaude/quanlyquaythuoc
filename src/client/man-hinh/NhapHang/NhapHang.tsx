@@ -356,6 +356,7 @@ export function NhapHang() {
   const [loi, setLoi] = useState<string | undefined>(undefined);
   const [thongBao, setThongBao] = useState<string | undefined>(undefined);
   const [dangTaoHangMoi, setDangTaoHangMoi] = useState(false);
+  const [idDongVuaThem, setIdDongVuaThem] = useState<string | undefined>(undefined);
   const oTimRef = useRef<HTMLInputElement>(null);
   const truyVanHienTaiRef = useRef('');
   const goiY = tim.trim() ? goiYThoBanDau : [];
@@ -410,7 +411,7 @@ export function NhapHang() {
   }
 
   function chon(g: GoiYBanHang) {
-    const chiSoMoi = dsDong.length;
+    const idMoi = crypto.randomUUID();
     setTim('');
     setGoiYThoBanDau([]);
     setChiSoChon(0);
@@ -418,11 +419,22 @@ export function NhapHang() {
     layGhiDeQuanLyLo(g.sanPhamId)
       .then((ghiDe) => {
         const quanLyLoBat = giaiNghiaCaiDatQuanLyLo(caiDatToanCuc ?? false, ghiDe);
-        setDsDong((ds) => themDongPhieuNhap(ds, g, quanLyLoBat, crypto.randomUUID()));
-        setChiSoDongChon(chiSoMoi);
+        setDsDong((ds) => themDongPhieuNhap(ds, g, quanLyLoBat, idMoi));
+        setIdDongVuaThem(idMoi);
       })
       .catch(() => setLoi('Không thêm được hàng vào phiếu — thử lại'));
   }
+
+  /** Chọn đúng dòng VỪA THÊM theo id, sau khi `dsDong` đã thực sự chứa nó — không
+   * suy chỉ số từ độ dài mảng lúc GỌI `chon()` (sai khi hai lượt chọn tra cứu
+   * quản lý lô bất đồng bộ xong KHÔNG theo đúng thứ tự gọi, PR #71). */
+  useEffect(() => {
+    if (idDongVuaThem === undefined) return;
+    const chiSo = dsDong.findIndex((d) => d.id === idDongVuaThem);
+    if (chiSo === -1) return;
+    setChiSoDongChon(chiSo);
+    setIdDongVuaThem(undefined);
+  }, [dsDong, idDongVuaThem]);
 
   /** T-040c2: hàng vừa tạo (`TaoMoiHangHoa`) thêm thẳng vào phiếu qua ĐÚNG
    * đường `chon()` đã có (đơn vị cơ sở) — không viết lại logic thêm dòng. */

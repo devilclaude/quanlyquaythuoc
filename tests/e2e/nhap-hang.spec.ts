@@ -105,6 +105,68 @@ test('nhập hàng: tìm/thêm hàng bằng bàn phím, Lưu tạm ở chế đ�
   ]);
 });
 
+test('nhập hàng: chọn liên tiếp hai gợi ý trước khi tra cứu quản lý lô của dòng ĐẦU trả về — dòng đang chọn phải là dòng thêm SAU CÙNG, không kẹt ở dòng đầu (sửa lỗi PR #71)', async ({
+  page,
+  context,
+}) => {
+  const HANG_HOA_2 = {
+    id: 'sp-2',
+    maHang: 'SP000333',
+    ten: 'Vitamin C 500mg',
+    giaBan: 2000,
+    giaVon: 0,
+    tonKho: 10,
+    ngayTao: '2026-09-01T00:00:00.000Z',
+    donViTinh: [{ id: 'dvt-vien', ten: 'viên', heSo: 1, laCoSo: true, giaBan: 2000 }],
+  };
+  await context.route('**/api/hang-hoa**', async (route) => {
+    const url = route.request().url();
+    // Dòng ĐẦU chọn (Panadol) có tra cứu ghi đè quản lý lô CHẬM (400ms) — mô
+    // phỏng việc chọn dòng THỨ HAI (Vitamin, tra cứu nhanh) trước khi dòng đầu
+    // kịp vào phiếu.
+    if (url.includes('/api/hang-hoa/sp-1')) {
+      await new Promise((r) => setTimeout(r, 400));
+      return route.fulfill({
+        json: { ...HANG_HOA_CHUNG, trangThai: 'HOAT_DONG', coTheXoaCung: true, quanLyLoGhiDe: 'KE_THUA' },
+      });
+    }
+    if (url.includes('/api/hang-hoa/sp-2')) {
+      return route.fulfill({
+        json: { ...HANG_HOA_2, trangThai: 'HOAT_DONG', coTheXoaCung: true, quanLyLoGhiDe: 'KE_THUA' },
+      });
+    }
+    const tim = new URL(url).searchParams.get('tim') ?? '';
+    const duLieu = tim.toLowerCase().includes('vita') ? [HANG_HOA_2] : [HANG_HOA_CHUNG];
+    return route.fulfill({ json: { duLieu } });
+  });
+  await context.route('**/api/cai-dat/quan-ly-lo', (route) => route.fulfill({ json: { bat: false } }));
+  await context.route('**/api/phieu-nhap**', (route) =>
+    route.fulfill({ json: route.request().method() === 'GET' ? { duLieu: [] } : {} }),
+  );
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Nhập hàng' }).click();
+  await page.getByRole('button', { name: '+ Nhập hàng' }).click();
+
+  const oTim = page.getByPlaceholder('Tìm hàng hóa');
+  const dongPhieu = page.locator('tbody tr');
+  const goiYOption = page.getByRole('listbox', { name: 'Gợi ý hàng hoá' }).getByRole('option');
+
+  await oTim.pressSequentially('pana');
+  await expect(goiYOption).toHaveCount(2);
+  await page.keyboard.press('Enter'); // chọn Panadol (dòng "vỉ") — tra cứu lô CHẬM, chưa vào phiếu
+
+  await oTim.pressSequentially('vita');
+  await expect(goiYOption).toHaveCount(1);
+  await page.keyboard.press('Enter'); // chọn Vitamin — tra cứu lô NHANH, vào phiếu trước Panadol
+
+  await expect(dongPhieu).toHaveCount(2); // đợi Panadol vào phiếu sau cùng
+
+  // Dòng đang chọn (nơi phím +/-/F2/Delete tác động) phải là dòng VỪA THÊM SAU
+  // CÙNG (Panadol) — không phải kẹt ở dòng đầu (Vitamin) do chỉ số chọn được
+  // tính trước khi tra cứu lô bất đồng bộ của dòng đầu hoàn tất.
+  await expect(page.locator('tr.gio-hang__dong--chon')).toContainText('SP000240');
+});
+
 test('nhập hàng: nút "+" tạo hàng mới ngay trong màn, thêm thẳng vào phiếu đang soạn (T-040c2)', async ({
   page,
   context,
