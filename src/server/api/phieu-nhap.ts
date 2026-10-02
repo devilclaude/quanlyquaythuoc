@@ -51,11 +51,13 @@ function chuanHoaDong(d: PhieuNhapDongReq): DongPhieuNhapInput {
 /** Nối màn nhập hàng (T-040c) gọi các route dưới đây. */
 export function dangKyPhieuNhapRoutes(app: Hono, db: Db): void {
   // Bộ lọc màn "Danh sách nhập hàng" (T-041): theo mã (một phần), trạng thái
-  // (nhiều giá trị lặp lại `?trangThai=A&trangThai=B`). Lọc theo khoảng thời
-  // gian chẻ sang T-041b (xem BACKLOG.md). Giá trị `trangThai` không hợp lệ bị
-  // bỏ qua thay vì làm lỗi truy vấn.
+  // (nhiều giá trị lặp lại `?trangThai=A&trangThai=B`), khoảng thời gian `tu`/
+  // `den` (ISO UTC, hai đầu bao gồm — client quy đổi từ giờ Việt Nam, T-041b).
+  // Giá trị `trangThai` không hợp lệ bị bỏ qua thay vì làm lỗi truy vấn.
   app.get('/', (c) => {
     const tim = c.req.query('tim');
+    const tu = c.req.query('tu');
+    const den = c.req.query('den');
     const trangThai = c.req
       .queries('trangThai')
       ?.filter((gt): gt is TrangThaiPhieuNhap => TrangThaiPhieuNhapSchema.safeParse(gt).success);
@@ -64,6 +66,8 @@ export function dangKyPhieuNhapRoutes(app: Hono, db: Db): void {
       duLieu: layDanhSachPhieuNhap(db, {
         ...(tim ? { tim } : {}),
         ...(trangThai && trangThai.length > 0 ? { trangThai } : {}),
+        ...(tu ? { tu } : {}),
+        ...(den ? { den } : {}),
       }),
     });
     return c.json(res);

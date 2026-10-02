@@ -21,6 +21,22 @@ describe('xayDungTruyVanDanhSachPhieuNhap', () => {
     const qs = xayDungTruyVanDanhSachPhieuNhap({ tim: 'PN0022', trangThaiDaChon: ['PHIEU_TAM', 'HOAN_THANH'] });
     expect(qs).toContain('tim=PN0022');
   });
+
+  it('không có khoảng thời gian (ví dụ "Tùy chỉnh" chưa chọn đủ hai ngày) — không gửi tu/den (T-041b)', () => {
+    const qs = xayDungTruyVanDanhSachPhieuNhap({ tim: '', trangThaiDaChon: ['PHIEU_TAM', 'HOAN_THANH'] });
+    expect(qs).not.toContain('tu=');
+    expect(qs).not.toContain('den=');
+  });
+
+  it('có khoảng thời gian — gửi đúng tu/den (T-041b)', () => {
+    const qs = xayDungTruyVanDanhSachPhieuNhap({
+      tim: '',
+      trangThaiDaChon: ['PHIEU_TAM', 'HOAN_THANH'],
+      khoangThoiGian: { tu: '2026-10-01T00:00:00.000Z', den: '2026-10-31T16:59:59.999Z' },
+    });
+    expect(qs).toContain('tu=2026-10-01T00%3A00%3A00.000Z');
+    expect(qs).toContain('den=2026-10-31T16%3A59%3A59.999Z');
+  });
 });
 
 const mucMau: PhieuNhapDanhSachItem = {

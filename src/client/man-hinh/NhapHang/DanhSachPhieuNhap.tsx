@@ -7,6 +7,7 @@ import {
 } from '../../../shared/hop-dong/phieu-nhap';
 import { dong } from '../../../shared/kieu/dong';
 import { dinhDangThoiGianVN } from '../../../shared/thoi-gian/dinh-dang';
+import { cuoiNgayVN, dauNgayVN, khoangThangNayVN } from '../../../shared/thoi-gian/khoang-ngay-vn';
 import { dinhDangTien } from '../../../shared/tien/dinh-dang';
 import { Bang, BadgeTrangThai, Nut, OSo, TruongNhap } from '../../thanh-phan';
 import { ChiTietPhieuNhap } from './ChiTietPhieuNhap';
@@ -28,14 +29,20 @@ const CAC_TRANG_THAI: readonly TrangThaiPhieuNhap[] = ['PHIEU_TAM', 'HOAN_THANH'
 interface XayDungTruyVanInput {
   tim: string;
   trangThaiDaChon: readonly TrangThaiPhieuNhap[];
+  /** Khoảng "Thời gian" (T-041b) đã quy đổi sang ISO UTC — `undefined` khi "Tùy chỉnh" chưa chọn đủ hai ngày. */
+  khoangThoiGian?: { tu: string; den: string };
 }
 
 /** Chỉ gửi `trangThai` khi đã LỌC BỚT (chọn ít hơn toàn bộ) — chọn đủ cả hai cũng như không lọc. */
-export function xayDungTruyVanDanhSachPhieuNhap({ tim, trangThaiDaChon }: XayDungTruyVanInput): string {
+export function xayDungTruyVanDanhSachPhieuNhap({ tim, trangThaiDaChon, khoangThoiGian }: XayDungTruyVanInput): string {
   const phan = new URLSearchParams();
   if (tim.trim()) phan.set('tim', tim.trim());
   if (trangThaiDaChon.length > 0 && trangThaiDaChon.length < CAC_TRANG_THAI.length) {
     for (const t of trangThaiDaChon) phan.append('trangThai', t);
+  }
+  if (khoangThoiGian) {
+    phan.set('tu', khoangThoiGian.tu);
+    phan.set('den', khoangThoiGian.den);
   }
   return phan.toString();
 }
@@ -133,13 +140,29 @@ export function BangDanhSachPhieuNhap({
   );
 }
 
-/** Container: bộ lọc trạng thái + ô tìm theo mã + "+ Nhập hàng". */
+type CheDoThoiGian = 'THANG_NAY' | 'TUY_CHINH';
+
+/** `undefined` khi "Tùy chỉnh" chưa chọn đủ hai ngày — khi đó không lọc theo thời gian (T-041b). */
+function tinhKhoangThoiGian(
+  che: CheDoThoiGian,
+  tuyChinhTu: string,
+  tuyChinhDen: string,
+): { tu: string; den: string } | undefined {
+  if (che === 'THANG_NAY') return khoangThangNayVN();
+  if (!tuyChinhTu || !tuyChinhDen) return undefined;
+  return { tu: dauNgayVN(tuyChinhTu), den: cuoiNgayVN(tuyChinhDen) };
+}
+
+/** Container: bộ lọc trạng thái + thời gian + ô tìm theo mã + "+ Nhập hàng". */
 export function DanhSachPhieuNhap() {
   const [tim, setTim] = useState('');
   const [trangThaiLoc, setTrangThaiLoc] = useState<Record<TrangThaiPhieuNhap, boolean>>({
     PHIEU_TAM: true,
     HOAN_THANH: true,
   });
+  const [cheDoThoiGian, setCheDoThoiGian] = useState<CheDoThoiGian>('THANG_NAY');
+  const [tuyChinhTu, setTuyChinhTu] = useState('');
+  const [tuyChinhDen, setTuyChinhDen] = useState('');
   const [duLieu, setDuLieu] = useState<PhieuNhapDanhSachItem[]>([]);
   const [dangTai, setDangTai] = useState(true);
   const [loi, setLoi] = useState<string | undefined>(undefined);
@@ -148,6 +171,7 @@ export function DanhSachPhieuNhap() {
   const [dangTaoMoi, setDangTaoMoi] = useState(false);
 
   const trangThaiDaChon = CAC_TRANG_THAI.filter((t) => trangThaiLoc[t]);
+  const khoangThoiGian = tinhKhoangThoiGian(cheDoThoiGian, tuyChinhTu, tuyChinhDen);
 
   useEffect(() => {
     if (trangThaiDaChon.length === 0) {
@@ -162,7 +186,11 @@ export function DanhSachPhieuNhap() {
       setDangTai(true);
       setLoi(undefined);
 
-      const qs = xayDungTruyVanDanhSachPhieuNhap({ tim, trangThaiDaChon });
+      const qs = xayDungTruyVanDanhSachPhieuNhap({
+        tim,
+        trangThaiDaChon,
+        ...(khoangThoiGian ? { khoangThoiGian } : {}),
+      });
       fetch(`/api/phieu-nhap?${qs}`, { signal: controller.signal })
         .then((res) => res.json())
         .then((json) => {
@@ -180,7 +208,7 @@ export function DanhSachPhieuNhap() {
 
     return () => clearTimeout(dinhThoiGian);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tim, trangThaiLoc, phienBanLamMoi]);
+  }, [tim, trangThaiLoc, cheDoThoiGian, tuyChinhTu, tuyChinhDen, phienBanLamMoi]);
 
   if (dangTaoMoi) {
     return (
@@ -216,6 +244,42 @@ export function DanhSachPhieuNhap() {
               {nhanTrangThaiPhieuNhap(t)}
             </label>
           ))}
+
+          <h2>Thời gian</h2>
+          <label className="danh-sach-phieu-nhap__nhan-radio">
+            <input
+              type="radio"
+              name="che-do-thoi-gian"
+              checked={cheDoThoiGian === 'THANG_NAY'}
+              onChange={() => setCheDoThoiGian('THANG_NAY')}
+            />
+            Tháng này
+          </label>
+          <label className="danh-sach-phieu-nhap__nhan-radio">
+            <input
+              type="radio"
+              name="che-do-thoi-gian"
+              checked={cheDoThoiGian === 'TUY_CHINH'}
+              onChange={() => setCheDoThoiGian('TUY_CHINH')}
+            />
+            Tùy chỉnh
+          </label>
+          {cheDoThoiGian === 'TUY_CHINH' ? (
+            <div className="danh-sach-phieu-nhap__tuy-chinh-ngay">
+              <input
+                type="date"
+                aria-label="Từ ngày"
+                value={tuyChinhTu}
+                onChange={(su) => setTuyChinhTu(su.target.value)}
+              />
+              <input
+                type="date"
+                aria-label="Đến ngày"
+                value={tuyChinhDen}
+                onChange={(su) => setTuyChinhDen(su.target.value)}
+              />
+            </div>
+          ) : null}
         </aside>
 
         <section className="danh-sach-phieu-nhap__noi-dung">

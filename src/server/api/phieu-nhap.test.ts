@@ -162,6 +162,20 @@ describe('dangKyPhieuNhapRoutes', () => {
     expect(jsonCaHai.duLieu).toHaveLength(2);
   });
 
+  it('GET /?tu=&den= lọc theo khoảng thời gian (T-041b), hai đầu bao gồm biên', async () => {
+    taoSanPham('sp-1', 'SP001');
+    await gui('/', 'POST', { dong: [dongMau] }); // thoiGian = lúc chạy test, nằm trong "hôm nay"
+
+    const homNay = new Date().toISOString().slice(0, 10);
+    const trongKhoang = await gui(`/?tu=${homNay}T00:00:00.000Z&den=${homNay}T23:59:59.999Z`, 'GET');
+    const jsonTrongKhoang = (await trongKhoang.json()) as { duLieu: unknown[] };
+    expect(jsonTrongKhoang.duLieu).toHaveLength(1);
+
+    const ngoaiKhoang = await gui('/?tu=2000-01-01T00:00:00.000Z&den=2000-01-02T00:00:00.000Z', 'GET');
+    const jsonNgoaiKhoang = (await ngoaiKhoang.json()) as { duLieu: unknown[] };
+    expect(jsonNgoaiKhoang.duLieu).toHaveLength(0);
+  });
+
   it('GET /?trangThai=<giá trị rác> bỏ qua thay vì 500, coi như không lọc', async () => {
     taoSanPham('sp-1', 'SP001');
     await gui('/', 'POST', { dong: [dongMau] });

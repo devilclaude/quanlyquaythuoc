@@ -392,7 +392,7 @@ thẳng vào phiếu đang soạn (cùng đường thêm dòng đã có ở T-04
 Ghi chú: đây là phần bị chẻ khỏi T-040c gốc — xem ghi chú chẻ ở T-040c1.
 
 ### T-041 [A] prio:41 — Danh sách và chi tiết phiếu nhập
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-040b
+Trạng thái: DONE · Phụ thuộc: T-040b
 Xong khi: cột bảng danh sách + bộ lọc Trạng thái + ô tìm theo mã khớp screenshot
 "Danh sách nhập hàng"; chi tiết (chỉ đọc) mở ngay dưới dòng như KiotViet; nav
 "Nhập hàng" vào thẳng danh sách này, nút "+ Nhập hàng" mở luồng tạo tay đã có
@@ -403,7 +403,7 @@ vượt ngưỡng — chẻ ngay, gỡ bộ lọc Thời gian sang T-041b (còn 
 lọc "Đã hủy" hay bộ lọc "Người tạo"/"Người nhập" (quầy một người dùng — v1.1).
 
 ### T-041b [A] prio:41.5 — Danh sách phiếu nhập: bộ lọc Thời gian
-Trạng thái: TODO · Phụ thuộc: T-041
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-041
 Xong khi: bộ lọc "Thời gian" (radio "Tháng này" mặc định / "Tùy chỉnh" hai ô
 ngày) trong ảnh "Danh sách nhập hàng" hoạt động, gửi khoảng ngày (quy đổi đúng
 giờ Việt Nam UTC+7) vào `GET /api/phieu-nhap`.
