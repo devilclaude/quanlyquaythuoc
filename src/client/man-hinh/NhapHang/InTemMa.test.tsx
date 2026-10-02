@@ -111,7 +111,7 @@ describe('InTemMa', () => {
     expect(html).toContain('In tem mã');
     expect(html).toContain('SP000125');
     expect(html).toContain('Betaloc 50mg');
-    expect(html).toContain('Tổng số tem');
+    expect(html).toContain('aria-label="Tổng số tem: 3"'); // dòng tổng khớp ảnh gốc: chỉ con số, không chữ ở ô Tên hàng
     expect(html).toContain('>3<'); // tổng 2 + 1
     expect(html).toContain('Bỏ qua');
   });

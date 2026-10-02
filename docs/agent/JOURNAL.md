@@ -1048,7 +1048,9 @@ Làm: không còn PR agent nào mở. Chọn T-042: modal "In tem mã" (sửa s�
 tem/dòng) mở ngay sau Hoàn thành, rồi "Xem trước tem mã" (mã vạch qua
 `jsbarcode`) — gộp hai bước "Chọn loại giấy"+"Xem bản in" của KiotViet thành
 một màn, tiền lệ InHoaDon K57/K80. Chỉ 2 khổ giấy (không phải 8) — chưa biết
-máy in tem thật của quầy. Bỏ dấu tiếng Việt CHỈ ở nội dung in thật, bước hỏi
-danh sách vẫn giữ dấu. Giá trên tem là giá BÁN, không phải đơn giá nhập.
+máy in tem thật của quầy. `doi-chieu-ui` phát hiện "bỏ dấu tiếng Việt" trong
+BACKLOG bị diễn giải sai (ảnh in thật giữ nguyên dấu ở tên hàng) — sửa lại:
+chỉ bỏ dấu ở MÃ HÀNG trước khi encode mã vạch (CODE128 chỉ ASCII). Cũng sửa
+dòng tổng (thừa chữ "Tổng số tem" so với ảnh gốc, giờ chỉ còn con số).
 PR: (xem mô tả PR) · Tầng: A — chỉ trình bày lại dữ liệu đã có.
 Kế tiếp: T-052b hoặc T-053a.

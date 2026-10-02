@@ -422,9 +422,15 @@ thành" ngay trong màn nhập hàng thật (SPEC.md §6.2 bước 4), không ph
 T-040c2 (tạo hàng mới ngay trong màn).
 Ghi chú (sửa lúc làm): chỉ 2 khổ giấy (không phải 8 như ảnh "Chọn loại giấy in
 tem mã") và gộp bước "Chọn loại giấy"+"Xem bản in" của KiotViet thành một màn
-preview sống — xem lý do trong `InTemMa.tsx`. Bỏ dấu tiếng Việt chỉ áp dụng cho
-NỘI DUNG IN THẬT (bước xem trước) — bước hỏi danh sách trước đó vẫn hiện đầy đủ
-dấu để dược sĩ nhận ra đúng hàng.
+preview sống — xem lý do trong `InTemMa.tsx`.
+Ghi chú (sửa lúc làm, phát hiện của `doi-chieu-ui`): dòng "bỏ dấu tiếng Việt
+trên tem" ở trên bị DIỄN GIẢI SAI lúc viết task — ảnh "Sau khi ấn nút in.png"
+(hộp thoại in Chrome cho đúng PDF KiotViet gửi máy in) cho thấy TÊN HÀNG/ĐƠN VỊ
+trên tem GIỮ NGUYÊN dấu ("mãnh lực vương (hộp)"). Ghi chú gốc trong ảnh "Chọn
+loại giấy in tem mã" ("không chứa ký tự đặc biệt hoặc chữ có dấu") nằm cùng
+bullet với "rút ngắn mã hàng" — nói về MÃ HÀNG (để mã vạch CODE128 quét được,
+vì chuẩn này chỉ định nghĩa cho dải ASCII), không phải tên hàng hiển thị. Đã
+sửa code cho đúng: chỉ bỏ dấu ở mã hàng trước khi encode mã vạch.
 
 ### T-043 [B] prio:43 — Nhập hàng từ file Excel
 Trạng thái: DONE · Phụ thuộc: T-040a

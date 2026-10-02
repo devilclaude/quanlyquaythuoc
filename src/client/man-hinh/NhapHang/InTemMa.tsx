@@ -94,10 +94,16 @@ export function trieuKhaiDsTem(dsTem: readonly DongTemUI[]): DongTemUI[] {
   return ketQua;
 }
 
-/** Máy in tem không in được chữ có dấu (BACKLOG.md T-042, ghi chú lấy nguyên
- * văn từ màn hình KiotViet) — CHỈ áp dụng cho nội dung IN THẬT (bước xem
- * trước), không áp cho bước hỏi danh sách trước đó (vẫn cần dấu để dược sĩ
- * nhận đúng hàng). NFD tách dấu khỏi chữ cái rồi xoá dấu, cộng thêm `đ`/`Đ`
+/** Chỉ dùng cho MÃ HÀNG trước khi encode mã vạch — CODE128 chỉ định nghĩa cho
+ * dải ASCII, mã hàng có dấu (gõ nhầm) sẽ ra mã vạch không quét được. Ghi chú
+ * "không chứa ký tự đặc biệt hoặc chữ có dấu" trong ảnh "Chọn loại giấy in
+ * tem mã" nằm cùng bullet với "rút ngắn mã hàng" — nói về MÃ HÀNG để mã vạch
+ * quét được, không phải tên hàng/đơn vị hiển thị. Đã SỬA LẠI sau khi ban đầu
+ * áp nhầm hàm này lên `tem.ten`/`tem.donViTen`: ảnh "Sau khi ấn nút in.png"
+ * (hộp thoại in Chrome cho đúng PDF KiotViet gửi máy in) cho thấy tên hàng
+ * và đơn vị trên tem GIỮ NGUYÊN dấu ("mãnh lực vương (hộp)") — bỏ dấu ở đó là
+ * khác hẳn trải nghiệm dược sĩ đã quen (UI-FIDELITY.md, phát hiện của
+ * `doi-chieu-ui`). NFD tách dấu khỏi chữ cái rồi xoá dấu, cộng thêm `đ`/`Đ`
  * (không tách được bằng NFD vì là một ký tự Unicode riêng, không phải "d" +
  * dấu gạch ngang). */
 export function boDauTiengViet(chuoi: string): string {
@@ -120,7 +126,7 @@ function MotTem({ tem, caoMm }: MotTemProps) {
 
   useEffect(() => {
     if (!svgRef.current) return;
-    JsBarcode(svgRef.current, tem.maHang, {
+    JsBarcode(svgRef.current, boDauTiengViet(tem.maHang), {
       format: 'CODE128',
       displayValue: true,
       fontSize: 11,
@@ -132,12 +138,12 @@ function MotTem({ tem, caoMm }: MotTemProps) {
   return (
     <div className="in-tem-ma__tem" style={{ height: `${caoMm}mm` }}>
       <p className="in-tem-ma__ten-hang">
-        {boDauTiengViet(tem.ten)} ({boDauTiengViet(tem.donViTen)})
+        {tem.ten} ({tem.donViTen})
       </p>
       <svg ref={svgRef} />
       <p className="in-tem-ma__gia">
         <strong>
-          {dinhDangTien(dong(tem.giaBan))} VND/{boDauTiengViet(tem.donViTen)}
+          {dinhDangTien(dong(tem.giaBan))} VND/{tem.donViTen}
         </strong>
       </p>
     </div>
@@ -211,10 +217,13 @@ export function InTemMa({ dsTemBanDau, onDong }: InTemMaProps) {
               </tr>
             </thead>
             <tbody>
-              <tr className="in-tem-ma__dong-tong">
+              {/* Dòng tổng khớp ảnh "In tem mã sau khi nhập hàng" — chỉ một
+               * con số đứng một mình dưới cột Số lượng, không có chữ nào ở
+               * ô Tên hàng (phát hiện của `doi-chieu-ui`, đã sửa lại). */}
+              <tr className="in-tem-ma__dong-tong" aria-label={`Tổng số tem: ${tongSoLuongTem(dsTem)}`}>
                 <td></td>
                 <td></td>
-                <td>Tổng số tem</td>
+                <td></td>
                 <OSo>
                   <strong>{tongSoLuongTem(dsTem)}</strong>
                 </OSo>
@@ -232,6 +241,11 @@ export function InTemMa({ dsTemBanDau, onDong }: InTemMaProps) {
                     </button>
                   </td>
                   <td>{t.maHang}</td>
+                  {/* Ảnh gốc có dropdown đổi đơn vị TẠI ĐÂY cho hàng nhiều
+                   * đơn vị — KHÔNG dựng: đơn vị (và giá bán đi kèm) đã CHỐT
+                   * theo đúng đơn vị chọn lúc nhập (T-040c1), đổi lại ở đây
+                   * sẽ cần tra giá bán của đơn vị khác — ngoài phạm vi
+                   * "Xong khi" của T-042 (câu hỏi `doi-chieu-ui` nêu ra). */}
                   <td>
                     {t.ten} ({t.donViTen})
                   </td>

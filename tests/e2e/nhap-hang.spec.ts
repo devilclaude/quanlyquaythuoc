@@ -342,7 +342,8 @@ test('in tem mã: mở ngay sau Hoàn thành, sửa số lượng tem, đổi kh
   await expect(hopThoaiDanhSach).toContainText('Panadol Extra');
   await expect(hopThoaiDanhSach).toContainText('hộp'); // bước hỏi danh sách vẫn giữ dấu để nhận đúng hàng
   await expect(hopThoaiDanhSach.getByLabel(/Số lượng tem/)).toHaveValue('2');
-  await expect(hopThoaiDanhSach).toContainText('Tổng số tem');
+  // Dòng tổng khớp ảnh gốc: chỉ con số dưới cột Số lượng, không chữ ở ô Tên hàng.
+  await expect(hopThoaiDanhSach.getByRole('row', { name: 'Tổng số tem: 2' })).toBeVisible();
 
   // Sửa số lượng tem (độc lập với số lượng đã nhập) rồi sang bước xem trước.
   await hopThoaiDanhSach.getByLabel(/Số lượng tem/).fill('3');
@@ -358,10 +359,10 @@ test('in tem mã: mở ngay sau Hoàn thành, sửa số lượng tem, đổi kh
   await expect(dsTemHienThi).toHaveCount(3); // đúng số lượng tem vừa sửa, không phải số lượng đã nhập
   await expect(dsTemHienThi.first()).toContainText('260,000'); // giá BÁN, không phải đơn giá nhập 16.000
   await expect(dsTemHienThi.first().locator('svg rect')).not.toHaveCount(0); // mã vạch đã render
-  // Nội dung IN THẬT bỏ dấu tiếng Việt (máy in tem không in được chữ có dấu,
-  // BACKLOG.md T-042) — "hộp" trên tem phải là "hop", không còn dấu nào.
-  await expect(dsTemHienThi.first()).toContainText('VND/hop');
-  await expect(dsTemHienThi.first()).not.toContainText('hộp');
+  // Tên hàng/đơn vị trên tem GIỮ NGUYÊN dấu tiếng Việt — khớp ảnh "Sau khi ấn
+  // nút in.png" (hộp thoại in Chrome cho đúng PDF gửi máy in, "mãnh lực vương
+  // (hộp)" còn dấu). Chỉ MÃ HÀNG (giá trị encode vào mã vạch) mới bỏ dấu.
+  await expect(dsTemHienThi.first()).toContainText('VND/hộp');
 
   // Đổi khổ giấy — số lượng tem không đổi (focus rời nút In do bấm chuột vào radio).
   await page.getByRole('radio', { name: /Cuộn 1 nhãn/ }).check();
