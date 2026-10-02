@@ -1042,3 +1042,19 @@ PR: (xem mô tả PR)
 Tầng: A — chỉ sửa bug chỉ số UI trong luồng đã duyệt, không đổi hợp đồng API,
 không thêm quyết định kiến trúc (tiền lệ T-021/T-024).
 Kế tiếp: T-042, T-052b, hoặc T-053a.
+
+## 2026-10-02 (run kế 4) — T-052b (Trả hàng: API)
+Làm: #76 (T-042) CI xanh, không comment cần xử lý (chỉ bot giải thích auto-merge
+bị chặn vì PR chạm `package.json`/`package-lock.json` — đúng theo luật nhóm tự-
+quản-trị, không phải lỗi cần sửa), chờ người duyệt — không sửa. Chọn T-052b:
+TDD thêm `layDanhSachTraHang`/`layChiTietTraHang` vào lõi T-052a đã duyệt (JOIN
+lấy mã hoá đơn gốc làm liên kết ngược, không snapshot); hợp đồng Zod
+`shared/hop-dong/tra-hang.ts`; route `POST /api/tra-hang` (gọi `taoPhieuTraHang`
+đã có, không viết lại), `GET /api/tra-hang` (danh sách), `GET /api/tra-hang/:id`
+(chi tiết). Map lỗi: 400 dữ liệu không hợp lệ/không thể xảy ra qua Zod, 404 hoá
+đơn hoặc dòng hoá đơn không tồn tại/không thuộc hoá đơn đã khai, 409 vượt số
+lượng đã bán (cộng dồn). Không có UI (đúng "Xong khi").
+PR: (xem mô tả PR)
+Tầng: A — chỉ nối API cho lõi nghiệp vụ đã duyệt B, không thêm quyết định kiến
+trúc mới (tiền lệ T-010a→b/T-022a→b/T-040a→b).
+Kế tiếp: T-053a hoặc T-052c (sau khi PR này merge).

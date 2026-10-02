@@ -472,7 +472,7 @@ có hai màn UI (danh sách trả hàng + luồng tạo trả hàng, luồng sau
 screenshot tham chiếu) nên chắc chắn không nhỏ hơn T-040. Theo đúng tiền lệ T-040a.
 
 ### T-052b [A] prio:52.2 — Trả hàng: API
-Trạng thái: TODO · Phụ thuộc: T-052a
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-052a
 Xong khi: `POST /api/tra-hang` (tạo phiếu trả cho một hoá đơn, gọi
 `taoPhieuTraHang`), `GET /api/tra-hang` (danh sách) và `GET /api/tra-hang/:id`
 (chi tiết, kèm liên kết ngược hoá đơn gốc); 400 khi dữ liệu không hợp lệ, 409 khi
