@@ -3,7 +3,7 @@ import type { drizzle } from 'drizzle-orm/better-sqlite3';
 import { soLuongHienThi } from '../../shared/kieu/so-luong';
 import { quyDoiSangCoSo } from '../../shared/don-vi/quy-doi';
 import { chiaLamTronNuaLen } from '../../shared/tien/lam-tron';
-import { hoaDon, hoaDonDong, hoaDonDongLo, traHang, traHangDong, traHangDongLo } from '../db/schema';
+import { hoaDon, hoaDonDong, hoaDonDongLo, sanPham, traHang, traHangDong, traHangDongLo } from '../db/schema';
 import { ghiMotDongTheKho } from '../kho/so-cai';
 
 type Db = ReturnType<typeof drizzle>;
@@ -75,6 +75,32 @@ export interface PhieuTraHangDaTao {
   id: string;
   ma: string;
   tongTienHoan: number;
+}
+
+export interface TraHangDanhSachItem {
+  id: string;
+  ma: string;
+  hoaDonId: string;
+  /** Mã hoá đơn gốc — liên kết ngược (T-052b), tra qua JOIN lúc đọc. */
+  hoaDonMa: string;
+  chiNhanhId: string;
+  thoiGian: string;
+  tongTienHoan: number;
+}
+
+export interface TraHangDongChiTiet {
+  id: string;
+  hoaDonDongId: string;
+  sanPhamId: string;
+  /** Mã/tên sản phẩm HIỆN TẠI, tra qua JOIN lúc đọc — không snapshot (cùng tiền lệ `phieu_nhap_dong`). */
+  maHang: string;
+  ten: string;
+  soLuong: number;
+  tienHoan: number;
+}
+
+export interface TraHangChiTiet extends TraHangDanhSachItem {
+  dong: TraHangDongChiTiet[];
 }
 
 function laLoiTrungMaTraHang(loi: unknown): boolean {
@@ -220,4 +246,76 @@ export function taoPhieuTraHang(db: Db, input: TaoPhieuTraHangInput): PhieuTraHa
   }
 
   throw new Error('không sinh được mã trả hàng tự động sau nhiều lần thử');
+}
+
+/**
+ * Danh sách phiếu trả hàng, mới nhất trước (T-052b). Kèm mã hoá đơn gốc (liên
+ * kết ngược) qua JOIN — không snapshot, vì `ma` hoá đơn bất biến sau khi tạo.
+ * `tongTienHoan` tính bằng một truy vấn gộp riêng (không N+1 theo từng phiếu).
+ */
+export function layDanhSachTraHang(db: Db): TraHangDanhSachItem[] {
+  const hang = db
+    .select({
+      id: traHang.id,
+      ma: traHang.ma,
+      hoaDonId: traHang.hoaDonId,
+      hoaDonMa: hoaDon.ma,
+      chiNhanhId: traHang.chiNhanhId,
+      thoiGian: traHang.thoiGian,
+    })
+    .from(traHang)
+    .innerJoin(hoaDon, eq(hoaDon.id, traHang.hoaDonId))
+    .orderBy(desc(traHang.thoiGianMayChu))
+    .all();
+
+  const tongTheoPhieu = new Map(
+    db
+      .select({ traHangId: traHangDong.traHangId, tongTienHoan: sql<number>`SUM(${traHangDong.tienHoan})` })
+      .from(traHangDong)
+      .groupBy(traHangDong.traHangId)
+      .all()
+      .map((r) => [r.traHangId, Number(r.tongTienHoan)]),
+  );
+
+  return hang.map((p) => ({ ...p, tongTienHoan: tongTheoPhieu.get(p.id) ?? 0 }));
+}
+
+/** Chi tiết một phiếu trả hàng kèm toàn bộ dòng và liên kết ngược hoá đơn gốc (T-052b). */
+export function layChiTietTraHang(db: Db, id: string): TraHangChiTiet | undefined {
+  const [phieu] = db
+    .select({
+      id: traHang.id,
+      ma: traHang.ma,
+      hoaDonId: traHang.hoaDonId,
+      hoaDonMa: hoaDon.ma,
+      chiNhanhId: traHang.chiNhanhId,
+      thoiGian: traHang.thoiGian,
+    })
+    .from(traHang)
+    .innerJoin(hoaDon, eq(hoaDon.id, traHang.hoaDonId))
+    .where(eq(traHang.id, id))
+    .all();
+  if (!phieu) return undefined;
+
+  const dong = db
+    .select({
+      id: traHangDong.id,
+      hoaDonDongId: traHangDong.hoaDonDongId,
+      sanPhamId: hoaDonDong.sanPhamId,
+      maHang: sanPham.maHang,
+      ten: sanPham.ten,
+      soLuong: traHangDong.soLuong,
+      tienHoan: traHangDong.tienHoan,
+    })
+    .from(traHangDong)
+    .innerJoin(hoaDonDong, eq(hoaDonDong.id, traHangDong.hoaDonDongId))
+    .innerJoin(sanPham, eq(sanPham.id, hoaDonDong.sanPhamId))
+    .where(eq(traHangDong.traHangId, id))
+    .all();
+
+  return {
+    ...phieu,
+    tongTienHoan: dong.reduce((tong, d) => tong + d.tienHoan, 0),
+    dong,
+  };
 }

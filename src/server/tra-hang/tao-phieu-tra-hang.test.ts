@@ -12,6 +12,8 @@ import {
   HoaDonKhongTonTaiError,
   SoLuongKhongHopLeError,
   VuotSoLuongDaBanError,
+  layChiTietTraHang,
+  layDanhSachTraHang,
   taoPhieuTraHang,
 } from './tao-phieu-tra-hang';
 
@@ -320,5 +322,74 @@ describe('taoPhieuTraHang', () => {
 
     expect(th1.ma).toBe('TH000001');
     expect(th2.ma).toBe('TH000002');
+  });
+});
+
+describe('layDanhSachTraHang (T-052b)', () => {
+  it('trả về danh sách kèm liên kết ngược mã hoá đơn gốc, mới nhất trước', () => {
+    taoChiNhanh('cn-1');
+    const { hoaDonDongId } = banHangDonGian('cn-1');
+
+    taoPhieuTraHang(db, {
+      id: 'th-1',
+      hoaDonId: 'hd-1',
+      thoiGian: '2026-09-22T08:00:00.000Z',
+      dong: [{ id: 'thd-1', hoaDonDongId, soLuong: 4 }],
+    });
+    taoPhieuTraHang(db, {
+      id: 'th-2',
+      hoaDonId: 'hd-1',
+      thoiGian: '2026-09-22T09:00:00.000Z',
+      dong: [{ id: 'thd-2', hoaDonDongId, soLuong: 3 }],
+    });
+
+    const ds = layDanhSachTraHang(db);
+
+    expect(ds).toHaveLength(2);
+    expect(ds[0]?.ma).toBe('TH000002');
+    expect(ds[0]?.hoaDonId).toBe('hd-1');
+    expect(ds[0]?.hoaDonMa).toBe('HD000001');
+    expect(ds[0]?.tongTienHoan).toBe(3_000);
+    expect(ds[1]?.ma).toBe('TH000001');
+  });
+
+  it('danh sách rỗng khi chưa có phiếu trả nào', () => {
+    taoChiNhanh('cn-1');
+    expect(layDanhSachTraHang(db)).toEqual([]);
+  });
+});
+
+describe('layChiTietTraHang (T-052b)', () => {
+  it('trả về chi tiết kèm từng dòng và liên kết ngược hoá đơn gốc', () => {
+    taoChiNhanh('cn-1');
+    const { hoaDonDongId } = banHangDonGian('cn-1');
+
+    taoPhieuTraHang(db, {
+      id: 'th-1',
+      hoaDonId: 'hd-1',
+      thoiGian: '2026-09-22T08:00:00.000Z',
+      dong: [{ id: 'thd-1', hoaDonDongId, soLuong: 4 }],
+    });
+
+    const chiTiet = layChiTietTraHang(db, 'th-1');
+
+    expect(chiTiet?.ma).toBe('TH000001');
+    expect(chiTiet?.hoaDonId).toBe('hd-1');
+    expect(chiTiet?.hoaDonMa).toBe('HD000001');
+    expect(chiTiet?.tongTienHoan).toBe(4_000);
+    expect(chiTiet?.dong).toHaveLength(1);
+    expect(chiTiet?.dong[0]).toMatchObject({
+      id: 'thd-1',
+      hoaDonDongId,
+      sanPhamId: 'sp-1',
+      maHang: 'SP001',
+      soLuong: 4,
+      tienHoan: 4_000,
+    });
+  });
+
+  it('trả về undefined khi không tìm thấy', () => {
+    taoChiNhanh('cn-1');
+    expect(layChiTietTraHang(db, 'khong-ton-tai')).toBeUndefined();
   });
 });
