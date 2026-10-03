@@ -1,12 +1,14 @@
 import { desc, eq, sql } from 'drizzle-orm';
 import type { drizzle } from 'drizzle-orm/better-sqlite3';
-import { soLuongHienThi } from '../../shared/kieu/so-luong';
-import { quyDoiSangCoSo } from '../../shared/don-vi/quy-doi';
+import { soLuongCoSo, soLuongHienThi } from '../../shared/kieu/so-luong';
+import { quyDoiSangCoSo, quyDoiTuCoSo } from '../../shared/don-vi/quy-doi';
 import { chiaLamTronNuaLen } from '../../shared/tien/lam-tron';
 import { hoaDon, hoaDonDong, hoaDonDongLo, sanPham, traHang, traHangDong, traHangDongLo } from '../db/schema';
 import { ghiMotDongTheKho } from '../kho/so-cai';
 
 type Db = ReturnType<typeof drizzle>;
+/** `db` ngoài transaction hoặc `tx` bên trong — cùng API `.select()` (tiền lệ `TxTheKho` ở `kho/so-cai.ts`). */
+type DbOrTx = Db | Parameters<Parameters<Db['transaction']>[0]>[0];
 
 export class DongTraHangRongError extends Error {
   constructor() {
@@ -144,6 +146,21 @@ function phanBoHoanLifo(danhSachLoDaTru: readonly PhanBoHoan[], soLuongCanHoan: 
 }
 
 /**
+ * Phần còn trả được tối đa của một dòng hoá đơn, đơn vị CƠ SỞ — đã bán trừ
+ * tổng đã trả ở các phiếu trả hàng trước (cộng dồn). Dùng chung cho cả đường
+ * ghi (`taoPhieuTraHang`, bên trong transaction) lẫn đường đọc
+ * (`timHoaDonDeTraHang`, T-052c) để không có hai công thức tính cùng một số.
+ */
+function tinhConLaiToiDaCoSo(dbOrTx: DbOrTx, hoaDonDongId: string, soLuongDaBanCoSo: number): number {
+  const [daTraTruoc] = dbOrTx
+    .select({ tong: sql<number>`coalesce(sum(${traHangDong.soLuong}), 0)` })
+    .from(traHangDong)
+    .where(eq(traHangDong.hoaDonDongId, hoaDonDongId))
+    .all();
+  return soLuongDaBanCoSo - Number(daTraTruoc?.tong ?? 0);
+}
+
+/**
  * Tạo phiếu trả hàng (T-052a, SPEC.md §4.2/§6.4): với mỗi dòng, hoàn kho theo
  * LIFO trên chính các dòng `hoa_don_dong_lo` đã trừ lúc bán của dòng hoá đơn
  * gốc đó — không suy lại FEFO, vì lô ưu tiên thủ công (SPEC.md §4.1) có thể đã
@@ -180,14 +197,7 @@ export function taoPhieuTraHang(db: Db, input: TaoPhieuTraHangInput): PhieuTraHa
           }
 
           const soLuongDaBanCoSo = quyDoiSangCoSo(soLuongHienThi(hddRow.soLuong), hddRow.heSo);
-
-          const [daTraTruoc] = tx
-            .select({ tong: sql<number>`coalesce(sum(${traHangDong.soLuong}), 0)` })
-            .from(traHangDong)
-            .where(eq(traHangDong.hoaDonDongId, d.hoaDonDongId))
-            .all();
-          const tongDaTraTruoc = Number(daTraTruoc?.tong ?? 0);
-          const conLaiToiDa = soLuongDaBanCoSo - tongDaTraTruoc;
+          const conLaiToiDa = tinhConLaiToiDaCoSo(tx, d.hoaDonDongId, soLuongDaBanCoSo);
 
           if (d.soLuong > conLaiToiDa) throw new VuotSoLuongDaBanError(d.hoaDonDongId, conLaiToiDa);
 
@@ -318,4 +328,73 @@ export function layChiTietTraHang(db: Db, id: string): TraHangChiTiet | undefine
     tongTienHoan: dong.reduce((tong, d) => tong + d.tienHoan, 0),
     dong,
   };
+}
+
+export interface HoaDonDongDeTraHang {
+  /** `hoa_don_dong.id` — client gửi lại đúng id này khi gọi `POST /api/tra-hang`. */
+  id: string;
+  sanPhamId: string;
+  maHang: string;
+  ten: string;
+  donViTen: string;
+  heSo: number;
+  /** Đã bán, đơn vị ĐÃ CHỌN lúc bán (giống cột "Số lượng" của `hoa_don_dong`). */
+  soLuongDaBan: number;
+  /**
+   * Còn trả được tối đa, quy đổi về đúng đơn vị đã bán — LÀM TRÒN XUỐNG
+   * (`quyDoiTuCoSo`, không làm tròn lên) để một lần trả đủ số này không bao
+   * giờ vượt `tinhConLaiToiDaCoSo` thật ở tầng cơ sở.
+   */
+  conLaiToiDa: number;
+}
+
+export interface HoaDonDeTraHang {
+  id: string;
+  ma: string;
+  thoiGian: string;
+  dong: HoaDonDongDeTraHang[];
+}
+
+/**
+ * Tìm một hoá đơn theo mã để bắt đầu luồng tạo trả hàng (T-052c): trả về từng
+ * dòng kèm `conLaiToiDa` — chỉ ĐỌC, không xác thực hay ghi gì. `POST
+ * /api/tra-hang` (qua `taoPhieuTraHang`) mới là nguồn sự thật cuối cùng, dùng
+ * lại đúng `tinhConLaiToiDaCoSo` nên không có hai công thức.
+ */
+export function timHoaDonDeTraHang(db: Db, ma: string): HoaDonDeTraHang | undefined {
+  const [h] = db.select().from(hoaDon).where(eq(hoaDon.ma, ma)).all();
+  if (!h) return undefined;
+
+  const dongRows = db
+    .select({
+      id: hoaDonDong.id,
+      sanPhamId: hoaDonDong.sanPhamId,
+      maHang: sanPham.maHang,
+      ten: sanPham.ten,
+      donViTen: hoaDonDong.donViTen,
+      heSo: hoaDonDong.heSo,
+      soLuong: hoaDonDong.soLuong,
+    })
+    .from(hoaDonDong)
+    .innerJoin(sanPham, eq(sanPham.id, hoaDonDong.sanPhamId))
+    .where(eq(hoaDonDong.hoaDonId, h.id))
+    .all();
+
+  const dong = dongRows.map((d) => {
+    const soLuongDaBanCoSo = quyDoiSangCoSo(soLuongHienThi(d.soLuong), d.heSo);
+    const conLaiToiDaCoSo = tinhConLaiToiDaCoSo(db, d.id, soLuongDaBanCoSo);
+    const conLaiToiDa = quyDoiTuCoSo(soLuongCoSo(conLaiToiDaCoSo), d.heSo).soLuong;
+    return {
+      id: d.id,
+      sanPhamId: d.sanPhamId,
+      maHang: d.maHang,
+      ten: d.ten,
+      donViTen: d.donViTen,
+      heSo: d.heSo,
+      soLuongDaBan: d.soLuong,
+      conLaiToiDa,
+    };
+  });
+
+  return { id: h.id, ma: h.ma, thoiGian: h.thoiGian, dong };
 }

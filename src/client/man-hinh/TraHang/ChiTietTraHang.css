@@ -1,0 +1,37 @@
+.thong-tin-tra-hang__dau {
+  display: flex;
+  align-items: center;
+  gap: var(--kc-3);
+  margin-bottom: var(--kc-3);
+}
+.thong-tin-tra-hang__ma { font-size: var(--chu-lg); margin: 0; }
+.thong-tin-tra-hang__hoa-don { color: var(--mau-chu-phu); }
+.thong-tin-tra-hang__nut-hoa-don {
+  background: none;
+  border: none;
+  color: var(--mau-chinh);
+  font-size: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.thong-tin-tra-hang__hoa-don-goc {
+  background: var(--mau-nen);
+  padding: var(--kc-3);
+  margin-bottom: var(--kc-3);
+  border-radius: var(--bo-goc);
+}
+
+.thong-tin-tra-hang__tong {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kc-1);
+  margin-top: var(--kc-3);
+  align-items: flex-end;
+}
+.thong-tin-tra-hang__tong div { display: flex; gap: var(--kc-3); }
+.thong-tin-tra-hang__tong dt { color: var(--mau-chu-phu); }
+.thong-tin-tra-hang__tong dd { margin: 0; font-weight: 600; }
+
+.thong-tin-tra-hang__loi { color: var(--mau-nguy); }

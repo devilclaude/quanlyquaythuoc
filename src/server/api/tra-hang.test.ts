@@ -180,4 +180,33 @@ describe('dangKyTraHangRoutes', () => {
 
     expect(res.status).toBe(404);
   });
+
+  it('GET /hoa-don/:ma trả về hoá đơn kèm conLaiToiDa từng dòng, chưa trả lần nào', async () => {
+    banHangDonGian();
+
+    const res = await taoRouter().request('/hoa-don/HD000001');
+
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as { ma: string; dong: { soLuongDaBan: number; conLaiToiDa: number }[] };
+    expect(json.ma).toBe('HD000001');
+    expect(json.dong).toHaveLength(1);
+    expect(json.dong[0]?.soLuongDaBan).toBe(10);
+    expect(json.dong[0]?.conLaiToiDa).toBe(10);
+  });
+
+  it('GET /hoa-don/:ma trả về conLaiToiDa đã giảm sau khi trả một phần', async () => {
+    const hoaDonDongId = banHangDonGian();
+    await guiTaoTraHang({ hoaDonId: 'hd-1', dong: [{ hoaDonDongId, soLuong: 4 }] });
+
+    const res = await taoRouter().request('/hoa-don/HD000001');
+
+    const json = (await res.json()) as { dong: { conLaiToiDa: number }[] };
+    expect(json.dong[0]?.conLaiToiDa).toBe(6);
+  });
+
+  it('GET /hoa-don/:ma trả về 404 khi không tìm thấy mã hoá đơn', async () => {
+    const res = await taoRouter().request('/hoa-don/HD999999');
+
+    expect(res.status).toBe(404);
+  });
 });

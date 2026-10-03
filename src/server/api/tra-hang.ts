@@ -1,6 +1,12 @@
 import type { drizzle } from 'drizzle-orm/better-sqlite3';
 import type { Hono } from 'hono';
-import { DanhSachTraHangResSchema, TaoTraHangReqSchema, TraHangChiTietResSchema, TraHangResSchema } from '../../shared/hop-dong/tra-hang';
+import {
+  DanhSachTraHangResSchema,
+  HoaDonDeTraHangResSchema,
+  TaoTraHangReqSchema,
+  TraHangChiTietResSchema,
+  TraHangResSchema,
+} from '../../shared/hop-dong/tra-hang';
 import { taoUlid } from '../../shared/kieu/ulid';
 import {
   DongTraHangRongError,
@@ -12,6 +18,7 @@ import {
   layChiTietTraHang,
   layDanhSachTraHang,
   taoPhieuTraHang,
+  timHoaDonDeTraHang,
 } from '../tra-hang/tao-phieu-tra-hang';
 
 type Db = ReturnType<typeof drizzle>;
@@ -27,6 +34,13 @@ export function dangKyTraHangRoutes(app: Hono, db: Db): void {
     const chiTiet = layChiTietTraHang(db, c.req.param('id'));
     if (!chiTiet) return c.json({ loi: 'Không tìm thấy phiếu trả hàng' }, 404);
     return c.json(TraHangChiTietResSchema.parse(chiTiet));
+  });
+
+  // T-052c — màn "Tạo trả hàng" gọi route này trước, để tìm hoá đơn gốc theo mã.
+  app.get('/hoa-don/:ma', (c) => {
+    const hoaDon = timHoaDonDeTraHang(db, c.req.param('ma'));
+    if (!hoaDon) return c.json({ loi: 'Không tìm thấy hoá đơn' }, 404);
+    return c.json(HoaDonDeTraHangResSchema.parse(hoaDon));
   });
 
   app.post('/', async (c) => {
