@@ -490,7 +490,7 @@ Xong khi: `POST /api/tra-hang` (tạo phiếu trả cho một hoá đơn, gọi
 số lượng trả vượt số đã bán (cộng dồn các lần trả trước). Không có UI.
 
 ### T-052c [A] prio:52.3 — Trả hàng: danh sách + chi tiết (chỉ đọc)
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-052b
+Trạng thái: DONE · Phụ thuộc: T-052b
 Xong khi: màn danh sách khớp screenshot "Danh sách trả hàng"
 (`docs/reference/kiotviet/Quản trị/Đơn hàng/` — KHÔNG phải
 `Quản trị/Trả hàng/`: file cùng tên ở đó thực chất là "Trả hàng nhập", phạm vi
@@ -516,7 +516,7 @@ chừng khi đo thật vượt ngưỡng, không phải chẻ lúc chọn task n
 tay người dùng — chỉ đọc (mở lại hoá đơn đã có, không sửa/tạo gì).
 
 ### T-052d [B] prio:52.35 — Trả hàng: luồng tạo (giao diện)
-Trạng thái: TODO · Phụ thuộc: T-052c
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-052c
 Xong khi: nút "+ Trả hàng" trên màn danh sách (T-052c) mở luồng tạo: ô tìm hoá
 đơn gốc theo mã (dùng lại `GET /api/tra-hang/hoa-don/:ma` và
 `useHoaDonDeTraHang`/`BangDongHoaDonDeTraHang` đã có từ T-052c, không viết

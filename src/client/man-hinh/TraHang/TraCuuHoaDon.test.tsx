@@ -28,4 +28,18 @@ describe('BangDongHoaDonDeTraHang', () => {
     expect(html).toContain('>10<');
     expect(html).toContain('>6<');
   });
+
+  it('KHÔNG hiện cột "Số lượng trả" khi không truyền onSuaSoLuongTra (T-052c, chỉ đọc)', () => {
+    const html = renderToStaticMarkup(<BangDongHoaDonDeTraHang dong={dongMau} />);
+    expect(html).not.toContain('Số lượng trả');
+  });
+
+  it('THÊM cột "Số lượng trả" kèm ô nhập khi truyền onSuaSoLuongTra (T-052d, luồng tạo)', () => {
+    const html = renderToStaticMarkup(
+      <BangDongHoaDonDeTraHang dong={dongMau} soLuongTra={{ 'hdd-1': 2 }} onSuaSoLuongTra={() => {}} />,
+    );
+    expect(html).toContain('Số lượng trả');
+    expect(html).toContain('value="2"');
+    expect(html).toContain('max="6"');
+  });
 });
