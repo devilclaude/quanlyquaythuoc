@@ -131,7 +131,7 @@ export function TaoTraHang({ onTaoXong }: TaoTraHangProps) {
       {hoaDon ? (
         <form className="tao-tra-hang__form" onSubmit={luu}>
           <p className="tao-tra-hang__hoa-don">
-            Hoá đơn gốc: <strong>{hoaDon.ma}</strong>
+            Mã hoá đơn: <strong>{hoaDon.ma}</strong>
           </p>
 
           <BangDongHoaDonDeTraHang
