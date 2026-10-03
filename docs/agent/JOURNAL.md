@@ -1105,3 +1105,15 @@ có cột trạng thái, một phiếu luôn hoàn tất ngay trong transaction 
 PR còn lại ~860 dòng/16 file, `npm run ci` xanh.
 PR: (xem mô tả PR) · Tầng: A
 Kế tiếp: T-052d (luồng tạo trả hàng) hoặc T-053a.
+
+## 2026-10-03 (run kế) — T-053a (Trả hàng nhập: schema + lõi nghiệp vụ)
+Làm: #79 (T-052d) CI xanh, không comment/conflict, chờ duyệt B — không sửa.
+Chọn T-053a: migration `tra_hang_nhap`/`tra_hang_nhap_dong`, hàm
+`taoPhieuTraHangNhap` trừ đúng lô ĐÃ NHẬN của dòng gốc (không FEFO, suy lại từ
+`(san_pham_id, so_lo, hsd)`, không cần bảng "...lo" riêng vì một dòng nhập chỉ
+có đúng một lô). Sửa lúc làm: "đơn giá... không tính lại" không đủ tính tiền
+hoàn (đơn vị lệch, cần chia) — đổi sang lưu `tienHoan` theo tỷ lệ, cùng công
+thức `chiaLamTronNuaLen` của T-052a. Thêm kiểm phiếu phải `HOAN_THANH` mới trả
+được. 12 test TDD (gồm bất biến "hai chế độ lô/phẳng cùng số dư").
+PR: (xem mô tả PR) · Tầng: B — ghi kho/tiền lần đầu qua lõi mới.
+Kế tiếp: T-053b (API) sau khi PR này merge.
