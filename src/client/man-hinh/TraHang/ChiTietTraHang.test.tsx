@@ -42,4 +42,11 @@ describe('ThongTinTraHang', () => {
     expect(html).toContain('<button');
     expect(html).toContain('>HD046758<');
   });
+
+  it('có badge trạng thái "Đã trả" cạnh mã phiếu — khớp ảnh gốc, trả hàng luôn hoàn tất ngay (T-052a: không có phiếu tạm)', () => {
+    const html = renderToStaticMarkup(<ThongTinTraHang chiTiet={chiTietMau} />);
+
+    expect(html).toContain('Đã trả');
+    expect(html).toContain('badge--tot');
+  });
 });

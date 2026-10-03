@@ -492,7 +492,9 @@ số lượng trả vượt số đã bán (cộng dồn các lần trả trư�
 ### T-052c [A] prio:52.3 — Trả hàng: danh sách + chi tiết (chỉ đọc)
 Trạng thái: CHỜ MERGE · Phụ thuộc: T-052b
 Xong khi: màn danh sách khớp screenshot "Danh sách trả hàng"
-(`docs/reference/kiotviet/Quản trị/Trả hàng/`) cho các cột còn trong phạm vi v1
+(`docs/reference/kiotviet/Quản trị/Đơn hàng/` — KHÔNG phải
+`Quản trị/Trả hàng/`: file cùng tên ở đó thực chất là "Trả hàng nhập", phạm vi
+T-053c, phát hiện của `doi-chieu-ui` khi đối chiếu PR này) cho các cột còn trong phạm vi v1
 (bỏ "Người bán"/"Mã KH"/"Khách hàng" — không công nợ khách, v1.1; gộp "Cần trả
 khách"/"Đã trả khách" thành một cột "Tổng tiền hoàn" — schema không lưu trả một
 phần; thêm cột "Mã hoá đơn" thay cho các bộ lọc "Trạng thái"/"Loại trả hàng" để
@@ -568,7 +570,11 @@ quyết định kiến trúc mới.
 
 ### T-053c [B] prio:53.3 — Trả hàng nhập: giao diện
 Trạng thái: TODO · Phụ thuộc: T-053b
-Xong khi: khớp screenshot "Trả hàng nhập" (`docs/reference/kiotviet/`); liên kết
+Xong khi: khớp screenshot "Trả hàng nhập"
+(`docs/reference/kiotviet/Quản trị/Trả hàng/Danh sách trả hàng.png` — tên file
+trùng với ảnh "trả hàng khách" ở `Quản trị/Đơn hàng/`, nhưng tiêu đề TRONG ảnh
+này là "Trả hàng nhập"; phát hiện của `doi-chieu-ui` lúc đối chiếu T-052c);
+liên kết
 ngược tới phiếu nhập gốc (mở được từ chi tiết phiếu nhập sang phiếu trả đã tạo,
 và ngược lại); luồng tạo: tìm phiếu nhập gốc, chọn dòng + số lượng trả, gọi
 `POST /api/tra-hang-nhap` (T-053b).

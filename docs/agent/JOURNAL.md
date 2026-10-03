@@ -1095,6 +1095,13 @@ không hai công thức) + `GET /api/tra-hang/hoa-don/:ma`, màn danh sách + ch
 tiết (inline) + liên kết ngược (mở lại hoá đơn gốc). Đo TRƯỚC khi mở PR: gộp cả
 luồng tạo ra ~1095 dòng/19 file — vượt ngưỡng. Chẻ ngay: gỡ luồng tạo (ô tìm có
 nhập liệu, nút "+ Trả hàng") sang T-052d mới, đổi nhãn T-052c `[B]`→`[A]` (hết
-ghi kho/tiền). PR còn lại ~800 dòng/16 file, `npm run ci` xanh.
+ghi kho/tiền). `doi-chieu-ui` phát hiện hai điều: (1) BACKLOG.md trỏ sai thư
+mục ảnh tham chiếu — `Quản trị/Trả hàng/Danh sách trả hàng.png` thực chất là
+"Trả hàng nhập" (phạm vi T-053c), ảnh đúng cho màn này nằm ở
+`Quản trị/Đơn hàng/Danh sách trả hàng.png` — đã sửa path ở cả T-052c lẫn
+T-053c trong BACKLOG.md; (2) panel chi tiết thiếu badge trạng thái "Đã trả"
+so với ảnh gốc — đã thêm (`BadgeTrangThai mau="tot"`, TĨNH vì `tra_hang` không
+có cột trạng thái, một phiếu luôn hoàn tất ngay trong transaction — T-052a).
+PR còn lại ~860 dòng/16 file, `npm run ci` xanh.
 PR: (xem mô tả PR) · Tầng: A
 Kế tiếp: T-052d (luồng tạo trả hàng) hoặc T-053a.

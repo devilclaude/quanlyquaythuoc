@@ -2,16 +2,19 @@ import { useEffect, useState } from 'react';
 import { TraHangChiTietResSchema, type TraHangChiTietRes } from '../../../shared/hop-dong/tra-hang';
 import { dong } from '../../../shared/kieu/dong';
 import { dinhDangTien } from '../../../shared/tien/dinh-dang';
-import { Bang, OSo } from '../../thanh-phan';
+import { Bang, BadgeTrangThai, OSo } from '../../thanh-phan';
 import { BangDongHoaDonDeTraHang, useHoaDonDeTraHang } from './TraCuuHoaDon';
 import './ChiTietTraHang.css';
 
 /**
- * Chi tiết CHỈ ĐỌC (T-052c): Mã trả hàng, mã hoá đơn gốc (liên kết ngược —
- * bấm mở lại hoá đơn NGAY TẠI ĐÂY, xem `TraCuuHoaDon`), bảng dòng Mã hàng/Tên
- * hàng/Số lượng/Tiền hoàn. Không có "Người bán"/"Khách hàng"/"Mã KH" (quầy một
- * người dùng, không công nợ khách — v1.1, giống tiền lệ T-041 với "Nhà cung
- * cấp"/"Người tạo").
+ * Chi tiết CHỈ ĐỌC (T-052c): Mã trả hàng, badge trạng thái, mã hoá đơn gốc
+ * (liên kết ngược — bấm mở lại hoá đơn NGAY TẠI ĐÂY, xem `TraCuuHoaDon`), bảng
+ * dòng Mã hàng/Tên hàng/Số lượng/Tiền hoàn. Badge luôn "Đã trả" (`tot`, tĩnh —
+ * không có trường `trạng thái` trong schema `tra_hang`): một phiếu trả hàng
+ * luôn hoàn tất ngay trong một transaction (T-052a, không có khái niệm
+ * "phiếu tạm" như `phieu_nhap`), nên không có trạng thái nào khác để hiện.
+ * Không có "Người bán"/"Khách hàng"/"Mã KH" (quầy một người dùng, không công
+ * nợ khách — v1.1, giống tiền lệ T-041 với "Nhà cung cấp"/"Người tạo").
  */
 export function ThongTinTraHang({ chiTiet }: { chiTiet: TraHangChiTietRes }) {
   const [xemHoaDon, setXemHoaDon] = useState(false);
@@ -21,6 +24,7 @@ export function ThongTinTraHang({ chiTiet }: { chiTiet: TraHangChiTietRes }) {
     <div className="thong-tin-tra-hang">
       <div className="thong-tin-tra-hang__dau">
         <h2 className="thong-tin-tra-hang__ma">{chiTiet.ma}</h2>
+        <BadgeTrangThai mau="tot">Đã trả</BadgeTrangThai>
         <span className="thong-tin-tra-hang__hoa-don">
           Mã hoá đơn:{' '}
           <button type="button" className="thong-tin-tra-hang__nut-hoa-don" onClick={() => setXemHoaDon((v) => !v)}>
