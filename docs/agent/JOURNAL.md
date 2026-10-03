@@ -1043,6 +1043,18 @@ Tầng: A — chỉ sửa bug chỉ số UI trong luồng đã duyệt, không �
 không thêm quyết định kiến trúc (tiền lệ T-021/T-024).
 Kế tiếp: T-042, T-052b, hoặc T-053a.
 
+## 2026-10-02 (run kế 3) — T-042 (In tem mã)
+Làm: không còn PR agent nào mở. Chọn T-042: modal "In tem mã" (sửa số lượng
+tem/dòng) mở ngay sau Hoàn thành, rồi "Xem trước tem mã" (mã vạch qua
+`jsbarcode`) — gộp hai bước "Chọn loại giấy"+"Xem bản in" của KiotViet thành
+một màn, tiền lệ InHoaDon K57/K80. Chỉ 2 khổ giấy (không phải 8) — chưa biết
+máy in tem thật của quầy. `doi-chieu-ui` phát hiện "bỏ dấu tiếng Việt" trong
+BACKLOG bị diễn giải sai (ảnh in thật giữ nguyên dấu ở tên hàng) — sửa lại:
+chỉ bỏ dấu ở MÃ HÀNG trước khi encode mã vạch (CODE128 chỉ ASCII). Cũng sửa
+dòng tổng (thừa chữ "Tổng số tem" so với ảnh gốc, giờ chỉ còn con số).
+PR: (xem mô tả PR) · Tầng: A — chỉ trình bày lại dữ liệu đã có.
+Kế tiếp: T-052b hoặc T-053a.
+
 ## 2026-10-02 (run kế 4) — T-052b (Trả hàng: API)
 Làm: #76 (T-042) CI xanh, không comment cần xử lý (chỉ bot giải thích auto-merge
 bị chặn vì PR chạm `package.json`/`package-lock.json` — đúng theo luật nhóm tự-
@@ -1058,3 +1070,20 @@ PR: (xem mô tả PR)
 Tầng: A — chỉ nối API cho lõi nghiệp vụ đã duyệt B, không thêm quyết định kiến
 trúc mới (tiền lệ T-010a→b/T-022a→b/T-040a→b).
 Kế tiếp: T-053a hoặc T-052c (sau khi PR này merge).
+
+## 2026-10-02 (run kế 5) — dọn PR: sửa conflict #76 (main vượt qua do #77/T-052b
+merge), dừng run
+Làm: #77 (T-052b) đã merge → BACKLOG chuyển DONE. #76 (T-042) CI xanh, không
+comment cần xử lý, nhưng `mergeable_state: dirty` — conflict thật với `main`
+sau khi #77 merge: chỉ `docs/agent/JOURNAL.md` (append cuối file, hai entry
+"run kế 3"/"run kế 4" cùng chèn sau cùng một dòng); `docs/agent/BACKLOG.md`
+tự merge sạch (hai thay đổi không chạm cùng dòng). Merge `main` vào nhánh, giữ
+cả hai entry theo đúng thứ tự thời gian thật (run kế 3 trước run kế 4 — run 4
+đã nhắc tới #76 nên phải sau). `npm run ci` xanh (715 test, build, 20 e2e — cần
+`PLAYWRIGHT_CHROMIUM_PATH=/opt/pw-browsers/chromium` cho máy chạy agent này, đã
+pin đúng bản trong CI GitHub). Push lên nhánh #76. Theo luật "sửa PR cũ rồi
+dừng" — không chọn task mới.
+PR: #76 (cập nhật, không mở PR mới)
+Tầng: A (không đổi)
+Kế tiếp: chờ CI GitHub xanh + người duyệt (#76 chạm `package.json`/
+`package-lock.json`, nhóm tự-quản-trị); sau đó T-053a hoặc T-052c.

@@ -290,3 +290,134 @@ test('danh sách nhập hàng: bộ lọc "Thời gian" — Tháng này mặc đ
   const urlCuoi = urlsDaGoi.at(-1) ?? '';
   expect(urlCuoi).toContain(`den=${encodeURIComponent('2026-10-31T16:59:59.999Z')}`);
 });
+
+// T-042 — In tem mã, mở ngay sau khi Hoàn thành (SPEC.md §6.2 bước 4). Giá
+// trên tem phải là GIÁ BÁN của đơn vị đã chọn (260.000đ/hộp từ
+// DON_VI_TINH_PANADOL), không phải đơn giá NHẬP gõ tay (16.000đ) — hai con số
+// khác nhau cố tình dùng trong test để phân biệt chắc chắn. `window.print`
+// được stub vì Playwright không in thật được (tiền lệ `ban-hang.spec.ts`).
+test('in tem mã: mở ngay sau Hoàn thành, sửa số lượng tem, đổi khổ giấy, Enter gọi in (T-042)', async ({
+  page,
+  context,
+}) => {
+  await context.route('**/api/hang-hoa**', (route) =>
+    route.fulfill({
+      json: route.request().url().includes('/api/hang-hoa/')
+        ? { ...HANG_HOA_CHUNG, trangThai: 'HOAT_DONG', coTheXoaCung: true, quanLyLoGhiDe: 'KE_THUA' }
+        : { duLieu: [HANG_HOA_CHUNG] },
+    }),
+  );
+  await context.route('**/api/cai-dat/quan-ly-lo', (route) => route.fulfill({ json: { bat: false } }));
+  await context.route('**/api/phieu-nhap**', async (route) => {
+    if (route.request().method() === 'GET') return route.fulfill({ json: { duLieu: [] } });
+    return route.fulfill({ status: 201, json: { id: 'pn-1', ma: 'PN000555', trangThai: 'HOAN_THANH' } });
+  });
+  await page.addInitScript(() => {
+    (window as unknown as { __soLanIn: number }).__soLanIn = 0;
+    window.print = () => {
+      (window as unknown as { __soLanIn: number }).__soLanIn += 1;
+    };
+  });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Nhập hàng' }).click();
+  await page.getByRole('button', { name: '+ Nhập hàng' }).click();
+
+  const oTim = page.getByPlaceholder('Tìm hàng hóa');
+  const goiYOption = page.getByRole('listbox', { name: 'Gợi ý hàng hoá' }).getByRole('option');
+  const dongPhieu = page.locator('tbody tr');
+
+  await oTim.pressSequentially('pana');
+  await expect(goiYOption).toHaveCount(2);
+  await page.keyboard.press('ArrowDown'); // sang dòng "hộp" — giá bán 260.000đ/hộp
+  await page.keyboard.press('Enter');
+  await dongPhieu.getByLabel(/Số lượng/).fill('2');
+  await dongPhieu.getByLabel(/Đơn giá/).fill('16000'); // đơn giá NHẬP — khác giá bán trên tem
+
+  await page.getByRole('button', { name: 'Hoàn thành' }).click();
+  await expect(page.getByText('Đã hoàn thành phiếu nhập PN000555')).toBeVisible();
+
+  const hopThoaiDanhSach = page.getByRole('dialog', { name: 'In tem mã' });
+  await expect(hopThoaiDanhSach).toBeVisible();
+  await expect(hopThoaiDanhSach).toContainText('SP000240');
+  await expect(hopThoaiDanhSach).toContainText('Panadol Extra');
+  await expect(hopThoaiDanhSach).toContainText('hộp'); // bước hỏi danh sách vẫn giữ dấu để nhận đúng hàng
+  await expect(hopThoaiDanhSach.getByLabel(/Số lượng tem/)).toHaveValue('2');
+  // Dòng tổng khớp ảnh gốc: chỉ con số dưới cột Số lượng, không chữ ở ô Tên hàng.
+  await expect(hopThoaiDanhSach.getByRole('row', { name: 'Tổng số tem: 2' })).toBeVisible();
+
+  // Sửa số lượng tem (độc lập với số lượng đã nhập) rồi sang bước xem trước.
+  await hopThoaiDanhSach.getByLabel(/Số lượng tem/).fill('3');
+  await page.getByRole('button', { name: 'In tem mã' }).click();
+
+  const hopThoaiXemTruoc = page.getByRole('dialog', { name: 'Xem trước tem mã' });
+  await expect(hopThoaiXemTruoc).toBeVisible();
+  await expect(page.getByRole('radio', { name: /Cuộn 2 nhãn/ })).toBeChecked(); // mặc định
+  const nutIn = page.getByRole('button', { name: 'In (Enter)' });
+  await expect(nutIn).toBeFocused(); // tự focus lúc mở xem trước
+
+  const dsTemHienThi = hopThoaiXemTruoc.locator('.in-tem-ma__tem');
+  await expect(dsTemHienThi).toHaveCount(3); // đúng số lượng tem vừa sửa, không phải số lượng đã nhập
+  await expect(dsTemHienThi.first()).toContainText('260,000'); // giá BÁN, không phải đơn giá nhập 16.000
+  await expect(dsTemHienThi.first().locator('svg rect')).not.toHaveCount(0); // mã vạch đã render
+  // Tên hàng/đơn vị trên tem GIỮ NGUYÊN dấu tiếng Việt — khớp ảnh "Sau khi ấn
+  // nút in.png" (hộp thoại in Chrome cho đúng PDF gửi máy in, "mãnh lực vương
+  // (hộp)" còn dấu). Chỉ MÃ HÀNG (giá trị encode vào mã vạch) mới bỏ dấu.
+  await expect(dsTemHienThi.first()).toContainText('VND/hộp');
+
+  // Đổi khổ giấy — số lượng tem không đổi (focus rời nút In do bấm chuột vào radio).
+  await page.getByRole('radio', { name: /Cuộn 1 nhãn/ }).check();
+  await expect(dsTemHienThi).toHaveCount(3);
+
+  await nutIn.focus();
+  await page.keyboard.press('Enter');
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as { __soLanIn: number }).__soLanIn))
+    .toBe(1);
+});
+
+test('in tem mã: "Bỏ qua" đóng ngay, không in; Lưu tạm không hỏi in tem (T-042)', async ({ page, context }) => {
+  await context.route('**/api/hang-hoa**', (route) =>
+    route.fulfill({
+      json: route.request().url().includes('/api/hang-hoa/')
+        ? { ...HANG_HOA_CHUNG, trangThai: 'HOAT_DONG', coTheXoaCung: true, quanLyLoGhiDe: 'KE_THUA' }
+        : { duLieu: [HANG_HOA_CHUNG] },
+    }),
+  );
+  await context.route('**/api/cai-dat/quan-ly-lo', (route) => route.fulfill({ json: { bat: false } }));
+  await context.route('**/api/phieu-nhap**', async (route) => {
+    if (route.request().method() === 'GET') return route.fulfill({ json: { duLieu: [] } });
+    const than = route.request().postDataJSON() as { hoanThanhNgay?: boolean };
+    return route.fulfill({
+      status: 201,
+      json: { id: 'pn-1', ma: 'PN000556', trangThai: than.hoanThanhNgay ? 'HOAN_THANH' : 'PHIEU_TAM' },
+    });
+  });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Nhập hàng' }).click();
+  await page.getByRole('button', { name: '+ Nhập hàng' }).click();
+
+  const oTim = page.getByPlaceholder('Tìm hàng hóa');
+  const goiYOption = page.getByRole('listbox', { name: 'Gợi ý hàng hoá' }).getByRole('option');
+  const dongPhieu = page.locator('tbody tr');
+
+  // Lưu tạm KHÔNG hỏi in tem — phiếu tạm chưa thật sự vào kho (SPEC.md §6.2).
+  await oTim.pressSequentially('pana');
+  await expect(goiYOption).toHaveCount(2);
+  await page.keyboard.press('Enter');
+  await expect(dongPhieu).toHaveCount(1); // đợi dòng vào phiếu (tra cứu quản lý lô bất đồng bộ) trước khi F6
+  await page.keyboard.press('F6');
+  await expect(page.getByText('Đã lưu tạm phiếu nhập PN000556')).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'In tem mã' })).toHaveCount(0);
+
+  // Hoàn thành thì hỏi in tem — "Bỏ qua" đóng ngay, ô tìm lấy lại được focus.
+  await oTim.pressSequentially('pana');
+  await expect(goiYOption).toHaveCount(2);
+  await page.keyboard.press('Enter');
+  await expect(dongPhieu).toHaveCount(1);
+  await page.getByRole('button', { name: 'Hoàn thành' }).click();
+  await expect(page.getByRole('dialog', { name: 'In tem mã' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Bỏ qua' }).click();
+  await expect(page.getByRole('dialog', { name: 'In tem mã' })).toHaveCount(0);
+  await expect(oTim).toBeFocused();
+});

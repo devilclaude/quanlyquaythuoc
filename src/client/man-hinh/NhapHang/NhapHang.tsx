@@ -18,6 +18,7 @@ import {
   layGoiYTimHang,
   type GoiYBanHang,
 } from '../BanHang/BanHang';
+import { InTemMa, xayDungDsTemTuPhieuNhap, type DongTemUI } from './InTemMa';
 import { NhapHangTuExcel } from './NhapHangTuExcel';
 import './NhapHang.css';
 
@@ -357,6 +358,7 @@ export function NhapHang() {
   const [thongBao, setThongBao] = useState<string | undefined>(undefined);
   const [dangTaoHangMoi, setDangTaoHangMoi] = useState(false);
   const [idDongVuaThem, setIdDongVuaThem] = useState<string | undefined>(undefined);
+  const [dsTemBanDau, setDsTemBanDau] = useState<DongTemUI[] | undefined>(undefined);
   const oTimRef = useRef<HTMLInputElement>(null);
   const truyVanHienTaiRef = useRef('');
   const goiY = tim.trim() ? goiYThoBanDau : [];
@@ -483,6 +485,7 @@ export function NhapHang() {
         return PhieuNhapResSchema.parse(await res.json());
       })
       .then((phieu) => {
+        if (hoanThanhNgay) setDsTemBanDau(xayDungDsTemTuPhieuNhap(dsDong));
         setDsDong([]);
         setChiSoDongChon(-1);
         setDangGui(false);
@@ -631,6 +634,16 @@ export function NhapHang() {
       </div>
 
       <NhapHangTuExcel />
+
+      {dsTemBanDau ? (
+        <InTemMa
+          dsTemBanDau={dsTemBanDau}
+          onDong={() => {
+            setDsTemBanDau(undefined);
+            oTimRef.current?.focus();
+          }}
+        />
+      ) : null}
     </div>
   );
 }

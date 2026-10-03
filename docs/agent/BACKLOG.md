@@ -411,7 +411,7 @@ Ghi chú: rã khỏi T-041 lúc build (xem ghi chú T-041) — không còn code 
 tham khảo (đã gỡ khỏi PR đó), viết lại từ đầu theo TDD.
 
 ### T-042 [A] prio:42 — In tem mã
-Trạng thái: TODO · Phụ thuộc: T-040c1
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-040c1
 Xong khi: chọn khổ giấy, sửa số lượng tem từng dòng, preview, in — đối chiếu
 screenshots và file PDF mẫu trong `docs/reference/kiotviet/`; **bỏ dấu tiếng Việt
 trên tem** vì máy in tem không in được chữ có dấu (ghi chú này lấy nguyên văn từ
@@ -420,6 +420,17 @@ Ghi chú: phụ thuộc T-040c1 (không chỉ T-040b) vì điểm gọi in tem l
 thành" ngay trong màn nhập hàng thật (SPEC.md §6.2 bước 4), không phải một màn
 độc lập. Chỉ cần T-040c1 (luồng hàng đã có) — nút Hoàn thành không phụ thuộc
 T-040c2 (tạo hàng mới ngay trong màn).
+Ghi chú (sửa lúc làm): chỉ 2 khổ giấy (không phải 8 như ảnh "Chọn loại giấy in
+tem mã") và gộp bước "Chọn loại giấy"+"Xem bản in" của KiotViet thành một màn
+preview sống — xem lý do trong `InTemMa.tsx`.
+Ghi chú (sửa lúc làm, phát hiện của `doi-chieu-ui`): dòng "bỏ dấu tiếng Việt
+trên tem" ở trên bị DIỄN GIẢI SAI lúc viết task — ảnh "Sau khi ấn nút in.png"
+(hộp thoại in Chrome cho đúng PDF KiotViet gửi máy in) cho thấy TÊN HÀNG/ĐƠN VỊ
+trên tem GIỮ NGUYÊN dấu ("mãnh lực vương (hộp)"). Ghi chú gốc trong ảnh "Chọn
+loại giấy in tem mã" ("không chứa ký tự đặc biệt hoặc chữ có dấu") nằm cùng
+bullet với "rút ngắn mã hàng" — nói về MÃ HÀNG (để mã vạch CODE128 quét được,
+vì chuẩn này chỉ định nghĩa cho dải ASCII), không phải tên hàng hiển thị. Đã
+sửa code cho đúng: chỉ bỏ dấu ở mã hàng trước khi encode mã vạch.
 
 ### T-043 [B] prio:43 — Nhập hàng từ file Excel
 Trạng thái: DONE · Phụ thuộc: T-040a
@@ -472,7 +483,7 @@ có hai màn UI (danh sách trả hàng + luồng tạo trả hàng, luồng sau
 screenshot tham chiếu) nên chắc chắn không nhỏ hơn T-040. Theo đúng tiền lệ T-040a.
 
 ### T-052b [A] prio:52.2 — Trả hàng: API
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-052a
+Trạng thái: DONE · Phụ thuộc: T-052a
 Xong khi: `POST /api/tra-hang` (tạo phiếu trả cho một hoá đơn, gọi
 `taoPhieuTraHang`), `GET /api/tra-hang` (danh sách) và `GET /api/tra-hang/:id`
 (chi tiết, kèm liên kết ngược hoá đơn gốc); 400 khi dữ liệu không hợp lệ, 409 khi
