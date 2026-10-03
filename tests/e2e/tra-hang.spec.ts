@@ -118,8 +118,11 @@ test('trả hàng: luồng tạo — tìm hoá đơn, chặn nhập vượt "cò
 
   expect(thanGui).toEqual({ hoaDonId: 'hd-2', dong: [{ hoaDonDongId: 'hdd-2', soLuong: 30 }] });
 
-  // Lưu xong quay về danh sách, tải lại và mở sẵn chi tiết phiếu vừa tạo.
+  // Lưu xong quay về danh sách, tải lại và mở sẵn chi tiết phiếu vừa tạo —
+  // "TH000002" xuất hiện cả ở dòng danh sách lẫn tiêu đề chi tiết đã mở sẵn,
+  // nên kiểm từng nơi bằng locator riêng (tránh strict-mode "resolved to 2 elements").
   await expect(page.getByPlaceholder('Theo mã phiếu trả')).toBeVisible();
-  await expect(page.getByText('TH000002')).toBeVisible();
+  await expect(page.getByRole('button', { name: /TH000002/ })).toBeVisible(); // dòng trong danh sách
+  await expect(page.getByRole('heading', { name: 'TH000002' })).toBeVisible(); // chi tiết đã mở sẵn
   await expect(page.getByText('60,000').first()).toBeVisible();
 });
