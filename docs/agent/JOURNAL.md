@@ -1105,3 +1105,14 @@ có cột trạng thái, một phiếu luôn hoàn tất ngay trong transaction 
 PR còn lại ~860 dòng/16 file, `npm run ci` xanh.
 PR: (xem mô tả PR) · Tầng: A
 Kế tiếp: T-052d (luồng tạo trả hàng) hoặc T-053a.
+
+## 2026-10-03 (run kế) — dọn PR + chọn T-055
+Làm: #79 (T-052d)/#80 (T-053a) CI xanh, không comment, không conflict — đang
+chờ người duyệt B, không sửa. T-053a/T-052d đã có PR nên không chọn lại; T-055
+là task TODO nhỏ nhất đủ điều kiện. Thêm `layCanhBaoCanDate` (hình chiếu suy ra
+từ `ton_kho_lo`/`lo_hang`, khuôn T-034) + `ngayHomNayVN`/`soNgayGiuaHaiNgayVN`
+(giờ VN) + `GET /api/tong-quan/canh-bao-can-date` + khối thứ hai ở màn Tổng
+quan. Tầng kho không gọi `giaiNghiaCaiDatQuanLyLo` (SPEC.md §3.2) — lọc theo
+cài đặt quản lý lô làm ở route, đúng "bộ lọc báo cáo cận date" được phép.
+PR: (xem mô tả PR) · Tầng: A
+Kế tiếp: T-055 chờ merge; sau đó T-053b (nếu #80 đã merge) hoặc tiếp T-055 kế.

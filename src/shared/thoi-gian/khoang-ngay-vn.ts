@@ -30,6 +30,20 @@ export function cuoiNgayVN(ngayVN: string): string {
   return new Date(Date.UTC(nam, thang - 1, ngay, 23, 59, 59, 999) - MUI_GIO_VN_MS).toISOString();
 }
 
+/** Ngày hiện tại theo giờ Việt Nam, dạng "yyyy-MM-dd" — mốc "hôm nay" khi tính số ngày còn lại tới một hạn dùng (T-055). */
+export function ngayHomNayVN(hienTai: Date = new Date()): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }).format(hienTai);
+}
+
+/** Số ngày từ `tuNgayVN` đến `denNgayVN` (cả hai dạng "yyyy-MM-dd") — âm nếu `denNgayVN` ở trong quá khứ. */
+export function soNgayGiuaHaiNgayVN(tuNgayVN: string, denNgayVN: string): number {
+  const tu = phanTichNgayVN(tuNgayVN);
+  const den = phanTichNgayVN(denNgayVN);
+  const tuMs = Date.UTC(tu.nam, tu.thang - 1, tu.ngay);
+  const denMs = Date.UTC(den.nam, den.thang - 1, den.ngay);
+  return Math.round((denMs - tuMs) / 86_400_000);
+}
+
 /** Khoảng [đầu tháng, cuối tháng] của tháng hiện tại theo giờ Việt Nam — mặc định của bộ lọc "Thời gian". */
 export function khoangThangNayVN(hienTai: Date = new Date()): { tu: string; den: string } {
   const phan = new Intl.DateTimeFormat('en-CA', {

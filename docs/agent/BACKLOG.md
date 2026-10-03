@@ -592,10 +592,19 @@ mà T-007 tạo ra (SPEC.md §3.4); bản gốc chỉ ghi phụ thuộc T-005 l�
 không dựng được đúng "Xong khi" nếu thiếu T-007.
 
 ### T-055 [A] prio:55 — Cảnh báo cận date
-Trạng thái: TODO · Phụ thuộc: T-010b
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-010b
 Xong khi: báo cáo hết hạn trong 30/60/90 ngày; một ô trên màn tổng quan.
 Ghi chú: **chỉ có tác dụng khi quầy đã bắt đầu dùng lô thật.** Ngày đầu toàn bộ tồn
 nằm ở lô ngầm định nên báo cáo sẽ rỗng — đó là đúng, không phải bug.
+Ghi chú (sửa lúc làm): "báo cáo hết hạn trong 30/60/90 ngày" cài đặt thành MỘT
+bảng duy nhất (không ba báo cáo riêng) — mỗi lô mang `soNgayConLai` (có thể âm
+nếu đã hết hạn) và `nguong` (30/60/90, ngưỡng cấp bách nhất mà nó rơi vào),
+sắp theo `soNgayConLai` tăng dần (gấp nhất lên trước). Tầng kho
+(`layCanhBaoCanDate`) trả dữ liệu thô kèm `quanLyLoGhiDe` của sản phẩm nhưng
+không tự gọi `giaiNghiaCaiDatQuanLyLo` (SPEC.md §3.2/`.dependency-cruiser.cjs`
+cấm `src/server/kho/**` import hàm đó); route `GET
+/api/tong-quan/canh-bao-can-date` mới là "bộ lọc báo cáo cận date" được phép
+gọi hàm giải nghĩa đó để ẩn lô của sản phẩm đã ghi đè tắt quản lý lô.
 
 ---
 
