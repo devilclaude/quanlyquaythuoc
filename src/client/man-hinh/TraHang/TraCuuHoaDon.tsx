@@ -6,10 +6,10 @@ import './TraCuuHoaDon.css';
 // T-052c — tra một hoá đơn theo mã để XEM LẠI từ chi tiết một phiếu trả đã
 // tạo (liên kết ngược — chỉ chiều phiếu trả → hoá đơn; chiều ngược lại cần
 // một màn "Danh sách hoá đơn" chưa có trong BACKLOG.md, xem ghi chú PR).
-// `BangDongHoaDonDeTraHang` CHỈ ĐỌC ở task này — T-052d (luồng tạo, chẻ khỏi
-// task này vì vượt ngưỡng 1000 dòng/PR, xem BACKLOG.md) sẽ dùng lại
-// `useHoaDonDeTraHang`/route `GET /api/tra-hang/hoa-don/:ma` và THÊM cột nhập
-// số lượng trả — không viết lại phần tra cứu này.
+// `BangDongHoaDonDeTraHang` CHỈ ĐỌC khi gọi không kèm `onSuaSoLuongTra` (dùng ở
+// `ChiTietTraHang`, T-052c). T-052d (luồng tạo) truyền thêm `soLuongTra`/
+// `onSuaSoLuongTra` để bảng tự thêm cột nhập số lượng trả — không viết lại
+// bảng hay `useHoaDonDeTraHang`/route `GET /api/tra-hang/hoa-don/:ma`.
 
 /** Tra một hoá đơn theo mã — `undefined` khi chưa có mã để tra. */
 export function useHoaDonDeTraHang(ma: string | undefined) {
@@ -48,8 +48,17 @@ export function useHoaDonDeTraHang(ma: string | undefined) {
   return { duLieu, dangTai, loi };
 }
 
-/** Thuần theo props — bảng dòng CHỈ ĐỌC của một hoá đơn (xem ghi chú đầu file). */
-export function BangDongHoaDonDeTraHang({ dong }: { dong: HoaDonDeTraHangRes['dong'] }) {
+interface BangDongHoaDonDeTraHangProps {
+  dong: HoaDonDeTraHangRes['dong'];
+  /** Chỉ cho khi muốn cho sửa (T-052d) — map `hoaDonDongId -> số lượng trả` đã chọn. */
+  soLuongTra?: Record<string, number>;
+  /** Có mặt thì bảng thêm cột "Số lượng trả" kèm ô nhập; vắng mặt thì chỉ đọc (T-052c). */
+  onSuaSoLuongTra?: (hoaDonDongId: string, soLuongMoi: number) => void;
+}
+
+/** Thuần theo props — bảng dòng của một hoá đơn (xem ghi chú đầu file). */
+export function BangDongHoaDonDeTraHang({ dong, soLuongTra, onSuaSoLuongTra }: BangDongHoaDonDeTraHangProps) {
+  const choSua = onSuaSoLuongTra !== undefined;
   return (
     <Bang>
       <thead>
@@ -58,6 +67,7 @@ export function BangDongHoaDonDeTraHang({ dong }: { dong: HoaDonDeTraHangRes['do
           <th>Tên hàng</th>
           <th>Đã bán</th>
           <th>Còn trả được</th>
+          {choSua ? <th>Số lượng trả</th> : null}
         </tr>
       </thead>
       <tbody>
@@ -69,6 +79,19 @@ export function BangDongHoaDonDeTraHang({ dong }: { dong: HoaDonDeTraHangRes['do
             </td>
             <OSo>{d.soLuongDaBan}</OSo>
             <OSo>{d.conLaiToiDa}</OSo>
+            {choSua ? (
+              <OSo>
+                <input
+                  type="number"
+                  min={0}
+                  max={d.conLaiToiDa}
+                  step={1}
+                  aria-label={`Số lượng trả ${d.ten}`}
+                  value={soLuongTra?.[d.id] ?? 0}
+                  onChange={(su) => onSuaSoLuongTra?.(d.id, Number.parseInt(su.target.value, 10))}
+                />
+              </OSo>
+            ) : null}
           </tr>
         ))}
       </tbody>

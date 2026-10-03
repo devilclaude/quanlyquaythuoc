@@ -7,7 +7,24 @@
 
 .danh-sach-tra-hang__tieu-de { font-size: var(--chu-lg); margin: 0; }
 
+.danh-sach-tra-hang__thanh-cong-cu {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--kc-3);
+}
+
 .danh-sach-tra-hang__thong-bao { text-align: center; padding: var(--kc-5); color: var(--mau-chu-phu); }
 .danh-sach-tra-hang__thong-bao--loi { color: var(--mau-nguy); }
 .danh-sach-tra-hang__dong--dang-chon { background: var(--mau-chinh-nhat); }
 .danh-sach-tra-hang__chi-tiet { background: var(--mau-nen); padding: var(--kc-4); }
+
+.danh-sach-tra-hang__quay-lai {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--mau-chinh);
+  font-size: var(--chu-sm);
+  cursor: pointer;
+  padding: var(--kc-2) 0;
+}

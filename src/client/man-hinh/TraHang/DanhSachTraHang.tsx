@@ -4,25 +4,28 @@ import { DanhSachTraHangResSchema, type TraHangDanhSachItem } from '../../../sha
 import { dong } from '../../../shared/kieu/dong';
 import { dinhDangThoiGianVN } from '../../../shared/thoi-gian/dinh-dang';
 import { dinhDangTien } from '../../../shared/tien/dinh-dang';
-import { Bang, OSo, TruongNhap } from '../../thanh-phan';
+import { Bang, Nut, OSo, TruongNhap } from '../../thanh-phan';
 import { ChiTietTraHang } from './ChiTietTraHang';
+import { TaoTraHang } from './TaoTraHang';
 import './DanhSachTraHang.css';
 
-// T-052c — Danh sách và chi tiết trả hàng (CHỈ ĐỌC — luồng TẠO trả hàng chẻ
-// sang task mới, xem BACKLOG.md, cùng lý do chẻ T-041/T-041b: gộp chung vượt
-// ngưỡng 1000 dòng/PR khi đo thật trước khi mở PR). Cột khớp screenshot "Danh
-// sách trả hàng" CHO PHẦN CÒN LẠI SAU KHI BỎ: "Người bán"/"Mã KH"/"Khách
-// hàng" (quầy một người dùng, không công nợ khách — v1.1, cùng quyết định
-// T-041 với "Nhà cung cấp"/"Người tạo"), "Cần trả khách"/"Đã trả khách"
-// (không có khái niệm trả nhiều lần/một phần CHO MỘT PHIẾU — SPEC.md chỉ có
-// "Đã trả", gộp thành một cột "Tổng tiền hoàn"), không có bộ lọc "Loại trả
-// hàng"/"Trạng thái" (không có "Đã huỷ" — chưa có luồng huỷ phiếu trả trong
-// BACKLOG.md) — thay bằng "Mã hoá đơn" (liên kết ngược, T-052b) để tra được
-// gốc ngay từ danh sách mà không cần mở chi tiết. Ô "Theo mã phiếu trả" lọc
-// NGAY TRÊN danh sách đã tải (không gọi lại API, không có tham số `tim` ở
-// `layDanhSachTraHang`) — số phiếu trả hàng của một quầy nhỏ không cần lọc
-// phía server; thêm lọc server-side khi cần (vd. sau khi dữ liệu lớn hơn) là
-// việc của task khác, không phải quyết định kiến trúc của task này.
+// T-052c — Danh sách và chi tiết trả hàng. Cột khớp screenshot "Danh sách trả
+// hàng" CHO PHẦN CÒN LẠI SAU KHI BỎ: "Người bán"/"Mã KH"/"Khách hàng" (quầy
+// một người dùng, không công nợ khách — v1.1, cùng quyết định T-041 với "Nhà
+// cung cấp"/"Người tạo"), "Cần trả khách"/"Đã trả khách" (không có khái niệm
+// trả nhiều lần/một phần CHO MỘT PHIẾU — SPEC.md chỉ có "Đã trả", gộp thành
+// một cột "Tổng tiền hoàn"), không có bộ lọc "Loại trả hàng"/"Trạng thái"
+// (không có "Đã huỷ" — chưa có luồng huỷ phiếu trả trong BACKLOG.md) — thay
+// bằng "Mã hoá đơn" (liên kết ngược, T-052b) để tra được gốc ngay từ danh sách
+// mà không cần mở chi tiết. Ô "Theo mã phiếu trả" lọc NGAY TRÊN danh sách đã
+// tải (không gọi lại API, không có tham số `tim` ở `layDanhSachTraHang`) — số
+// phiếu trả hàng của một quầy nhỏ không cần lọc phía server; thêm lọc
+// server-side khi cần (vd. sau khi dữ liệu lớn hơn) là việc của task khác,
+// không phải quyết định kiến trúc của task này.
+// T-052d — nút "+ Trả hàng" mở luồng tạo (`TaoTraHang`, chẻ khỏi T-052c vì
+// gộp chung vượt ngưỡng 1000 dòng/PR, xem BACKLOG.md). Cùng khuôn
+// `dangTaoMoi`/"← Danh sách..." đã dùng ở `DanhSachPhieuNhap` (T-041) — lưu
+// xong quay về danh sách, tải lại và mở sẵn chi tiết phiếu vừa tạo.
 
 interface BangDanhSachTraHangProps {
   duLieu: TraHangDanhSachItem[];
@@ -97,16 +100,19 @@ export function BangDanhSachTraHang({ duLieu, dangTai, loi, phieuChonId, onChonD
   );
 }
 
-/** Container: tải danh sách một lần, ô tìm lọc ngay trên dữ liệu đã tải. */
+/** Container: tải danh sách một lần, ô tìm lọc ngay trên dữ liệu đã tải, "+ Trả hàng" mở luồng tạo. */
 export function DanhSachTraHang() {
   const [tim, setTim] = useState('');
   const [duLieu, setDuLieu] = useState<TraHangDanhSachItem[]>([]);
   const [dangTai, setDangTai] = useState(true);
   const [loi, setLoi] = useState<string | undefined>(undefined);
   const [phieuChonId, setPhieuChonId] = useState<string | undefined>(undefined);
+  const [phienBanLamMoi, setPhienBanLamMoi] = useState(0);
+  const [dangTaoMoi, setDangTaoMoi] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
+    setDangTai(true);
     fetch('/api/tra-hang', { signal: controller.signal })
       .then((res) => res.json())
       .then((json) => {
@@ -120,15 +126,37 @@ export function DanhSachTraHang() {
       });
 
     return () => controller.abort();
-  }, []);
+  }, [phienBanLamMoi]);
 
   const timChuanHoa = tim.trim().toLowerCase();
   const duLieuLoc = timChuanHoa ? duLieu.filter((p) => p.ma.toLowerCase().includes(timChuanHoa)) : duLieu;
 
+  function taoXong(id: string) {
+    setDangTaoMoi(false);
+    setPhienBanLamMoi((v) => v + 1);
+    setPhieuChonId(id);
+  }
+
+  if (dangTaoMoi) {
+    return (
+      <div className="danh-sach-tra-hang">
+        <button type="button" className="danh-sach-tra-hang__quay-lai" onClick={() => setDangTaoMoi(false)}>
+          ← Danh sách trả hàng
+        </button>
+        <TaoTraHang onTaoXong={taoXong} />
+      </div>
+    );
+  }
+
   return (
     <div className="danh-sach-tra-hang">
       <h1 className="danh-sach-tra-hang__tieu-de">Trả hàng</h1>
-      <TruongNhap aria-label="Theo mã phiếu trả" placeholder="Theo mã phiếu trả" value={tim} onChange={(su) => setTim(su.target.value)} />
+      <div className="danh-sach-tra-hang__thanh-cong-cu">
+        <TruongNhap aria-label="Theo mã phiếu trả" placeholder="Theo mã phiếu trả" value={tim} onChange={(su) => setTim(su.target.value)} />
+        <Nut bienThe="chinh" onClick={() => setDangTaoMoi(true)}>
+          + Trả hàng
+        </Nut>
+      </div>
       <BangDanhSachTraHang
         duLieu={duLieuLoc}
         dangTai={dangTai}
