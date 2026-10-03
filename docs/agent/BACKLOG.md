@@ -411,7 +411,7 @@ Ghi chú: rã khỏi T-041 lúc build (xem ghi chú T-041) — không còn code 
 tham khảo (đã gỡ khỏi PR đó), viết lại từ đầu theo TDD.
 
 ### T-042 [A] prio:42 — In tem mã
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-040c1
+Trạng thái: DONE · Phụ thuộc: T-040c1
 Xong khi: chọn khổ giấy, sửa số lượng tem từng dòng, preview, in — đối chiếu
 screenshots và file PDF mẫu trong `docs/reference/kiotviet/`; **bỏ dấu tiếng Việt
 trên tem** vì máy in tem không in được chữ có dấu (ghi chú này lấy nguyên văn từ
@@ -489,17 +489,49 @@ Xong khi: `POST /api/tra-hang` (tạo phiếu trả cho một hoá đơn, gọi
 (chi tiết, kèm liên kết ngược hoá đơn gốc); 400 khi dữ liệu không hợp lệ, 409 khi
 số lượng trả vượt số đã bán (cộng dồn các lần trả trước). Không có UI.
 
-### T-052c [B] prio:52.3 — Trả hàng: giao diện
-Trạng thái: TODO · Phụ thuộc: T-052b
+### T-052c [A] prio:52.3 — Trả hàng: danh sách + chi tiết (chỉ đọc)
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-052b
 Xong khi: màn danh sách khớp screenshot "Danh sách trả hàng"
-(`docs/reference/kiotviet/Quản trị/Trả hàng/`); luồng tạo trả hàng: tìm hoá đơn
-gốc, chọn dòng + số lượng trả, gọi `POST /api/tra-hang` (T-052b); mở được liên
-kết ngược từ hoá đơn gốc sang phiếu trả đã tạo.
-Ghi chú: không có screenshot tham chiếu cho form/luồng TẠO trả hàng trong
+(`docs/reference/kiotviet/Quản trị/Trả hàng/`) cho các cột còn trong phạm vi v1
+(bỏ "Người bán"/"Mã KH"/"Khách hàng" — không công nợ khách, v1.1; gộp "Cần trả
+khách"/"Đã trả khách" thành một cột "Tổng tiền hoàn" — schema không lưu trả một
+phần; thêm cột "Mã hoá đơn" thay cho các bộ lọc "Trạng thái"/"Loại trả hàng" để
+liên kết ngược); chi tiết mở INLINE ngay dưới dòng (không phải modal, khớp
+KiotViet); bấm mã hoá đơn trong chi tiết mở lại được hoá đơn gốc kèm từng dòng
++ số lượng còn trả được tối đa (liên kết ngược — CHỈ chiều phiếu trả → hoá đơn;
+chiều ngược lại cần một màn "Danh sách hoá đơn" chưa có trong BACKLOG.md, xem
+ghi chú PR). `GET /api/tra-hang/hoa-don/:ma` (hàm `timHoaDonDeTraHang`, lõi
+`tinhConLaiToiDaCoSo` dùng chung với `taoPhieuTraHang` — không có hai công thức
+tính "còn trả được") dựng mới ở task này để phục vụ liên kết ngược — T-052d
+dùng lại ĐÚNG route/hàm/component này cho luồng tạo, không viết lại.
+Ghi chú: đây là T-052c cũ (từng gộp cả luồng tạo), chẻ GIỮA LÚC BUILD — đo
+xong mới phát hiện gộp cả luồng tạo trả hàng ra ~1095 dòng/19 file, vượt ngưỡng
+1000 dòng/PR (CLAUDE.md), không phải lúc ước lượng ban đầu. Gỡ toàn bộ luồng
+TẠO (ô tìm hoá đơn có nhập số lượng, nút "+ Trả hàng") sang T-052d — slice còn
+lại trong ngưỡng (~800 dòng/16 file). Theo đúng tiền lệ T-041/T-041b (chẻ giữa
+chừng khi đo thật vượt ngưỡng, không phải chẻ lúc chọn task như T-040a/T-052a).
+Đổi nhãn `[B]`→`[A]`: sau khi gỡ luồng tạo, task này không còn ghi kho/tiền qua
+tay người dùng — chỉ đọc (mở lại hoá đơn đã có, không sửa/tạo gì).
+
+### T-052d [B] prio:52.35 — Trả hàng: luồng tạo (giao diện)
+Trạng thái: TODO · Phụ thuộc: T-052c
+Xong khi: nút "+ Trả hàng" trên màn danh sách (T-052c) mở luồng tạo: ô tìm hoá
+đơn gốc theo mã (dùng lại `GET /api/tra-hang/hoa-don/:ma` và
+`useHoaDonDeTraHang`/`BangDongHoaDonDeTraHang` đã có từ T-052c, không viết
+lại phần tra cứu), hiện bảng dòng kèm số lượng đã bán/còn trả được tối đa,
+thêm được cột nhập số lượng trả từng dòng (giới hạn bởi "còn trả được tối
+đa"), nút Lưu gọi `POST /api/tra-hang` (T-052b); lưu xong quay về danh sách,
+mở sẵn chi tiết phiếu vừa tạo.
+Ghi chú: phần bị chẻ khỏi T-052c khi đo kích thước PR vượt ngưỡng — xem ghi
+chú T-052c. Không hiển thị tạm tính "tiền hoàn" từng dòng trước khi lưu —
+công thức đó chỉ sống ở server (`tao-phieu-tra-hang.ts`, cần
+`thanhTien`/`giamGiaPhanBo` không lộ ra `GET .../hoa-don/:ma`); tổng tiền hoàn
+thật chỉ hiện SAU khi lưu (từ response `POST /api/tra-hang`). Không có
+screenshot tham chiếu cho form/luồng TẠO trả hàng trong
 `docs/reference/kiotviet/` (chỉ có màn danh sách) — dựng theo token trong
 `.claude/skills/design-system/`, ghi rõ trong PR, theo tiền lệ T-010c/T-023.
-Tầng B: đường ghi kho + tiền qua tay người dùng lần đầu ở luồng tạo (tương tự lý
-do T-040c1[B], khác tiền lệ T-022c[A]/T-040b[A] chỉ nối API đã duyệt).
+Tầng B: đường ghi kho + tiền qua tay người dùng lần đầu ở luồng tạo (tương tự
+lý do T-040c1[B], khác tiền lệ T-022c[A]/T-040b[A] chỉ nối API đã duyệt).
 
 ### T-053a [B] prio:53.1 — Trả hàng nhập: schema + lõi nghiệp vụ
 Trạng thái: TODO · Phụ thuộc: T-040a

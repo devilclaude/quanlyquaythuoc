@@ -15,6 +15,7 @@ import {
   layChiTietTraHang,
   layDanhSachTraHang,
   taoPhieuTraHang,
+  timHoaDonDeTraHang,
 } from './tao-phieu-tra-hang';
 
 type DbTest = ReturnType<typeof drizzle>;
@@ -391,5 +392,88 @@ describe('layChiTietTraHang (T-052b)', () => {
   it('trả về undefined khi không tìm thấy', () => {
     taoChiNhanh('cn-1');
     expect(layChiTietTraHang(db, 'khong-ton-tai')).toBeUndefined();
+  });
+});
+
+describe('timHoaDonDeTraHang (T-052c)', () => {
+  it('chưa trả lần nào: conLaiToiDa bằng đúng số lượng đã bán', () => {
+    taoChiNhanh('cn-1');
+    banHangDonGian('cn-1');
+
+    const hd = timHoaDonDeTraHang(db, 'HD000001');
+
+    expect(hd?.ma).toBe('HD000001');
+    expect(hd?.dong).toHaveLength(1);
+    expect(hd?.dong[0]).toMatchObject({
+      id: 'hdd-1',
+      sanPhamId: 'sp-1',
+      maHang: 'SP001',
+      donViTen: 'Viên',
+      heSo: 1,
+      soLuongDaBan: 10,
+      conLaiToiDa: 10,
+    });
+  });
+
+  it('đã trả một phần: conLaiToiDa giảm đúng bằng phần đã trả', () => {
+    taoChiNhanh('cn-1');
+    const { hoaDonDongId } = banHangDonGian('cn-1');
+    taoPhieuTraHang(db, {
+      id: 'th-1',
+      hoaDonId: 'hd-1',
+      thoiGian: '2026-09-22T08:00:00.000Z',
+      dong: [{ id: 'thd-1', hoaDonDongId, soLuong: 4 }],
+    });
+
+    const hd = timHoaDonDeTraHang(db, 'HD000001');
+
+    expect(hd?.dong[0]?.conLaiToiDa).toBe(6);
+  });
+
+  it('đã trả hết: conLaiToiDa về đúng 0', () => {
+    taoChiNhanh('cn-1');
+    const { hoaDonDongId } = banHangDonGian('cn-1');
+    taoPhieuTraHang(db, {
+      id: 'th-1',
+      hoaDonId: 'hd-1',
+      thoiGian: '2026-09-22T08:00:00.000Z',
+      dong: [{ id: 'thd-1', hoaDonDongId, soLuong: 10 }],
+    });
+
+    const hd = timHoaDonDeTraHang(db, 'HD000001');
+
+    expect(hd?.dong[0]?.conLaiToiDa).toBe(0);
+  });
+
+  it('quy đổi conLaiToiDa về đúng đơn vị đã bán (hệ số > 1), làm tròn xuống khi đã trả lẻ đơn vị cơ sở', () => {
+    taoChiNhanh('cn-1');
+    const loId = taoSanPhamCoLo('sp-2', 'SP002');
+    nhapKho(loId, 'cn-1', 200, '2026-09-20T07:00:00.000Z');
+    taoHoaDonTuGioHang(db, {
+      id: 'hd-2',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-09-21T08:00:00.000Z',
+      phuongThucThanhToan: 'TIEN_MAT',
+      dong: [moiDong({ id: 'hdd-2', sanPhamId: 'sp-2', donViTen: 'Hộp', heSo: 10, soLuong: 10 })],
+    });
+    // Trả 5 CƠ SỞ (nửa hộp) qua lõi nghiệp vụ trực tiếp — mô phỏng dữ liệu lẻ
+    // không tròn hệ số, để kiểm conLaiToiDa không làm tròn LÊN vượt tồn thật.
+    taoPhieuTraHang(db, {
+      id: 'th-2',
+      hoaDonId: 'hd-2',
+      thoiGian: '2026-09-22T08:00:00.000Z',
+      dong: [{ id: 'thd-2', hoaDonDongId: 'hdd-2', soLuong: 5 }],
+    });
+
+    // db trong test này chỉ có một hoá đơn (hd-2) — mã tự sinh tuần tự nên là HD000001.
+    const hd = timHoaDonDeTraHang(db, 'HD000001');
+
+    // Đã bán 10 hộp = 100 cơ sở, đã trả 5 cơ sở → còn 95 cơ sở = 9,5 hộp → làm tròn XUỐNG còn 9.
+    expect(hd?.dong[0]?.conLaiToiDa).toBe(9);
+  });
+
+  it('trả về undefined khi không tìm thấy mã hoá đơn', () => {
+    taoChiNhanh('cn-1');
+    expect(timHoaDonDeTraHang(db, 'HD999999')).toBeUndefined();
   });
 });

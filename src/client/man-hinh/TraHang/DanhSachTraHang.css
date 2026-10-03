@@ -1,0 +1,13 @@
+.danh-sach-tra-hang {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kc-4);
+  padding: var(--kc-5);
+}
+
+.danh-sach-tra-hang__tieu-de { font-size: var(--chu-lg); margin: 0; }
+
+.danh-sach-tra-hang__thong-bao { text-align: center; padding: var(--kc-5); color: var(--mau-chu-phu); }
+.danh-sach-tra-hang__thong-bao--loi { color: var(--mau-nguy); }
+.danh-sach-tra-hang__dong--dang-chon { background: var(--mau-chinh-nhat); }
+.danh-sach-tra-hang__chi-tiet { background: var(--mau-nen); padding: var(--kc-4); }

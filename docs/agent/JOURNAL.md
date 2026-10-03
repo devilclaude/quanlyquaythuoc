@@ -1087,3 +1087,14 @@ PR: #76 (cập nhật, không mở PR mới)
 Tầng: A (không đổi)
 Kế tiếp: chờ CI GitHub xanh + người duyệt (#76 chạm `package.json`/
 `package-lock.json`, nhóm tự-quản-trị); sau đó T-053a hoặc T-052c.
+
+## 2026-10-03 — dọn PR: #76 (T-042) đã merge, chuyển DONE; chọn T-052c
+Làm: không còn PR agent nào mở (#76 đã merge). Chọn T-052c: TDD
+`timHoaDonDeTraHang` (dùng chung `tinhConLaiToiDaCoSo` với `taoPhieuTraHang` —
+không hai công thức) + `GET /api/tra-hang/hoa-don/:ma`, màn danh sách + chi
+tiết (inline) + liên kết ngược (mở lại hoá đơn gốc). Đo TRƯỚC khi mở PR: gộp cả
+luồng tạo ra ~1095 dòng/19 file — vượt ngưỡng. Chẻ ngay: gỡ luồng tạo (ô tìm có
+nhập liệu, nút "+ Trả hàng") sang T-052d mới, đổi nhãn T-052c `[B]`→`[A]` (hết
+ghi kho/tiền). PR còn lại ~800 dòng/16 file, `npm run ci` xanh.
+PR: (xem mô tả PR) · Tầng: A
+Kế tiếp: T-052d (luồng tạo trả hàng) hoặc T-053a.

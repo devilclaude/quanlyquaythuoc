@@ -52,9 +52,33 @@ export const TraHangChiTietResSchema = TraHangDanhSachItemSchema.extend({
   dong: z.array(TraHangDongResSchema),
 });
 
+// T-052c — tìm hoá đơn gốc theo mã để bắt đầu luồng tạo trả hàng
+// (`GET /api/tra-hang/hoa-don/:ma`). `conLaiToiDa` CHỈ để gợi ý/giới hạn input
+// trên giao diện — `POST /api/tra-hang` vẫn là nơi xác thực cuối cùng (409 khi
+// vượt), tính lại đúng cùng công thức ở `timHoaDonDeTraHang`.
+export const HoaDonDongDeTraHangItemSchema = z.object({
+  id: z.string(),
+  sanPhamId: z.string(),
+  maHang: z.string(),
+  ten: z.string(),
+  donViTen: z.string(),
+  heSo: z.number().int().min(1),
+  soLuongDaBan: z.number().int(),
+  conLaiToiDa: z.number().int(),
+});
+
+export const HoaDonDeTraHangResSchema = z.object({
+  id: z.string(),
+  ma: z.string(),
+  thoiGian: z.string(),
+  dong: z.array(HoaDonDongDeTraHangItemSchema),
+});
+
 export type TraHangDongReq = z.infer<typeof TraHangDongReqSchema>;
 export type TaoTraHangReq = z.infer<typeof TaoTraHangReqSchema>;
 export type TraHangRes = z.infer<typeof TraHangResSchema>;
 export type TraHangDanhSachItem = z.infer<typeof TraHangDanhSachItemSchema>;
 export type DanhSachTraHangRes = z.infer<typeof DanhSachTraHangResSchema>;
 export type TraHangChiTietRes = z.infer<typeof TraHangChiTietResSchema>;
+export type HoaDonDongDeTraHangItem = z.infer<typeof HoaDonDongDeTraHangItemSchema>;
+export type HoaDonDeTraHangRes = z.infer<typeof HoaDonDeTraHangResSchema>;
