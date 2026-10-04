@@ -1183,3 +1183,15 @@ Tầng: A — sau khi gỡ luồng tạo, slice này chỉ đọc (không ghi kh
 Kế tiếp: T-053c2 (luồng tạo + liên kết ngược chiều còn lại) sau khi PR này
 merge — task TODO duy nhất còn đủ điều kiện; mọi TODO khác đều BLOCKED
 (T-054, T-060, T-061/T-062).
+
+## 2026-10-05 — dọn PR, không chọn task mới
+Làm: PR#84 (T-053c2) nay CI xanh (trước đó "CI đang chạy"), không comment,
+`mergeable_state: clean` — chờ duyệt B đúng dự kiến, không sửa. Chưa merge
+nên T-053c1 (CHỜ MERGE) và T-053c2 (TODO) vẫn chưa mở khoá trên `main`.
+Không còn TODO nào đủ điều kiện: T-053c2 đã có PR mở; T-054/T-060 BLOCKED;
+T-061/T-062 BLOCKED (thiếu đích backup, xem BLOCKED.md). Không có chỉ đạo
+mới ở #quaythuoc-admin từ 2026-09-14.
+PR: (entry này, chỉ ghi JOURNAL — không có thay đổi code)
+Tầng: A
+Kế tiếp: chọn theo prio khi #84 merge (chuyển T-053c1/T-053c2 sang DONE);
+BLOCKED.md vẫn cần người quyết cho T-054/T-060/T-061.
