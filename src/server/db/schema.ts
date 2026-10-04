@@ -471,3 +471,54 @@ export const traHangDongLo = sqliteTable(
     check('tra_hang_dong_lo_so_luong_duong', sql`${t.soLuong} > 0`),
   ],
 );
+
+// Chứng từ trả hàng nhập (trả NCC, T-053a, SPEC.md §4.?/§6.4) — chứng từ giao
+// dịch, không xoá cứng (SPEC.md §3.5). `chi_nhanh_id` LUÔN lấy từ phiếu nhập
+// gốc (không nhận riêng qua tham số) — cùng lý do `tra_hang.chi_nhanh_id` suy
+// từ hoá đơn gốc. `ma` tự sinh tuần tự giống `hoa_don.ma`/`phieu_nhap.ma`/
+// `tra_hang.ma`.
+export const traHangNhap = sqliteTable('tra_hang_nhap', {
+  id: text('id').primaryKey(),
+  phieuNhapId: text('phieu_nhap_id')
+    .notNull()
+    .references(() => phieuNhap.id),
+  chiNhanhId: text('chi_nhanh_id')
+    .notNull()
+    .references(() => chiNhanh.id),
+  ma: text('ma').notNull().unique(),
+  thoiGian: text('thoi_gian').notNull(),
+  thoiGianMayChu: text('thoi_gian_may_chu')
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+});
+
+// Từng dòng trả của một phiếu trả hàng nhập — liên kết ngược tới đúng dòng
+// phiếu nhập gốc đã nhập (không tới sản phẩm, để không phải suy lại đơn
+// vị/giá — cùng lý do `tra_hang_dong.hoa_don_dong_id`). `so_luong` là đơn vị
+// CƠ SỞ. Trả về đúng LÔ ĐÃ NHẬN của dòng gốc đó (không FEFO, SPEC.md — lô suy
+// lại trực tiếp từ (san_pham_id, so_lo, hsd) của dòng gốc lúc ghi thẻ kho) —
+// không cần một bảng "...lo" riêng như `tra_hang_dong_lo`/`hoa_don_dong_lo`:
+// một dòng phiếu nhập chỉ get-or-create ĐÚNG MỘT lô (T-040a), không tràn qua
+// nhiều lô như một dòng bán hàng. `tien_hoan` tính theo TỶ LỆ số lượng trả /
+// đã nhập trên tổng tiền dòng nhập gốc (đơn giá × số lượng, SPEC.md §3.4),
+// dùng lại đúng `chiaLamTronNuaLen` đã có ở `tra_hang_dong.tien_hoan` — không
+// phải một công thức tiền mới.
+export const traHangNhapDong = sqliteTable(
+  'tra_hang_nhap_dong',
+  {
+    id: text('id').primaryKey(),
+    traHangNhapId: text('tra_hang_nhap_id')
+      .notNull()
+      .references(() => traHangNhap.id),
+    phieuNhapDongId: text('phieu_nhap_dong_id')
+      .notNull()
+      .references(() => phieuNhapDong.id),
+    soLuong: integer('so_luong').notNull(),
+    tienHoan: integer('tien_hoan').notNull(),
+  },
+  (t) => [
+    unique('tra_hang_nhap_dong_tra_hang_nhap_phieu_nhap_dong_unique').on(t.traHangNhapId, t.phieuNhapDongId),
+    check('tra_hang_nhap_dong_so_luong_duong', sql`${t.soLuong} > 0`),
+    check('tra_hang_nhap_dong_tien_hoan_khong_am', sql`${t.tienHoan} >= 0`),
+  ],
+);

@@ -536,7 +536,7 @@ Tầng B: đường ghi kho + tiền qua tay người dùng lần đầu ở lu�
 lý do T-040c1[B], khác tiền lệ T-022c[A]/T-040b[A] chỉ nối API đã duyệt).
 
 ### T-053a [B] prio:53.1 — Trả hàng nhập: schema + lõi nghiệp vụ
-Trạng thái: TODO · Phụ thuộc: T-040a
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-040a
 Xong khi: migration `tra_hang_nhap` (chứng từ, không xoá cứng, liên kết
 `phieu_nhap_id` tới phiếu nhập gốc, mã tự sinh tuần tự) và `tra_hang_nhap_dong`
 (dòng trả: liên kết `phieu_nhap_dong_id`, số lượng trả theo đơn vị cơ sở, đơn
@@ -556,6 +556,22 @@ Ghi chú: đây là T-053 cũ, chẻ ngay lúc chọn task (không build thử r
 cùng hình dạng gộp schema+lõi (đọc/ghi kho+tiền+lô, khớp screenshot, liên kết
 ngược chứng từ gốc)+API+UI đã khiến T-009/T-022/T-040/T-052 vượt ngưỡng 1000
 dòng/24 file khi làm trọn gói. Theo đúng tiền lệ T-040a/T-052a.
+Ghi chú (sửa lúc làm): "đơn giá lấy lại từ dòng nhập gốc — không tính lại" ở
+trên không đủ để tính tiền hoàn — `tra_hang_nhap_dong.so_luong` là đơn vị CƠ
+SỞ còn `đơn giá` của dòng nhập gốc là theo đơn vị ĐÃ CHỌN lúc nhập; quy đổi
+giữa hai bên đòi một phép chia theo hệ số (cấm — ARCHITECTURE.md §5/CLAUDE.md
+"tiền tính bằng số nguyên"). Đã đổi sang lưu `tien_hoan` (giống
+`tra_hang_dong.tien_hoan` của T-052a): phân bổ theo TỶ LỆ số lượng trả/đã nhập
+(cả hai quy về cơ sở) trên tổng tiền dòng nhập gốc (đơn giá × số lượng, không
+chia), dùng đúng `chiaLamTronNuaLen` đã có — không phát minh công thức tiền
+mới. Cũng không cần bảng "...lo" riêng như `tra_hang_dong_lo`/`hoa_don_dong_lo`:
+một dòng phiếu nhập chỉ get-or-create ĐÚNG MỘT lô (T-040a, không tràn qua
+nhiều lô như một dòng bán hàng), nên lô được suy lại trực tiếp từ
+`(san_pham_id, so_lo, hsd)` của dòng gốc lúc ghi thẻ kho, không cần lưu thêm.
+Thêm kiểm `phieu_nhap.trang_thai === 'HOAN_THANH'` (lỗi mới
+`PhieuNhapChuaHoanThanhError`) — phiếu còn `PHIEU_TAM` chưa từng ghi kho/tạo
+lô nên chưa thể trả; không có trong "Xong khi" gốc nhưng cần để bất biến
+"không để tồn kho âm không giải thích" không bị vi phạm.
 
 ### T-053b [A] prio:53.2 — Trả hàng nhập: API
 Trạng thái: TODO · Phụ thuộc: T-053a
