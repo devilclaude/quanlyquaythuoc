@@ -4,17 +4,20 @@ import { CaiDat } from './man-hinh/CaiDat/CaiDat';
 import { DanhSachHangHoa } from './man-hinh/HangHoa/DanhSachHangHoa';
 import { DanhSachPhieuNhap } from './man-hinh/NhapHang/DanhSachPhieuNhap';
 import { DanhSachTraHang } from './man-hinh/TraHang/DanhSachTraHang';
+import { DanhSachTraHangNhap } from './man-hinh/TraHangNhap/DanhSachTraHangNhap';
 import { TongQuan } from './man-hinh/TongQuan/TongQuan';
 import { Nut } from './thanh-phan';
 import './App.css';
 
-type Man = 'ban-hang' | 'hang-hoa' | 'nhap-hang' | 'tra-hang' | 'tong-quan' | 'cai-dat';
+type Man = 'ban-hang' | 'hang-hoa' | 'nhap-hang' | 'tra-hang' | 'tra-hang-nhap' | 'tong-quan' | 'cai-dat';
 
 // Bộ chuyển màn tối thiểu — KHÔNG bám sidebar đầy đủ của KiotViet (chưa có task
 // dựng nav thật trong BACKLOG.md). Chỉ để "Hàng hoá" (T-009) không biến mất khỏi
 // giao diện từ khi T-020 thêm màn thứ hai; mặc định "Bán hàng" vì đó là việc
 // dược sĩ làm cả ngày. "Nhập hàng" vào thẳng DANH SÁCH (T-041, khớp KiotViet:
 // nav vào danh sách, nút "+ Nhập hàng" mới mở luồng tạo tay T-040c1/T-043).
+// "Trả hàng nhập" (T-053c1) vào thẳng danh sách, chỉ đọc — nút "+ Trả hàng
+// nhập" (luồng tạo) và liên kết ngược từ chi tiết phiếu nhập thuộc T-053c2.
 export function App() {
   const [man, setMan] = useState<Man>('ban-hang');
 
@@ -34,6 +37,9 @@ export function App() {
         <Nut bienThe={man === 'tra-hang' ? 'chinh' : 'phu'} onClick={() => setMan('tra-hang')}>
           Trả hàng
         </Nut>
+        <Nut bienThe={man === 'tra-hang-nhap' ? 'chinh' : 'phu'} onClick={() => setMan('tra-hang-nhap')}>
+          Trả hàng nhập
+        </Nut>
         <Nut bienThe={man === 'tong-quan' ? 'chinh' : 'phu'} onClick={() => setMan('tong-quan')}>
           Tổng quan
         </Nut>
@@ -49,6 +55,8 @@ export function App() {
         <DanhSachPhieuNhap />
       ) : man === 'tra-hang' ? (
         <DanhSachTraHang />
+      ) : man === 'tra-hang-nhap' ? (
+        <DanhSachTraHangNhap />
       ) : man === 'tong-quan' ? (
         <TongQuan />
       ) : (

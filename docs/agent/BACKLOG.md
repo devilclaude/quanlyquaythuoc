@@ -574,7 +574,7 @@ lô nên chưa thể trả; không có trong "Xong khi" gốc nhưng cần để
 "không để tồn kho âm không giải thích" không bị vi phạm.
 
 ### T-053b [A] prio:53.2 — Trả hàng nhập: API
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-053a
+Trạng thái: DONE · Phụ thuộc: T-053a
 Xong khi: `POST /api/tra-hang-nhap` (tạo phiếu trả cho một phiếu nhập, gọi
 `taoPhieuTraHangNhap`), `GET /api/tra-hang-nhap` (danh sách) và
 `GET /api/tra-hang-nhap/:id` (chi tiết, kèm liên kết ngược phiếu nhập gốc); 400
@@ -584,19 +584,53 @@ Ghi chú: theo tiền lệ T-010a[B]→T-010b[A]/T-022a[B]→T-022b[A]/T-040a[B]
 T-040b[A]/T-052a[B]→T-052b[A] — chỉ nối API cho lõi đã duyệt B, không thêm
 quyết định kiến trúc mới.
 
-### T-053c [B] prio:53.3 — Trả hàng nhập: giao diện
-Trạng thái: TODO · Phụ thuộc: T-053b
+### T-053c1 [A] prio:53.31 — Trả hàng nhập: danh sách + chi tiết (chỉ đọc)
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-053b
 Xong khi: khớp screenshot "Trả hàng nhập"
 (`docs/reference/kiotviet/Quản trị/Trả hàng/Danh sách trả hàng.png` — tên file
 trùng với ảnh "trả hàng khách" ở `Quản trị/Đơn hàng/`, nhưng tiêu đề TRONG ảnh
-này là "Trả hàng nhập"; phát hiện của `doi-chieu-ui` lúc đối chiếu T-052c);
-liên kết
-ngược tới phiếu nhập gốc (mở được từ chi tiết phiếu nhập sang phiếu trả đã tạo,
-và ngược lại); luồng tạo: tìm phiếu nhập gốc, chọn dòng + số lượng trả, gọi
-`POST /api/tra-hang-nhap` (T-053b).
-Tầng B: đường ghi kho + tiền qua tay người dùng lần đầu ở luồng tạo (tương tự lý
-do T-040c1[B]/T-052c[B], khác tiền lệ T-022c[A]/T-040b[A]/T-052b[A] chỉ nối API
-đã duyệt).
+này là "Trả hàng nhập"; phát hiện của `doi-chieu-ui` lúc đối chiếu T-052c) cho
+các cột còn trong phạm vi v1 (bỏ "Nhà cung cấp"/"NCC cần trả"/"NCC đã trả" —
+không công nợ NCC, v1.1; gộp "Tổng tiền hàng"/"Giảm giá" thành "Tổng tiền
+hoàn" — schema không lưu giảm giá phiếu trả hàng nhập; không có bộ lọc "Trạng
+thái"/"Thời gian"/"Người tạo"/"Người trả" — thay bằng "Mã nhập hàng" để liên
+kết ngược); chi tiết mở INLINE ngay dưới dòng (không phải modal, khớp
+KiotViet); bấm mã phiếu nhập trong chi tiết mở lại được phiếu nhập gốc
+(liên kết ngược MỘT CHIỀU — chiều ngược lại "phiếu nhập → trả hàng nhập"
+thuộc T-053c2). Không có nút "+ Trả hàng nhập" (luồng tạo) ở slice này.
+Ghi chú: đây là T-053c cũ, CHẺ GIỮA LÚC BUILD — đo xong (gộp cả luồng tạo +
+nút "Trả hàng nhập" ở chi tiết phiếu nhập) ra 1395 dòng/26 file, vượt ngưỡng
+1000 dòng/24 file (CLAUDE.md). Gỡ luồng tạo (`TraCuuPhieuNhap.tsx`,
+`TaoTraHangNhap.tsx`, `GET /api/tra-hang-nhap/phieu-nhap/:ma`,
+`timPhieuNhapDeTraHangNhap`) và liên kết ngược chiều "phiếu nhập → trả hàng
+nhập" (nút ở `ChiTietPhieuNhap`) sang T-053c2 — không còn code cũ để tham
+khảo (đã gỡ khỏi slice này), viết lại từ đầu theo TDD ở run sau, theo đúng
+tiền lệ T-041/T-041b. Slice còn lại trong ngưỡng. Đổi nhãn `[B]`→`[A]`: sau
+khi gỡ luồng tạo, slice này không còn ghi kho/tiền qua tay người dùng — chỉ
+đọc (mở lại phiếu nhập đã có, không sửa/tạo gì), cùng tiền lệ T-052c.
+
+### T-053c2 [B] prio:53.32 — Trả hàng nhập: luồng tạo + liên kết ngược từ phiếu nhập
+Trạng thái: TODO · Phụ thuộc: T-053c1
+Xong khi: nút "+ Trả hàng nhập" trên màn danh sách (T-053c1) mở luồng tạo: ô
+tìm phiếu nhập gốc theo mã (`GET /api/tra-hang-nhap/phieu-nhap/:ma`,
+`timPhieuNhapDeTraHangNhap` — cùng khuôn `timHoaDonDeTraHang`/T-052c, trả
+`conLaiToiDa` từng dòng; phiếu còn `PHIEU_TAM` trả `dong: []`, chưa ghi kho
+nên chưa thể trả), hiện bảng dòng kèm số lượng đã nhập/còn trả được tối đa,
+thêm cột nhập số lượng trả từng dòng (giới hạn bởi "còn trả được tối đa"),
+nút Lưu gọi `POST /api/tra-hang-nhap`; lưu xong quay về danh sách, mở sẵn chi
+tiết phiếu vừa tạo. Liên kết ngược CHIỀU CÒN LẠI: nút "Trả hàng nhập" ở chân
+`ChiTietPhieuNhap` (T-041, khớp vị trí ảnh "Chi tiết một đơn nhập hàng trong
+danh sách", chỉ hiện khi phiếu đã `HOAN_THANH`) nhảy sang màn trả hàng nhập,
+mở sẵn luồng tạo với mã phiếu nhập đã điền và tự tra cứu — không cần gõ lại.
+Ghi chú: phần bị chẻ khỏi T-053c gốc khi đo kích thước PR vượt ngưỡng — xem
+ghi chú chẻ ở T-053c1. Không hiển thị tạm tính "tiền hoàn" từng dòng trước khi
+lưu — công thức đó chỉ sống ở server, cùng tiền lệ T-052d. Không có screenshot
+tham chiếu riêng cho luồng TẠO trả hàng nhập (chỉ có màn danh sách) — dựng
+theo token trong `.claude/skills/design-system/`, theo tiền lệ T-010c/T-023/
+T-052d.
+Tầng B: đường ghi kho + tiền qua tay người dùng lần đầu ở luồng tạo (tương tự
+lý do T-040c1[B]/T-052d[B], khác tiền lệ T-022c[A]/T-040b[A]/T-052b[A] chỉ
+nối API đã duyệt).
 
 ### T-054 [A] prio:54 — Màn thẻ kho
 Trạng thái: BLOCKED · Phụ thuộc: T-005, T-007
