@@ -1106,6 +1106,25 @@ PR còn lại ~860 dòng/16 file, `npm run ci` xanh.
 PR: (xem mô tả PR) · Tầng: A
 Kế tiếp: T-052d (luồng tạo trả hàng) hoặc T-053a.
 
+## 2026-10-03 (run kế) — dọn PR + T-052d
+Làm: #78 (T-052c) đã merge → DONE. Không còn PR agent nào mở. Chọn T-052d:
+nút "+ Trả hàng" (khuôn `dangTaoMoi` giống `DanhSachPhieuNhap`/T-041) mở
+`TaoTraHang` — tái dùng NGUYÊN `useHoaDonDeTraHang`/`GET
+/api/tra-hang/hoa-don/:ma` đã có; `BangDongHoaDonDeTraHang` (TraCuuHoaDon.tsx)
+thêm props tuỳ chọn `soLuongTra`/`onSuaSoLuongTra` để tự thêm cột "Số lượng
+trả" khi được truyền (không viết lại bảng, cách dùng cũ ở `ChiTietTraHang`
+không đổi). Số lượng trả nhập theo đơn vị ĐÃ BÁN (khớp cột "Còn trả được"
+hiện có), quy đổi sang cơ sở bằng `quyDoiSangCoSo` ngay trước khi gọi `POST
+/api/tra-hang` — có test khoá đúng phép nhân hệ số (2 hộp × 15 = 30 viên).
+Lưu xong quay về danh sách, tải lại và mở sẵn chi tiết phiếu vừa tạo.
+PR: (xem mô tả PR)
+Tầng: B — đường ghi kho/tiền qua tay người dùng lần đầu ở luồng tạo (lý do đã
+khai từ T-052c, giống tiền lệ T-040c1/T-053c, khác T-022c/T-040b/T-052b chỉ
+nối API đã duyệt).
+Khác KiotViet: không hiển thị tạm tính "tiền hoàn" từng dòng trước khi lưu —
+công thức chỉ sống ở server; không có screenshot tham chiếu cho luồng tạo
+(theo tiền lệ T-010c/T-023), dựng theo token design-system.
+Kế tiếp: T-053a (trả hàng nhập: schema + lõi) hoặc T-055 (cảnh báo cận date).
 ## 2026-10-03 (run kế) — dọn PR + chọn T-055
 Làm: #79 (T-052d)/#80 (T-053a) CI xanh, không comment, không conflict — đang
 chờ người duyệt B, không sửa. T-053a/T-052d đã có PR nên không chọn lại; T-055
