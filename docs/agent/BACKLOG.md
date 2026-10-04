@@ -516,7 +516,7 @@ chừng khi đo thật vượt ngưỡng, không phải chẻ lúc chọn task n
 tay người dùng — chỉ đọc (mở lại hoá đơn đã có, không sửa/tạo gì).
 
 ### T-052d [B] prio:52.35 — Trả hàng: luồng tạo (giao diện)
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-052c
+Trạng thái: DONE · Phụ thuộc: T-052c
 Xong khi: nút "+ Trả hàng" trên màn danh sách (T-052c) mở luồng tạo: ô tìm hoá
 đơn gốc theo mã (dùng lại `GET /api/tra-hang/hoa-don/:ma` và
 `useHoaDonDeTraHang`/`BangDongHoaDonDeTraHang` đã có từ T-052c, không viết
@@ -536,7 +536,7 @@ Tầng B: đường ghi kho + tiền qua tay người dùng lần đầu ở lu�
 lý do T-040c1[B], khác tiền lệ T-022c[A]/T-040b[A] chỉ nối API đã duyệt).
 
 ### T-053a [B] prio:53.1 — Trả hàng nhập: schema + lõi nghiệp vụ
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-040a
+Trạng thái: DONE · Phụ thuộc: T-040a
 Xong khi: migration `tra_hang_nhap` (chứng từ, không xoá cứng, liên kết
 `phieu_nhap_id` tới phiếu nhập gốc, mã tự sinh tuần tự) và `tra_hang_nhap_dong`
 (dòng trả: liên kết `phieu_nhap_dong_id`, số lượng trả theo đơn vị cơ sở, đơn
@@ -574,7 +574,7 @@ lô nên chưa thể trả; không có trong "Xong khi" gốc nhưng cần để
 "không để tồn kho âm không giải thích" không bị vi phạm.
 
 ### T-053b [A] prio:53.2 — Trả hàng nhập: API
-Trạng thái: TODO · Phụ thuộc: T-053a
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-053a
 Xong khi: `POST /api/tra-hang-nhap` (tạo phiếu trả cho một phiếu nhập, gọi
 `taoPhieuTraHangNhap`), `GET /api/tra-hang-nhap` (danh sách) và
 `GET /api/tra-hang-nhap/:id` (chi tiết, kèm liên kết ngược phiếu nhập gốc); 400
@@ -608,7 +608,7 @@ mà T-007 tạo ra (SPEC.md §3.4); bản gốc chỉ ghi phụ thuộc T-005 l�
 không dựng được đúng "Xong khi" nếu thiếu T-007.
 
 ### T-055 [A] prio:55 — Cảnh báo cận date
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-010b
+Trạng thái: DONE · Phụ thuộc: T-010b
 Xong khi: báo cáo hết hạn trong 30/60/90 ngày; một ô trên màn tổng quan.
 Ghi chú: **chỉ có tác dụng khi quầy đã bắt đầu dùng lô thật.** Ngày đầu toàn bộ tồn
 nằm ở lô ngầm định nên báo cáo sẽ rỗng — đó là đúng, không phải bug.

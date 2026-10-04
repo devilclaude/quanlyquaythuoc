@@ -7,6 +7,7 @@ import { dangKyHoaDonRoutes } from './api/hoa-don';
 import { dangKyPhieuNhapRoutes } from './api/phieu-nhap';
 import { dangKyTongQuanRoutes } from './api/tong-quan';
 import { dangKyTraHangRoutes } from './api/tra-hang';
+import { dangKyTraHangNhapRoutes } from './api/tra-hang-nhap';
 
 type Db = ReturnType<typeof drizzle>;
 
@@ -42,6 +43,10 @@ export function taoApp(db: Db) {
   const traHangRouter = new Hono();
   dangKyTraHangRoutes(traHangRouter, db);
   app.route('/api/tra-hang', traHangRouter);
+
+  const traHangNhapRouter = new Hono();
+  dangKyTraHangNhapRoutes(traHangNhapRouter, db);
+  app.route('/api/tra-hang-nhap', traHangNhapRouter);
 
   return app;
 }

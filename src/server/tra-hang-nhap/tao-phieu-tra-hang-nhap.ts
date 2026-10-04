@@ -1,9 +1,9 @@
-import { and, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import type { drizzle } from 'drizzle-orm/better-sqlite3';
 import { soLuongHienThi } from '../../shared/kieu/so-luong';
 import { quyDoiSangCoSo } from '../../shared/don-vi/quy-doi';
 import { chiaLamTronNuaLen } from '../../shared/tien/lam-tron';
-import { loHang, phieuNhap, phieuNhapDong, tonKhoLo, traHangNhap, traHangNhapDong } from '../db/schema';
+import { loHang, phieuNhap, phieuNhapDong, sanPham, tonKhoLo, traHangNhap, traHangNhapDong } from '../db/schema';
 import { KhongDuTonKhoError } from '../kho/fefo';
 import { ghiMotDongTheKho } from '../kho/so-cai';
 
@@ -85,6 +85,32 @@ export interface PhieuTraHangNhapDaTao {
   id: string;
   ma: string;
   tongTienHoan: number;
+}
+
+export interface TraHangNhapDanhSachItem {
+  id: string;
+  ma: string;
+  phieuNhapId: string;
+  /** Mã phiếu nhập gốc — liên kết ngược (T-053b), tra qua JOIN lúc đọc. */
+  phieuNhapMa: string;
+  chiNhanhId: string;
+  thoiGian: string;
+  tongTienHoan: number;
+}
+
+export interface TraHangNhapDongChiTiet {
+  id: string;
+  phieuNhapDongId: string;
+  sanPhamId: string;
+  /** Mã/tên sản phẩm HIỆN TẠI, tra qua JOIN lúc đọc — không snapshot (cùng tiền lệ `tra_hang_dong`). */
+  maHang: string;
+  ten: string;
+  soLuong: number;
+  tienHoan: number;
+}
+
+export interface TraHangNhapChiTiet extends TraHangNhapDanhSachItem {
+  dong: TraHangNhapDongChiTiet[];
 }
 
 function laLoiTrungMaTraHangNhap(loi: unknown): boolean {
@@ -215,4 +241,77 @@ export function taoPhieuTraHangNhap(db: Db, input: TaoPhieuTraHangNhapInput): Ph
   }
 
   throw new Error('không sinh được mã trả hàng nhập tự động sau nhiều lần thử');
+}
+
+/**
+ * Danh sách phiếu trả hàng nhập, mới nhất trước (T-053b). Kèm mã phiếu nhập
+ * gốc (liên kết ngược) qua JOIN — không snapshot, vì `ma` phiếu nhập bất biến
+ * sau khi tạo. `tongTienHoan` tính bằng một truy vấn gộp riêng (không N+1
+ * theo từng phiếu) — cùng khuôn `layDanhSachTraHang` (T-052b).
+ */
+export function layDanhSachTraHangNhap(db: Db): TraHangNhapDanhSachItem[] {
+  const hang = db
+    .select({
+      id: traHangNhap.id,
+      ma: traHangNhap.ma,
+      phieuNhapId: traHangNhap.phieuNhapId,
+      phieuNhapMa: phieuNhap.ma,
+      chiNhanhId: traHangNhap.chiNhanhId,
+      thoiGian: traHangNhap.thoiGian,
+    })
+    .from(traHangNhap)
+    .innerJoin(phieuNhap, eq(phieuNhap.id, traHangNhap.phieuNhapId))
+    .orderBy(desc(traHangNhap.thoiGianMayChu))
+    .all();
+
+  const tongTheoPhieu = new Map(
+    db
+      .select({ traHangNhapId: traHangNhapDong.traHangNhapId, tongTienHoan: sql<number>`SUM(${traHangNhapDong.tienHoan})` })
+      .from(traHangNhapDong)
+      .groupBy(traHangNhapDong.traHangNhapId)
+      .all()
+      .map((r) => [r.traHangNhapId, Number(r.tongTienHoan)]),
+  );
+
+  return hang.map((p) => ({ ...p, tongTienHoan: tongTheoPhieu.get(p.id) ?? 0 }));
+}
+
+/** Chi tiết một phiếu trả hàng nhập kèm toàn bộ dòng và liên kết ngược phiếu nhập gốc (T-053b). */
+export function layChiTietTraHangNhap(db: Db, id: string): TraHangNhapChiTiet | undefined {
+  const [phieu] = db
+    .select({
+      id: traHangNhap.id,
+      ma: traHangNhap.ma,
+      phieuNhapId: traHangNhap.phieuNhapId,
+      phieuNhapMa: phieuNhap.ma,
+      chiNhanhId: traHangNhap.chiNhanhId,
+      thoiGian: traHangNhap.thoiGian,
+    })
+    .from(traHangNhap)
+    .innerJoin(phieuNhap, eq(phieuNhap.id, traHangNhap.phieuNhapId))
+    .where(eq(traHangNhap.id, id))
+    .all();
+  if (!phieu) return undefined;
+
+  const dong = db
+    .select({
+      id: traHangNhapDong.id,
+      phieuNhapDongId: traHangNhapDong.phieuNhapDongId,
+      sanPhamId: phieuNhapDong.sanPhamId,
+      maHang: sanPham.maHang,
+      ten: sanPham.ten,
+      soLuong: traHangNhapDong.soLuong,
+      tienHoan: traHangNhapDong.tienHoan,
+    })
+    .from(traHangNhapDong)
+    .innerJoin(phieuNhapDong, eq(phieuNhapDong.id, traHangNhapDong.phieuNhapDongId))
+    .innerJoin(sanPham, eq(sanPham.id, phieuNhapDong.sanPhamId))
+    .where(eq(traHangNhapDong.traHangNhapId, id))
+    .all();
+
+  return {
+    ...phieu,
+    tongTienHoan: dong.reduce((tong, d) => tong + d.tienHoan, 0),
+    dong,
+  };
 }

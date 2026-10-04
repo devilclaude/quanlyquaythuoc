@@ -14,6 +14,8 @@ import {
   PhieuNhapKhongTonTaiError,
   SoLuongKhongHopLeError,
   VuotSoLuongDaNhapError,
+  layChiTietTraHangNhap,
+  layDanhSachTraHangNhap,
   taoPhieuTraHangNhap,
 } from './tao-phieu-tra-hang-nhap';
 
@@ -338,5 +340,58 @@ describe('taoPhieuTraHangNhap', () => {
 
     expect(thn1.ma).toBe('THN000001');
     expect(thn2.ma).toBe('THN000002');
+  });
+});
+
+describe('layDanhSachTraHangNhap', () => {
+  it('trả về rỗng khi chưa có phiếu trả hàng nhập nào', () => {
+    expect(layDanhSachTraHangNhap(db)).toEqual([]);
+  });
+
+  it('trả về danh sách kèm liên kết ngược mã phiếu nhập gốc và tổng tiền hoàn', () => {
+    taoChiNhanh('cn-1');
+    taoSanPham('sp-1', 'SP001');
+    const { phieuId, dongId } = nhapHoanThanh('cn-1');
+    taoPhieuTraHangNhap(db, {
+      id: 'thn-1',
+      phieuNhapId: phieuId,
+      thoiGian: '2026-09-22T08:00:00.000Z',
+      dong: [{ id: 'thnd-1', phieuNhapDongId: dongId, soLuong: 20 }],
+    });
+
+    const danhSach = layDanhSachTraHangNhap(db);
+
+    expect(danhSach).toHaveLength(1);
+    expect(danhSach[0]?.ma).toBe('THN000001');
+    expect(danhSach[0]?.phieuNhapId).toBe(phieuId);
+    expect(danhSach[0]?.phieuNhapMa).toBe('PN000001');
+    expect(danhSach[0]?.tongTienHoan).toBe(20_000);
+  });
+});
+
+describe('layChiTietTraHangNhap', () => {
+  it('trả về undefined khi không tìm thấy', () => {
+    expect(layChiTietTraHangNhap(db, 'khong-ton-tai')).toBeUndefined();
+  });
+
+  it('trả về chi tiết kèm từng dòng và liên kết ngược phiếu nhập gốc', () => {
+    taoChiNhanh('cn-1');
+    taoSanPham('sp-1', 'SP001');
+    const { phieuId, dongId } = nhapHoanThanh('cn-1');
+    taoPhieuTraHangNhap(db, {
+      id: 'thn-1',
+      phieuNhapId: phieuId,
+      thoiGian: '2026-09-22T08:00:00.000Z',
+      dong: [{ id: 'thnd-1', phieuNhapDongId: dongId, soLuong: 20 }],
+    });
+
+    const chiTiet = layChiTietTraHangNhap(db, 'thn-1');
+
+    expect(chiTiet?.ma).toBe('THN000001');
+    expect(chiTiet?.phieuNhapMa).toBe('PN000001');
+    expect(chiTiet?.dong).toHaveLength(1);
+    expect(chiTiet?.dong[0]?.maHang).toBe('SP001');
+    expect(chiTiet?.dong[0]?.soLuong).toBe(20);
+    expect(chiTiet?.dong[0]?.tienHoan).toBe(20_000);
   });
 });
