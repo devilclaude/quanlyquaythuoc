@@ -84,4 +84,20 @@ describe('ThongTinPhieuNhap', () => {
     expect(html).toContain('L01');
     expect(html).toContain('2027-06-30');
   });
+
+  it('KHÔNG hiện nút "Trả hàng nhập" khi không truyền onTraHangNhap (T-053c2, tránh đệ quy khi tái dùng làm "phiếu nhập gốc" trong trả hàng nhập)', () => {
+    const html = renderToStaticMarkup(<ThongTinPhieuNhap chiTiet={chiTietPhang} />);
+    expect(html).not.toContain('Trả hàng nhập');
+  });
+
+  it('có onTraHangNhap và phiếu đã HOAN_THANH: hiện nút "Trả hàng nhập" (T-053c2)', () => {
+    const html = renderToStaticMarkup(<ThongTinPhieuNhap chiTiet={chiTietPhang} onTraHangNhap={() => {}} />);
+    expect(html).toContain('Trả hàng nhập');
+  });
+
+  it('có onTraHangNhap nhưng phiếu còn PHIEU_TAM: KHÔNG hiện nút — chưa từng ghi kho nên chưa thể trả (T-053c2)', () => {
+    const chiTietTam = { ...chiTietPhang, trangThai: 'PHIEU_TAM' as const };
+    const html = renderToStaticMarkup(<ThongTinPhieuNhap chiTiet={chiTietTam} onTraHangNhap={() => {}} />);
+    expect(html).not.toContain('Trả hàng nhập');
+  });
 });

@@ -2,6 +2,7 @@ import type { drizzle } from 'drizzle-orm/better-sqlite3';
 import type { Hono } from 'hono';
 import {
   DanhSachTraHangNhapResSchema,
+  PhieuNhapDeTraHangNhapResSchema,
   TaoTraHangNhapReqSchema,
   TraHangNhapChiTietResSchema,
   TraHangNhapResSchema,
@@ -19,11 +20,12 @@ import {
   layChiTietTraHangNhap,
   layDanhSachTraHangNhap,
   taoPhieuTraHangNhap,
+  timPhieuNhapDeTraHangNhap,
 } from '../tra-hang-nhap/tao-phieu-tra-hang-nhap';
 
 type Db = ReturnType<typeof drizzle>;
 
-/** Nối màn trả hàng nhập (T-053c, chưa dựng) gọi các route dưới đây. */
+/** Nối màn trả hàng nhập (T-053c) gọi các route dưới đây. */
 export function dangKyTraHangNhapRoutes(app: Hono, db: Db): void {
   app.get('/', (c) => {
     const res = DanhSachTraHangNhapResSchema.parse({ duLieu: layDanhSachTraHangNhap(db) });
@@ -34,6 +36,13 @@ export function dangKyTraHangNhapRoutes(app: Hono, db: Db): void {
     const chiTiet = layChiTietTraHangNhap(db, c.req.param('id'));
     if (!chiTiet) return c.json({ loi: 'Không tìm thấy phiếu trả hàng nhập' }, 404);
     return c.json(TraHangNhapChiTietResSchema.parse(chiTiet));
+  });
+
+  // T-053c2 — màn "Tạo trả hàng nhập" gọi route này trước, để tìm phiếu nhập gốc theo mã.
+  app.get('/phieu-nhap/:ma', (c) => {
+    const phieuNhap = timPhieuNhapDeTraHangNhap(db, c.req.param('ma'));
+    if (!phieuNhap) return c.json({ loi: 'Không tìm thấy phiếu nhập' }, 404);
+    return c.json(PhieuNhapDeTraHangNhapResSchema.parse(phieuNhap));
   });
 
   app.post('/', async (c) => {

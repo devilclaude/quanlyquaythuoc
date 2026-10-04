@@ -52,9 +52,35 @@ export const TraHangNhapChiTietResSchema = TraHangNhapDanhSachItemSchema.extend(
   dong: z.array(TraHangNhapDongResSchema),
 });
 
+// T-053c2 — tìm phiếu nhập gốc theo mã để bắt đầu luồng tạo trả hàng nhập
+// (`GET /api/tra-hang-nhap/phieu-nhap/:ma`). `conLaiToiDa` CHỈ để gợi ý/giới
+// hạn input trên giao diện — `POST /api/tra-hang-nhap` vẫn là nơi xác thực
+// cuối cùng (409 khi vượt), tính lại đúng cùng công thức ở
+// `timPhieuNhapDeTraHangNhap`. Cùng khuôn `HoaDonDongDeTraHangItemSchema`
+// (T-052c).
+export const PhieuNhapDongDeTraHangNhapItemSchema = z.object({
+  id: z.string(),
+  sanPhamId: z.string(),
+  maHang: z.string(),
+  ten: z.string(),
+  donViTen: z.string(),
+  heSo: z.number().int().min(1),
+  soLuongDaNhap: z.number().int(),
+  conLaiToiDa: z.number().int(),
+});
+
+export const PhieuNhapDeTraHangNhapResSchema = z.object({
+  id: z.string(),
+  ma: z.string(),
+  thoiGian: z.string(),
+  dong: z.array(PhieuNhapDongDeTraHangNhapItemSchema),
+});
+
 export type TraHangNhapDongReq = z.infer<typeof TraHangNhapDongReqSchema>;
 export type TaoTraHangNhapReq = z.infer<typeof TaoTraHangNhapReqSchema>;
 export type TraHangNhapRes = z.infer<typeof TraHangNhapResSchema>;
 export type TraHangNhapDanhSachItem = z.infer<typeof TraHangNhapDanhSachItemSchema>;
 export type DanhSachTraHangNhapRes = z.infer<typeof DanhSachTraHangNhapResSchema>;
 export type TraHangNhapChiTietRes = z.infer<typeof TraHangNhapChiTietResSchema>;
+export type PhieuNhapDongDeTraHangNhapItem = z.infer<typeof PhieuNhapDongDeTraHangNhapItemSchema>;
+export type PhieuNhapDeTraHangNhapRes = z.infer<typeof PhieuNhapDeTraHangNhapResSchema>;

@@ -1,7 +1,7 @@
 import { and, desc, eq, sql } from 'drizzle-orm';
 import type { drizzle } from 'drizzle-orm/better-sqlite3';
-import { soLuongHienThi } from '../../shared/kieu/so-luong';
-import { quyDoiSangCoSo } from '../../shared/don-vi/quy-doi';
+import { soLuongCoSo, soLuongHienThi } from '../../shared/kieu/so-luong';
+import { quyDoiSangCoSo, quyDoiTuCoSo } from '../../shared/don-vi/quy-doi';
 import { chiaLamTronNuaLen } from '../../shared/tien/lam-tron';
 import { loHang, phieuNhap, phieuNhapDong, sanPham, tonKhoLo, traHangNhap, traHangNhapDong } from '../db/schema';
 import { KhongDuTonKhoError } from '../kho/fefo';
@@ -111,6 +111,32 @@ export interface TraHangNhapDongChiTiet {
 
 export interface TraHangNhapChiTiet extends TraHangNhapDanhSachItem {
   dong: TraHangNhapDongChiTiet[];
+}
+
+export interface PhieuNhapDongDeTraHangNhap {
+  /** `phieu_nhap_dong.id` — client gửi lại đúng id này khi gọi `POST /api/tra-hang-nhap`. */
+  id: string;
+  sanPhamId: string;
+  maHang: string;
+  ten: string;
+  donViTen: string;
+  heSo: number;
+  /** Đã nhập, đơn vị ĐÃ CHỌN lúc nhập (giống cột "Số lượng" của `phieu_nhap_dong`). */
+  soLuongDaNhap: number;
+  /**
+   * Còn trả được tối đa, quy đổi về đúng đơn vị đã nhập — LÀM TRÒN XUỐNG
+   * (`quyDoiTuCoSo`, không làm tròn lên), cùng tiền lệ `HoaDonDongDeTraHang`
+   * (T-052c) để một lần trả đủ số này không bao giờ vượt
+   * `tinhConLaiToiDaNhapCoSo` thật ở tầng cơ sở.
+   */
+  conLaiToiDa: number;
+}
+
+export interface PhieuNhapDeTraHangNhap {
+  id: string;
+  ma: string;
+  thoiGian: string;
+  dong: PhieuNhapDongDeTraHangNhap[];
 }
 
 function laLoiTrungMaTraHangNhap(loi: unknown): boolean {
@@ -241,6 +267,57 @@ export function taoPhieuTraHangNhap(db: Db, input: TaoPhieuTraHangNhapInput): Ph
   }
 
   throw new Error('không sinh được mã trả hàng nhập tự động sau nhiều lần thử');
+}
+
+/**
+ * Tìm một phiếu nhập theo mã để bắt đầu luồng tạo trả hàng nhập (T-053c2): trả
+ * về từng dòng kèm `conLaiToiDa` — chỉ ĐỌC, không xác thực hay ghi gì. `POST
+ * /api/tra-hang-nhap` (qua `taoPhieuTraHangNhap`) mới là nguồn sự thật cuối
+ * cùng, dùng lại đúng `tinhConLaiToiDaNhapCoSo` nên không có hai công thức.
+ * Phiếu còn `PHIEU_TAM` (chưa hoàn thành) trả về `dong: []` thay vì `throw` —
+ * phiếu đó chưa từng ghi kho nên chưa có gì để trả, nhưng tra theo mã vẫn phải
+ * tìm thấy phiếu để giao diện báo đúng lý do (khác "không tìm thấy mã này").
+ */
+export function timPhieuNhapDeTraHangNhap(db: Db, ma: string): PhieuNhapDeTraHangNhap | undefined {
+  const [p] = db.select().from(phieuNhap).where(eq(phieuNhap.ma, ma)).all();
+  if (!p) return undefined;
+
+  if (p.trangThai !== 'HOAN_THANH') {
+    return { id: p.id, ma: p.ma, thoiGian: p.thoiGian, dong: [] };
+  }
+
+  const dongRows = db
+    .select({
+      id: phieuNhapDong.id,
+      sanPhamId: phieuNhapDong.sanPhamId,
+      maHang: sanPham.maHang,
+      ten: sanPham.ten,
+      donViTen: phieuNhapDong.donViTen,
+      heSo: phieuNhapDong.heSo,
+      soLuong: phieuNhapDong.soLuong,
+    })
+    .from(phieuNhapDong)
+    .innerJoin(sanPham, eq(sanPham.id, phieuNhapDong.sanPhamId))
+    .where(eq(phieuNhapDong.phieuId, p.id))
+    .all();
+
+  const dong = dongRows.map((d) => {
+    const soLuongDaNhapCoSo = quyDoiSangCoSo(soLuongHienThi(d.soLuong), d.heSo);
+    const conLaiToiDaCoSo = tinhConLaiToiDaNhapCoSo(db, d.id, soLuongDaNhapCoSo);
+    const conLaiToiDa = quyDoiTuCoSo(soLuongCoSo(conLaiToiDaCoSo), d.heSo).soLuong;
+    return {
+      id: d.id,
+      sanPhamId: d.sanPhamId,
+      maHang: d.maHang,
+      ten: d.ten,
+      donViTen: d.donViTen,
+      heSo: d.heSo,
+      soLuongDaNhap: d.soLuong,
+      conLaiToiDa,
+    };
+  });
+
+  return { id: p.id, ma: p.ma, thoiGian: p.thoiGian, dong };
 }
 
 /**

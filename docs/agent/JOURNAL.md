@@ -1183,3 +1183,15 @@ Tầng: A — sau khi gỡ luồng tạo, slice này chỉ đọc (không ghi kh
 Kế tiếp: T-053c2 (luồng tạo + liên kết ngược chiều còn lại) sau khi PR này
 merge — task TODO duy nhất còn đủ điều kiện; mọi TODO khác đều BLOCKED
 (T-054, T-060, T-061/T-062).
+
+## 2026-10-04 (run kế) — dọn PR + T-053c2
+Làm: #83 (T-053c1) đã merge → chuyển DONE. Chọn T-053c2 (TODO duy nhất đủ
+điều kiện): viết lại từ đầu theo TDD `timPhieuNhapDeTraHangNhap` + `GET
+/api/tra-hang-nhap/phieu-nhap/:ma`, `TaoTraHangNhap`/`TraCuuPhieuNhap` (cùng
+khuôn `TaoTraHang`/`TraCuuHoaDon` T-052d), nút "+ Trả hàng nhập", và nút "Trả
+hàng nhập" ở chân `ChiTietPhieuNhap` (chỉ hiện khi `HOAN_THANH`) nhảy sang
+màn này kèm mã điền sẵn + tự tra cứu. E2e phát hiện một race hai state khi
+dựng liên kết ngược — xem ghi chú "sửa lúc làm" ở BACKLOG.md T-053c2.
+PR: (xem mô tả PR) · Tầng: B
+Kế tiếp: mọi TODO khác đều BLOCKED (T-054, T-060, T-061/T-062) — không còn
+task TODO đủ điều kiện sau PR này.

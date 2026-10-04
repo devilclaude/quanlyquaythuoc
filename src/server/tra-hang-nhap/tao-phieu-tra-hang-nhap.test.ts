@@ -17,6 +17,7 @@ import {
   layChiTietTraHangNhap,
   layDanhSachTraHangNhap,
   taoPhieuTraHangNhap,
+  timPhieuNhapDeTraHangNhap,
 } from './tao-phieu-tra-hang-nhap';
 
 type DbTest = ReturnType<typeof drizzle>;
@@ -340,6 +341,80 @@ describe('taoPhieuTraHangNhap', () => {
 
     expect(thn1.ma).toBe('THN000001');
     expect(thn2.ma).toBe('THN000002');
+  });
+});
+
+describe('timPhieuNhapDeTraHangNhap (T-053c2)', () => {
+  it('không tìm thấy mã thì trả về undefined', () => {
+    expect(timPhieuNhapDeTraHangNhap(db, 'PN999999')).toBeUndefined();
+  });
+
+  it('chưa trả lần nào: conLaiToiDa bằng đúng số lượng đã nhập (đơn vị ĐÃ CHỌN lúc nhập)', () => {
+    taoChiNhanh('cn-1');
+    taoSanPham('sp-1', 'SP001');
+    nhapHoanThanh('cn-1', { donViTen: 'hộp', heSo: 15, soLuong: 3 });
+
+    const pn = timPhieuNhapDeTraHangNhap(db, 'PN000001');
+
+    expect(pn?.ma).toBe('PN000001');
+    expect(pn?.dong).toHaveLength(1);
+    expect(pn?.dong[0]).toMatchObject({
+      id: 'pnd-1',
+      sanPhamId: 'sp-1',
+      maHang: 'SP001',
+      donViTen: 'hộp',
+      heSo: 15,
+      soLuongDaNhap: 3,
+      conLaiToiDa: 3,
+    });
+  });
+
+  it('đã trả một phần: conLaiToiDa giảm đúng, quy đổi đúng về đơn vị đã nhập (3 hộp × 15 − 1 hộp × 15 = 30 viên = 2 hộp còn lại)', () => {
+    taoChiNhanh('cn-1');
+    taoSanPham('sp-1', 'SP001');
+    const { phieuId, dongId } = nhapHoanThanh('cn-1', { donViTen: 'hộp', heSo: 15, soLuong: 3 });
+    taoPhieuTraHangNhap(db, {
+      id: 'thn-1',
+      phieuNhapId: phieuId,
+      thoiGian: '2026-09-22T08:00:00.000Z',
+      dong: [{ id: 'thnd-1', phieuNhapDongId: dongId, soLuong: 15 }],
+    });
+
+    const pn = timPhieuNhapDeTraHangNhap(db, 'PN000001');
+
+    expect(pn?.dong[0]?.conLaiToiDa).toBe(2);
+  });
+
+  it('đã trả hết: conLaiToiDa về đúng 0', () => {
+    taoChiNhanh('cn-1');
+    taoSanPham('sp-1', 'SP001');
+    const { phieuId, dongId } = nhapHoanThanh('cn-1');
+    taoPhieuTraHangNhap(db, {
+      id: 'thn-1',
+      phieuNhapId: phieuId,
+      thoiGian: '2026-09-22T08:00:00.000Z',
+      dong: [{ id: 'thnd-1', phieuNhapDongId: dongId, soLuong: 100 }],
+    });
+
+    const pn = timPhieuNhapDeTraHangNhap(db, 'PN000001');
+
+    expect(pn?.dong[0]?.conLaiToiDa).toBe(0);
+  });
+
+  it('phiếu còn PHIEU_TAM (chưa hoàn thành, chưa từng ghi kho): trả về dong rỗng, không throw', () => {
+    taoChiNhanh('cn-1');
+    taoSanPham('sp-1', 'SP001');
+    taoPhieuNhap(db, {
+      id: 'pn-tam',
+      chiNhanhId: 'cn-1',
+      thoiGian: '2026-09-20T07:00:00.000Z',
+      dong: [{ id: 'pnd-tam', sanPhamId: 'sp-1', donViTen: 'Viên', heSo: 1, donGia: 1_000, soLuong: 50 }],
+    });
+
+    const pn = timPhieuNhapDeTraHangNhap(db, 'PN000001');
+
+    expect(pn?.ma).toBe('PN000001');
+    expect(pn?.dong).toEqual([]);
   });
 });
 
