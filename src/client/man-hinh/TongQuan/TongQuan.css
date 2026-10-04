@@ -1,3 +1,9 @@
+.tong-quan__trang {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kc-5);
+}
+
 .tong-quan__khoi {
   max-width: 960px;
   padding: var(--kc-5);
