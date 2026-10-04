@@ -28,7 +28,7 @@ test('trả hàng: danh sách lọc theo mã, mở chi tiết, rồi mở lại 
   await context.route('**/api/tra-hang/hoa-don/HD000001', (route) => route.fulfill({ json: HOA_DON_HD000001 }));
 
   await page.goto('/');
-  await page.getByRole('button', { name: 'Trả hàng' }).click();
+  await page.getByRole('button', { name: 'Trả hàng', exact: true }).click();
   await expect(page.getByText('TH000001')).toBeVisible();
 
   // Lọc ngay trên dữ liệu đã tải — gõ mã không khớp thì ẩn dòng.
@@ -92,7 +92,7 @@ test('trả hàng: luồng tạo — tìm hoá đơn, chặn nhập vượt "cò
   });
 
   await page.goto('/');
-  await page.getByRole('button', { name: 'Trả hàng' }).click();
+  await page.getByRole('button', { name: 'Trả hàng', exact: true }).click();
   await page.getByRole('button', { name: '+ Trả hàng' }).click();
 
   await page.getByPlaceholder('Mã hoá đơn').fill('HD000002');

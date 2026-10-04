@@ -1162,3 +1162,24 @@ Ghi chú: `node_modules` chưa cài sẵn trong môi trường run này (giống
 2026-09-23) — `npm ci` trước khi `npm run ci`; e2e cần `PLAYWRIGHT_CHROMIUM_PATH`
 trỏ `/opt/pw-browsers/chromium-1194/chrome-linux/chrome` (không phải lỗi code).
 Kế tiếp: T-053c (giao diện trả hàng nhập) sau khi PR này merge.
+
+## 2026-10-04 (run kế) — dọn PR + T-053c (chẻ giữa lúc build) + T-053c1
+Làm: PR#82 (T-053b) đã merge → chuyển DONE. Chọn T-053c, dựng trọn vẹn theo
+TDD (danh sách+chi tiết+liên kết ngược hai chiều+luồng tạo, `npm run ci`
+xanh, xác nhận bằng browser thật) rồi đo trước khi mở PR: 1395 dòng/26 file,
+vượt cả hai ngưỡng CLAUDE.md. Chẻ ngay: gỡ luồng tạo (`TraCuuPhieuNhap.tsx`,
+`TaoTraHangNhap.tsx`, `GET /api/tra-hang-nhap/phieu-nhap/:ma`,
+`timPhieuNhapDeTraHangNhap`) và liên kết ngược chiều "phiếu nhập → trả hàng
+nhập" (nút "Trả hàng nhập" ở `ChiTietPhieuNhap`) sang T-053c2 (TODO) —
+không commit code đã gỡ, run sau viết lại từ đầu theo TDD (tiền lệ T-041/
+T-041b). PR này (T-053c1) chỉ còn: danh sách+lọc client-side+chi tiết chỉ đọc,
+liên kết ngược MỘT CHIỀU (trả hàng nhập → phiếu nhập gốc, toggle inline tái
+dùng thẳng `ChiTietPhieuNhap` của T-041 qua render-prop `renderPhieuNhapGoc`
+— tránh import vòng giữa `TraHangNhap/` và `NhapHang/`, không viết lại).
+`doi-chieu-ui` đối chiếu ảnh "Trả hàng nhập" (thực chất
+`Quản trị/Trả hàng/Danh sách trả hàng.png`) trước khi chẻ — không vi phạm.
+PR: (xem mô tả PR)
+Tầng: A — sau khi gỡ luồng tạo, slice này chỉ đọc (không ghi kho/tiền).
+Kế tiếp: T-053c2 (luồng tạo + liên kết ngược chiều còn lại) sau khi PR này
+merge — task TODO duy nhất còn đủ điều kiện; mọi TODO khác đều BLOCKED
+(T-054, T-060, T-061/T-062).
