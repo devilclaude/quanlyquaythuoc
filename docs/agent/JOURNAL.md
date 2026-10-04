@@ -1146,3 +1146,19 @@ quan. Tầng kho không gọi `giaiNghiaCaiDatQuanLyLo` (SPEC.md §3.2) — lọ
 cài đặt quản lý lô làm ở route, đúng "bộ lọc báo cáo cận date" được phép.
 PR: (xem mô tả PR) · Tầng: A
 Kế tiếp: T-055 chờ merge; sau đó T-053b (nếu #80 đã merge) hoặc tiếp T-055 kế.
+
+## 2026-10-04 — dọn PR + T-053b
+Làm: PR#79 (T-052d), #80 (T-053a), #81 (T-055) đều đã merge → chuyển DONE.
+Không còn PR agent nào mở, không có chỉ đạo mới ở #quaythuoc-admin. Chọn
+T-053b: `layDanhSachTraHangNhap`/`layChiTietTraHangNhap` (cùng khuôn
+`layDanhSachTraHang`/`layChiTietTraHang` T-052b, liên kết ngược mã phiếu nhập
+gốc qua JOIN); hợp đồng Zod `src/shared/hop-dong/tra-hang-nhap.ts`; `POST`/`GET
+/api/tra-hang-nhap`, `GET /api/tra-hang-nhap/:id` nối đúng lõi T-053a đã duyệt,
+không thêm quyết định kiến trúc mới (tiền lệ T-010a[B]→T-010b[A]/.../
+T-052a[B]→T-052b[A]).
+PR: (xem mô tả PR)
+Tầng: A
+Ghi chú: `node_modules` chưa cài sẵn trong môi trường run này (giống
+2026-09-23) — `npm ci` trước khi `npm run ci`; e2e cần `PLAYWRIGHT_CHROMIUM_PATH`
+trỏ `/opt/pw-browsers/chromium-1194/chrome-linux/chrome` (không phải lỗi code).
+Kế tiếp: T-053c (giao diện trả hàng nhập) sau khi PR này merge.
