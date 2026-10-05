@@ -1195,3 +1195,26 @@ dựng liên kết ngược — xem ghi chú "sửa lúc làm" ở BACKLOG.md T-
 PR: (xem mô tả PR) · Tầng: B
 Kế tiếp: mọi TODO khác đều BLOCKED (T-054, T-060, T-061/T-062) — không còn
 task TODO đủ điều kiện sau PR này.
+
+## 2026-10-05 — dọn PR, không chọn task mới
+Làm: PR#84 (T-053c2) nay CI xanh (trước đó "CI đang chạy"), không comment,
+`mergeable_state: clean` — chờ duyệt B đúng dự kiến, không sửa. Chưa merge
+nên T-053c1 (CHỜ MERGE) và T-053c2 (TODO) vẫn chưa mở khoá trên `main`.
+Không còn TODO nào đủ điều kiện: T-053c2 đã có PR mở; T-054/T-060 BLOCKED;
+T-061/T-062 BLOCKED (thiếu đích backup, xem BLOCKED.md). Không có chỉ đạo
+mới ở #quaythuoc-admin từ 2026-09-14.
+PR: (entry này, chỉ ghi JOURNAL — không có thay đổi code)
+Tầng: A
+Kế tiếp: chọn theo prio khi #84 merge (chuyển T-053c1/T-053c2 sang DONE);
+BLOCKED.md vẫn cần người quyết cho T-054/T-060/T-061.
+
+## 2026-10-05 (run kế) — dọn conflict PR#84 với main
+Làm: PR#84 (T-053c2) CI xanh, không comment chưa xử lý, nhưng
+`mergeable_state: dirty` (conflict với `main` do entry JOURNAL.md ở run
+dọn-PR 2026-10-05 nói trên). Theo luật "dọn PR cũ trước khi mở PR mới", sửa
+conflict này và dừng run tại đây — không chọn task mới. Merge `main` vào
+branch, resolve xung đột JOURNAL.md (giữ cả hai entry append-only theo đúng
+thứ tự thời gian), chạy lại `npm run ci`, push.
+PR: #84 (cùng PR, không mở PR mới) · Tầng: B (giữ nguyên khai báo gốc)
+Kế tiếp: #84 xanh + hết conflict, chờ người duyệt B. Khi merge: chuyển
+T-053c1 (đã DONE từ trước)/T-053c2 CHỜ MERGE → DONE ở run dọn PR kế tiếp.
