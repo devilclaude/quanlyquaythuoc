@@ -1206,3 +1206,14 @@ nhưng đã có PR #84 mở; còn lại đều BLOCKED (T-054, T-060, T-061/T-06
 PR: (entry này, chỉ ghi JOURNAL — không có thay đổi code)
 Tầng: A
 Kế tiếp: như entry trước — chờ người duyệt #84 hoặc quyết BLOCKED.md.
+
+## 2026-10-05 (run kế 2) — dọn PR, không chọn task mới (lần 3, không đổi gì)
+Làm: #84 vẫn CI xanh, `mergeable_state: clean`, không comment/review mới —
+không sửa. #quaythuoc-admin không có chỉ đạo mới từ 2026-10-01. Ba run liên
+tiếp cùng kết luận: T-053c2 (TODO duy nhất đủ điều kiện) đã có PR #84 mở;
+còn lại đều BLOCKED (T-054, T-060, T-061/T-062) — không có task nào để chọn.
+Báo Slack #quaythuoc-build nhấn mạnh cần người duyệt #84 và quyết BLOCKED.md
+vì routine đang đứng yên ba lần chạy liên tiếp.
+PR: (entry này, chỉ ghi JOURNAL — không có thay đổi code)
+Tầng: A
+Kế tiếp: như hai entry trước — chờ người duyệt #84 hoặc quyết BLOCKED.md.
