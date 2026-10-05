@@ -1218,3 +1218,30 @@ thứ tự thời gian), chạy lại `npm run ci`, push.
 PR: #84 (cùng PR, không mở PR mới) · Tầng: B (giữ nguyên khai báo gốc)
 Kế tiếp: #84 xanh + hết conflict, chờ người duyệt B. Khi merge: chuyển
 T-053c1 (đã DONE từ trước)/T-053c2 CHỜ MERGE → DONE ở run dọn PR kế tiếp.
+
+## 2026-10-05 (run kế) — dọn PR, không chọn task mới (lần 2, không đổi gì)
+Làm: #84 vẫn CI xanh, `mergeable_state: clean`, không comment/review mới —
+một run trước đã tự sửa một conflict tạm thời với `main` rồi push lại (báo ở
+#quaythuoc-build 2026-10-06 03:23), trạng thái hiện tại khớp kết quả đó. Soát
+lại #quaythuoc-admin: không có chỉ đạo mới từ 2026-10-01. BACKLOG/BLOCKED
+không đổi so với entry trước — T-053c2 vẫn là TODO duy nhất đủ điều kiện
+nhưng đã có PR #84 mở; còn lại đều BLOCKED (T-054, T-060, T-061/T-062).
+PR: (entry này, chỉ ghi JOURNAL — không có thay đổi code)
+Tầng: A
+Kế tiếp: như entry trước — chờ người duyệt #84 hoặc quyết BLOCKED.md.
+
+## 2026-10-05 (run kế, lần 3) — dọn conflict PR#84 với main (lặp lại)
+Làm: PR#84 lại `mergeable_state: dirty` — mỗi run "không chọn task mới" tự nó
+mở một PR journal-only vào `main` (ví dụ #85, #86), và vì PR#84 cũng có dòng
+JOURNAL.md ở đúng cuối file, hai bên đụng nhau mỗi lần main nhích thêm một
+entry kiểu này. Đây là vòng lặp cấu trúc, không phải lỗi một lần. Sửa như hai
+lần trước: merge `main` vào branch, giữ cả hai entry theo đúng thứ tự thời
+gian (không xoá/sửa entry cũ — append-only), chạy lại `npm run ci`, push.
+Không tự thay đổi quy tắc "mỗi run không chọn task mới vẫn ghi một entry
+JOURNAL qua PR riêng" vì đó là chỉ đạo chủ dự án 2026-09-14; nêu lại hiện
+tượng ở đây để người duyệt biết, không tự quyết đổi quy trình.
+PR: #84 (cùng PR, không mở PR mới) · Tầng: B (giữ nguyên khai báo gốc)
+Kế tiếp: #84 xanh + hết conflict, chờ người duyệt B merge tay. Nếu vòng lặp
+này lặp thêm vài lần nữa trước khi #84 được duyệt, cân nhắc hỏi chủ dự án có
+muốn gộp các entry "không chọn task mới" liên tiếp thành một PR ít tần suất
+hơn để giảm va chạm với các PR [B] đang chờ duyệt lâu.
