@@ -1195,3 +1195,14 @@ PR: (entry này, chỉ ghi JOURNAL — không có thay đổi code)
 Tầng: A
 Kế tiếp: chọn theo prio khi #84 merge (chuyển T-053c1/T-053c2 sang DONE);
 BLOCKED.md vẫn cần người quyết cho T-054/T-060/T-061.
+
+## 2026-10-05 (run kế) — dọn PR, không chọn task mới (lần 2, không đổi gì)
+Làm: #84 vẫn CI xanh, `mergeable_state: clean`, không comment/review mới —
+một run trước đã tự sửa một conflict tạm thời với `main` rồi push lại (báo ở
+#quaythuoc-build 2026-10-06 03:23), trạng thái hiện tại khớp kết quả đó. Soát
+lại #quaythuoc-admin: không có chỉ đạo mới từ 2026-10-01. BACKLOG/BLOCKED
+không đổi so với entry trước — T-053c2 vẫn là TODO duy nhất đủ điều kiện
+nhưng đã có PR #84 mở; còn lại đều BLOCKED (T-054, T-060, T-061/T-062).
+PR: (entry này, chỉ ghi JOURNAL — không có thay đổi code)
+Tầng: A
+Kế tiếp: như entry trước — chờ người duyệt #84 hoặc quyết BLOCKED.md.
