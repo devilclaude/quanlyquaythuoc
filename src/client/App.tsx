@@ -16,10 +16,19 @@ type Man = 'ban-hang' | 'hang-hoa' | 'nhap-hang' | 'tra-hang' | 'tra-hang-nhap' 
 // giao diện từ khi T-020 thêm màn thứ hai; mặc định "Bán hàng" vì đó là việc
 // dược sĩ làm cả ngày. "Nhập hàng" vào thẳng DANH SÁCH (T-041, khớp KiotViet:
 // nav vào danh sách, nút "+ Nhập hàng" mới mở luồng tạo tay T-040c1/T-043).
-// "Trả hàng nhập" (T-053c1) vào thẳng danh sách, chỉ đọc — nút "+ Trả hàng
-// nhập" (luồng tạo) và liên kết ngược từ chi tiết phiếu nhập thuộc T-053c2.
+// "Trả hàng nhập" (T-053c1) vào thẳng danh sách. T-053c2 — nút "Trả hàng
+// nhập" ở chân chi tiết một phiếu nhập (trong "Nhập hàng") nhảy sang đây,
+// kèm mã phiếu nhập đó để tự mở sẵn luồng tạo — "man"/"maPhieuNhapTraHangNhap"
+// là state tối thiểu duy nhất cần NÂNG LÊN App (không dùng router) để hai màn
+// độc lập này nói chuyện được với nhau.
 export function App() {
   const [man, setMan] = useState<Man>('ban-hang');
+  const [maPhieuNhapTraHangNhap, setMaPhieuNhapTraHangNhap] = useState<string | undefined>(undefined);
+
+  function traHangNhapTuPhieuNhap(ma: string) {
+    setMaPhieuNhapTraHangNhap(ma);
+    setMan('tra-hang-nhap');
+  }
 
   return (
     <main>
@@ -52,11 +61,14 @@ export function App() {
       ) : man === 'hang-hoa' ? (
         <DanhSachHangHoa />
       ) : man === 'nhap-hang' ? (
-        <DanhSachPhieuNhap />
+        <DanhSachPhieuNhap onTraHangNhap={traHangNhapTuPhieuNhap} />
       ) : man === 'tra-hang' ? (
         <DanhSachTraHang />
       ) : man === 'tra-hang-nhap' ? (
-        <DanhSachTraHangNhap />
+        <DanhSachTraHangNhap
+          maPhieuNhapGoiY={maPhieuNhapTraHangNhap}
+          onDaDungMaGoiY={() => setMaPhieuNhapTraHangNhap(undefined)}
+        />
       ) : man === 'tong-quan' ? (
         <TongQuan />
       ) : (

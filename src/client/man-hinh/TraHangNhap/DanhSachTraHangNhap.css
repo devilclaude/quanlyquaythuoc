@@ -18,3 +18,13 @@
 .danh-sach-tra-hang-nhap__thong-bao--loi { color: var(--mau-nguy); }
 .danh-sach-tra-hang-nhap__dong--dang-chon { background: var(--mau-chinh-nhat); }
 .danh-sach-tra-hang-nhap__chi-tiet { background: var(--mau-nen); padding: var(--kc-4); }
+
+.danh-sach-tra-hang-nhap__quay-lai {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: var(--mau-chinh);
+  font-size: var(--chu-sm);
+  cursor: pointer;
+  padding: var(--kc-2) 0;
+}

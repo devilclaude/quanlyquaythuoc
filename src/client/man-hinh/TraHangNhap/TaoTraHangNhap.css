@@ -1,0 +1,26 @@
+.tao-tra-hang-nhap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kc-4);
+  padding: var(--kc-5);
+}
+
+.tao-tra-hang-nhap__tieu-de { font-size: var(--chu-lg); margin: 0; }
+
+.tao-tra-hang-nhap__o-tim {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--kc-3);
+}
+
+.tao-tra-hang-nhap__phieu-nhap { color: var(--mau-chu-phu); }
+
+.tao-tra-hang-nhap__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kc-3);
+  align-items: flex-start;
+}
+
+.tao-tra-hang-nhap__thong-bao { color: var(--mau-chu-phu); }
+.tao-tra-hang-nhap__loi { color: var(--mau-nguy); }

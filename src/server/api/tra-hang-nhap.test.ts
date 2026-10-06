@@ -169,4 +169,23 @@ describe('dangKyTraHangNhapRoutes', () => {
 
     expect(res.status).toBe(404);
   });
+
+  it('GET /phieu-nhap/:ma trả về phiếu nhập kèm conLaiToiDa từng dòng (T-053c2)', async () => {
+    nhapHoanThanhDonGian();
+
+    const res = await taoRouter().request('/phieu-nhap/PN000001');
+
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as { ma: string; dong: { maHang: string; conLaiToiDa: number }[] };
+    expect(json.ma).toBe('PN000001');
+    expect(json.dong).toHaveLength(1);
+    expect(json.dong[0]?.maHang).toBe('SP001');
+    expect(json.dong[0]?.conLaiToiDa).toBe(100);
+  });
+
+  it('GET /phieu-nhap/:ma trả về 404 khi không tìm thấy mã', async () => {
+    const res = await taoRouter().request('/phieu-nhap/PN999999');
+
+    expect(res.status).toBe(404);
+  });
 });

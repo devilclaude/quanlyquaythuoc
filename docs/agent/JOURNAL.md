@@ -1184,6 +1184,18 @@ Kế tiếp: T-053c2 (luồng tạo + liên kết ngược chiều còn lại) s
 merge — task TODO duy nhất còn đủ điều kiện; mọi TODO khác đều BLOCKED
 (T-054, T-060, T-061/T-062).
 
+## 2026-10-04 (run kế) — dọn PR + T-053c2
+Làm: #83 (T-053c1) đã merge → chuyển DONE. Chọn T-053c2 (TODO duy nhất đủ
+điều kiện): viết lại từ đầu theo TDD `timPhieuNhapDeTraHangNhap` + `GET
+/api/tra-hang-nhap/phieu-nhap/:ma`, `TaoTraHangNhap`/`TraCuuPhieuNhap` (cùng
+khuôn `TaoTraHang`/`TraCuuHoaDon` T-052d), nút "+ Trả hàng nhập", và nút "Trả
+hàng nhập" ở chân `ChiTietPhieuNhap` (chỉ hiện khi `HOAN_THANH`) nhảy sang
+màn này kèm mã điền sẵn + tự tra cứu. E2e phát hiện một race hai state khi
+dựng liên kết ngược — xem ghi chú "sửa lúc làm" ở BACKLOG.md T-053c2.
+PR: (xem mô tả PR) · Tầng: B
+Kế tiếp: mọi TODO khác đều BLOCKED (T-054, T-060, T-061/T-062) — không còn
+task TODO đủ điều kiện sau PR này.
+
 ## 2026-10-05 — dọn PR, không chọn task mới
 Làm: PR#84 (T-053c2) nay CI xanh (trước đó "CI đang chạy"), không comment,
 `mergeable_state: clean` — chờ duyệt B đúng dự kiến, không sửa. Chưa merge
@@ -1196,6 +1208,17 @@ Tầng: A
 Kế tiếp: chọn theo prio khi #84 merge (chuyển T-053c1/T-053c2 sang DONE);
 BLOCKED.md vẫn cần người quyết cho T-054/T-060/T-061.
 
+## 2026-10-05 (run kế) — dọn conflict PR#84 với main
+Làm: PR#84 (T-053c2) CI xanh, không comment chưa xử lý, nhưng
+`mergeable_state: dirty` (conflict với `main` do entry JOURNAL.md ở run
+dọn-PR 2026-10-05 nói trên). Theo luật "dọn PR cũ trước khi mở PR mới", sửa
+conflict này và dừng run tại đây — không chọn task mới. Merge `main` vào
+branch, resolve xung đột JOURNAL.md (giữ cả hai entry append-only theo đúng
+thứ tự thời gian), chạy lại `npm run ci`, push.
+PR: #84 (cùng PR, không mở PR mới) · Tầng: B (giữ nguyên khai báo gốc)
+Kế tiếp: #84 xanh + hết conflict, chờ người duyệt B. Khi merge: chuyển
+T-053c1 (đã DONE từ trước)/T-053c2 CHỜ MERGE → DONE ở run dọn PR kế tiếp.
+
 ## 2026-10-05 (run kế) — dọn PR, không chọn task mới (lần 2, không đổi gì)
 Làm: #84 vẫn CI xanh, `mergeable_state: clean`, không comment/review mới —
 một run trước đã tự sửa một conflict tạm thời với `main` rồi push lại (báo ở
@@ -1207,6 +1230,21 @@ PR: (entry này, chỉ ghi JOURNAL — không có thay đổi code)
 Tầng: A
 Kế tiếp: như entry trước — chờ người duyệt #84 hoặc quyết BLOCKED.md.
 
+## 2026-10-05 (run kế, lần 3) — dọn conflict PR#84 với main (lặp lại)
+Làm: PR#84 lại `mergeable_state: dirty` — mỗi run "không chọn task mới" tự nó
+mở một PR journal-only vào `main` (ví dụ #85, #86), và vì PR#84 cũng có dòng
+JOURNAL.md ở đúng cuối file, hai bên đụng nhau mỗi lần main nhích thêm một
+entry kiểu này. Đây là vòng lặp cấu trúc, không phải lỗi một lần. Sửa như hai
+lần trước: merge `main` vào branch, giữ cả hai entry theo đúng thứ tự thời
+gian (không xoá/sửa entry cũ — append-only), chạy lại `npm run ci`, push.
+Không tự thay đổi quy tắc "mỗi run không chọn task mới vẫn ghi một entry
+JOURNAL qua PR riêng" vì đó là chỉ đạo chủ dự án 2026-09-14; nêu lại hiện
+tượng ở đây để người duyệt biết, không tự quyết đổi quy trình.
+PR: #84 (cùng PR, không mở PR mới) · Tầng: B (giữ nguyên khai báo gốc)
+Kế tiếp: #84 xanh + hết conflict, chờ người duyệt B merge tay. Nếu vòng lặp
+này lặp thêm vài lần nữa trước khi #84 được duyệt, cân nhắc hỏi chủ dự án có
+muốn gộp các entry "không chọn task mới" liên tiếp thành một PR ít tần suất
+hơn để giảm va chạm với các PR [B] đang chờ duyệt lâu.
 ## 2026-10-05 (run kế 2) — dọn PR, không chọn task mới (lần 3, không đổi gì)
 Làm: #84 vẫn CI xanh, `mergeable_state: clean`, không comment/review mới —
 không sửa. #quaythuoc-admin không có chỉ đạo mới từ 2026-10-01. Ba run liên

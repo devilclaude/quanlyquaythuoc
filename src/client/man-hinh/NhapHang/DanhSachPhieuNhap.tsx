@@ -153,8 +153,13 @@ function tinhKhoangThoiGian(
   return { tu: dauNgayVN(tuyChinhTu), den: cuoiNgayVN(tuyChinhDen) };
 }
 
+interface DanhSachPhieuNhapProps {
+  /** Nối tới `ChiTietPhieuNhap` — nút "Trả hàng nhập" ở chân chi tiết (T-053c2, xem `App.tsx`). */
+  onTraHangNhap?: ((phieuNhapMa: string) => void) | undefined;
+}
+
 /** Container: bộ lọc trạng thái + thời gian + ô tìm theo mã + "+ Nhập hàng". */
-export function DanhSachPhieuNhap() {
+export function DanhSachPhieuNhap({ onTraHangNhap }: DanhSachPhieuNhapProps = {}) {
   const [tim, setTim] = useState('');
   const [trangThaiLoc, setTrangThaiLoc] = useState<Record<TrangThaiPhieuNhap, boolean>>({
     PHIEU_TAM: true,
@@ -300,7 +305,7 @@ export function DanhSachPhieuNhap() {
             loi={loi}
             phieuChonId={phieuChonId}
             onChonDong={(id) => setPhieuChonId((hienTai) => (hienTai === id ? undefined : id))}
-            renderChiTiet={(id) => <ChiTietPhieuNhap id={id} />}
+            renderChiTiet={(id) => <ChiTietPhieuNhap id={id} onTraHangNhap={onTraHangNhap} />}
           />
         </section>
       </div>

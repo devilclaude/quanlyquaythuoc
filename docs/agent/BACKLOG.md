@@ -585,7 +585,7 @@ T-040b[A]/T-052a[B]→T-052b[A] — chỉ nối API cho lõi đã duyệt B, kh�
 quyết định kiến trúc mới.
 
 ### T-053c1 [A] prio:53.31 — Trả hàng nhập: danh sách + chi tiết (chỉ đọc)
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-053b
+Trạng thái: DONE · Phụ thuộc: T-053b
 Xong khi: khớp screenshot "Trả hàng nhập"
 (`docs/reference/kiotviet/Quản trị/Trả hàng/Danh sách trả hàng.png` — tên file
 trùng với ảnh "trả hàng khách" ở `Quản trị/Đơn hàng/`, nhưng tiêu đề TRONG ảnh
@@ -610,7 +610,7 @@ khi gỡ luồng tạo, slice này không còn ghi kho/tiền qua tay người d
 đọc (mở lại phiếu nhập đã có, không sửa/tạo gì), cùng tiền lệ T-052c.
 
 ### T-053c2 [B] prio:53.32 — Trả hàng nhập: luồng tạo + liên kết ngược từ phiếu nhập
-Trạng thái: TODO · Phụ thuộc: T-053c1
+Trạng thái: CHỜ MERGE · Phụ thuộc: T-053c1
 Xong khi: nút "+ Trả hàng nhập" trên màn danh sách (T-053c1) mở luồng tạo: ô
 tìm phiếu nhập gốc theo mã (`GET /api/tra-hang-nhap/phieu-nhap/:ma`,
 `timPhieuNhapDeTraHangNhap` — cùng khuôn `timHoaDonDeTraHang`/T-052c, trả
@@ -631,6 +631,14 @@ T-052d.
 Tầng B: đường ghi kho + tiền qua tay người dùng lần đầu ở luồng tạo (tương tự
 lý do T-040c1[B]/T-052d[B], khác tiền lệ T-022c[A]/T-040b[A]/T-052b[A] chỉ
 nối API đã duyệt).
+Ghi chú (sửa lúc làm): liên kết ngược CHIỀU CÒN LẠI đụng một race hai state
+(`App.tsx`/`DanhSachTraHangNhap.tsx`) — xoá `maPhieuNhapTraHangNhap` ở `App`
+VÀ đọc nó để truyền `maGoiY` xuống `TaoTraHangNhap` xảy ra trong CÙNG một
+effect, React 18 batch chung nên khi `TaoTraHangNhap` mount thì prop đã về
+`undefined` (ô tìm trống, không phải mã vừa bấm). Phát hiện bằng e2e đỏ, không
+phải đọc code suông. Sửa: `DanhSachTraHangNhap` chụp giá trị vào state RIÊNG
+(`maGoiYDaChup`) trong effect đó rồi mới gọi callback xoá — không đọc thẳng
+prop khi render `TaoTraHangNhap`.
 
 ### T-054 [A] prio:54 — Màn thẻ kho
 Trạng thái: BLOCKED · Phụ thuộc: T-005, T-007

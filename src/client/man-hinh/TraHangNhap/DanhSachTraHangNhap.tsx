@@ -4,9 +4,10 @@ import { DanhSachTraHangNhapResSchema, type TraHangNhapDanhSachItem } from '../.
 import { dong } from '../../../shared/kieu/dong';
 import { dinhDangThoiGianVN } from '../../../shared/thoi-gian/dinh-dang';
 import { dinhDangTien } from '../../../shared/tien/dinh-dang';
-import { Bang, OSo, TruongNhap } from '../../thanh-phan';
+import { Bang, Nut, OSo, TruongNhap } from '../../thanh-phan';
 import { ChiTietPhieuNhap } from '../NhapHang/ChiTietPhieuNhap';
 import { ChiTietTraHangNhap } from './ChiTietTraHangNhap';
+import { TaoTraHangNhap } from './TaoTraHangNhap';
 import './DanhSachTraHangNhap.css';
 
 // T-053c1 — Danh sách và chi tiết (CHỈ ĐỌC) trả hàng nhập, cùng khuôn
@@ -22,13 +23,16 @@ import './DanhSachTraHangNhap.css';
 // nhập hàng" (liên kết ngược, T-053b) để tra được gốc ngay từ danh sách. Ô
 // "Theo mã phiếu trả" lọc NGAY TRÊN danh sách đã tải, cùng quyết định T-052c.
 //
-// Liên kết ngược MỘT CHIỀU ở slice này (trả hàng nhập → phiếu nhập gốc):
-// toggle inline tái dùng THẲNG `ChiTietPhieuNhap` (T-041) qua `renderPhieuNhapGoc`.
-// KHÔNG có nút "+ Trả hàng nhập" (luồng tạo) ở đây — đo trước khi mở PR cho
-// thấy gộp cả luồng tạo + liên kết ngược chiều kia (nút "Trả hàng nhập" ở
-// `ChiTietPhieuNhap`) vượt ngưỡng 1000 dòng/24 file (CLAUDE.md); chẻ ngay
-// (không build thử rồi bỏ, theo đúng tiền lệ T-040a/T-052a) thành T-053c2
-// (TODO trong BACKLOG.md) — cùng hình chẻ T-052c/d.
+// Liên kết ngược MỘT CHIỀU ở T-053c1 (trả hàng nhập → phiếu nhập gốc): toggle
+// inline tái dùng THẲNG `ChiTietPhieuNhap` (T-041) qua `renderPhieuNhapGoc`.
+//
+// T-053c2 — nút "+ Trả hàng nhập" mở luồng tạo (`TaoTraHangNhap`, chẻ khỏi
+// T-053c1 vì gộp chung vượt ngưỡng 1000 dòng/PR, xem BACKLOG.md). Cùng khuôn
+// `dangTaoMoi`/"← Danh sách..." đã dùng ở `DanhSachTraHang` (T-052d). Prop
+// `maPhieuNhapGoiY` (+ `onDaDungMaGoiY` để xoá state ở `App.tsx` sau khi dùng)
+// phục vụ liên kết ngược CHIỀU CÒN LẠI: nút "Trả hàng nhập" ở chân
+// `ChiTietPhieuNhap` nhảy sang đây, mở sẵn luồng tạo với mã đã điền và tự tra
+// cứu — không cần gõ lại.
 
 interface BangDanhSachTraHangNhapProps {
   duLieu: TraHangNhapDanhSachItem[];
@@ -103,13 +107,29 @@ export function BangDanhSachTraHangNhap({ duLieu, dangTai, loi, phieuChonId, onC
   );
 }
 
-/** Container: tải danh sách một lần, ô tìm lọc ngay trên dữ liệu đã tải. */
-export function DanhSachTraHangNhap() {
+interface DanhSachTraHangNhapProps {
+  /** Mã phiếu nhập điền sẵn + mở luồng tạo ngay (liên kết ngược từ `ChiTietPhieuNhap`, T-053c2). */
+  maPhieuNhapGoiY?: string | undefined;
+  /** Gọi ngay khi đã dùng `maPhieuNhapGoiY` — để `App.tsx` xoá state, tránh mở lại luồng tạo khi quay lại tab này lần sau. */
+  onDaDungMaGoiY?: (() => void) | undefined;
+}
+
+/** Container: tải danh sách một lần, ô tìm lọc ngay trên dữ liệu đã tải, "+ Trả hàng nhập" mở luồng tạo. */
+export function DanhSachTraHangNhap({ maPhieuNhapGoiY, onDaDungMaGoiY }: DanhSachTraHangNhapProps = {}) {
   const [tim, setTim] = useState('');
   const [duLieu, setDuLieu] = useState<TraHangNhapDanhSachItem[]>([]);
   const [dangTai, setDangTai] = useState(true);
   const [loi, setLoi] = useState<string | undefined>(undefined);
   const [phieuChonId, setPhieuChonId] = useState<string | undefined>(undefined);
+  const [phienBanLamMoi, setPhienBanLamMoi] = useState(0);
+  const [dangTaoMoi, setDangTaoMoi] = useState(false);
+  // Chụp lại `maPhieuNhapGoiY` vào state RIÊNG của component này — không đọc
+  // thẳng prop khi render `TaoTraHangNhap`. `onDaDungMaGoiY` xoá state ở
+  // `App.tsx` NGAY trong effect dưới đây (cùng lượt render với `setDangTaoMoi`,
+  // React 18 batch chung) nên prop `maPhieuNhapGoiY` đã về `undefined` trước
+  // khi `TaoTraHangNhap` kịp mount — phải giữ giá trị đã chụp ở state riêng
+  // thì mới sống sót qua lượt render đó.
+  const [maGoiYDaChup, setMaGoiYDaChup] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -127,16 +147,43 @@ export function DanhSachTraHangNhap() {
       });
 
     return () => controller.abort();
-  }, []);
+  }, [phienBanLamMoi]);
+
+  useEffect(() => {
+    if (!maPhieuNhapGoiY) return;
+    setMaGoiYDaChup(maPhieuNhapGoiY);
+    setDangTaoMoi(true);
+    onDaDungMaGoiY?.();
+  }, [maPhieuNhapGoiY, onDaDungMaGoiY]);
 
   const timChuanHoa = tim.trim().toLowerCase();
   const duLieuLoc = timChuanHoa ? duLieu.filter((p) => p.ma.toLowerCase().includes(timChuanHoa)) : duLieu;
+
+  function taoXong(id: string) {
+    setDangTaoMoi(false);
+    setPhienBanLamMoi((v) => v + 1);
+    setPhieuChonId(id);
+  }
+
+  if (dangTaoMoi) {
+    return (
+      <div className="danh-sach-tra-hang-nhap">
+        <button type="button" className="danh-sach-tra-hang-nhap__quay-lai" onClick={() => setDangTaoMoi(false)}>
+          ← Danh sách trả hàng nhập
+        </button>
+        <TaoTraHangNhap onTaoXong={taoXong} maGoiY={maGoiYDaChup} />
+      </div>
+    );
+  }
 
   return (
     <div className="danh-sach-tra-hang-nhap">
       <h1 className="danh-sach-tra-hang-nhap__tieu-de">Trả hàng nhập</h1>
       <div className="danh-sach-tra-hang-nhap__thanh-cong-cu">
         <TruongNhap aria-label="Theo mã phiếu trả" placeholder="Theo mã phiếu trả" value={tim} onChange={(su) => setTim(su.target.value)} />
+        <Nut bienThe="chinh" onClick={() => setDangTaoMoi(true)}>
+          + Trả hàng nhập
+        </Nut>
       </div>
       <BangDanhSachTraHangNhap
         duLieu={duLieuLoc}
