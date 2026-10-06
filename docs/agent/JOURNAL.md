@@ -1255,3 +1255,16 @@ vì routine đang đứng yên ba lần chạy liên tiếp.
 PR: (entry này, chỉ ghi JOURNAL — không có thay đổi code)
 Tầng: A
 Kế tiếp: như hai entry trước — chờ người duyệt #84 hoặc quyết BLOCKED.md.
+
+## 2026-10-06 — dọn PR: #84 đã merge (người duyệt), không chọn task mới
+Làm: Dương đã duyệt/merge #84 (T-053c2) tay. Không còn PR agent nào mở (#85/
+#86/#87 — các entry journal-only trước đó — đều đã tự động merge Tầng A).
+Chuyển T-053c2 sang DONE trong BACKLOG.md. Soát lại toàn bộ: không còn task
+TODO nào đủ điều kiện — chỉ T-061/T-062 còn TODO, cả hai vẫn BLOCKED (thiếu
+đích/xác thực đẩy backup, xem BLOCKED.md); T-054/T-060 vẫn BLOCKED. Không có
+chỉ đạo mới ở #quaythuoc-admin từ 2026-10-01.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: cần người quyết BLOCKED.md (T-054 khuôn tham chiếu chứng từ thẻ kho,
+T-060 mẫu xuất KiotViet thật, T-061 đích/xác thực backup) — không còn việc gì
+khác để làm tới khi có quyết định.

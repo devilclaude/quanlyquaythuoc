@@ -610,7 +610,7 @@ khi gỡ luồng tạo, slice này không còn ghi kho/tiền qua tay người d
 đọc (mở lại phiếu nhập đã có, không sửa/tạo gì), cùng tiền lệ T-052c.
 
 ### T-053c2 [B] prio:53.32 — Trả hàng nhập: luồng tạo + liên kết ngược từ phiếu nhập
-Trạng thái: CHỜ MERGE · Phụ thuộc: T-053c1
+Trạng thái: DONE · Phụ thuộc: T-053c1
 Xong khi: nút "+ Trả hàng nhập" trên màn danh sách (T-053c1) mở luồng tạo: ô
 tìm phiếu nhập gốc theo mã (`GET /api/tra-hang-nhap/phieu-nhap/:ma`,
 `timPhieuNhapDeTraHangNhap` — cùng khuôn `timHoaDonDeTraHang`/T-052c, trả
