@@ -1268,3 +1268,16 @@ Tầng: A
 Kế tiếp: cần người quyết BLOCKED.md (T-054 khuôn tham chiếu chứng từ thẻ kho,
 T-060 mẫu xuất KiotViet thật, T-061 đích/xác thực backup) — không còn việc gì
 khác để làm tới khi có quyết định.
+
+## 2026-10-06 (run kế) — dọn PR, không chọn task mới (không đổi gì so với run trước)
+Làm: không còn PR agent nào mở (xác nhận qua GitHub, không chỉ đọc BACKLOG).
+Soát lại từ đầu: #quaythuoc-admin vẫn không có chỉ đạo mới từ 2026-10-01;
+BACKLOG/BLOCKED giống hệt run trước — chỉ T-061/T-062 còn `TODO` nhưng vẫn
+`BLOCKED`; T-054/T-060 vẫn `BLOCKED`. Không có gì mới để ghi ngoài việc xác
+nhận lại. Không báo thêm Slack #quaythuoc-build (đợt báo ngay trước đó, PR#88,
+đã nói đúng nội dung này — tránh lặp thông báo giống nhau khi không có gì đổi,
+theo tinh thần "đừng đi tìm việc phụ để làm cho có").
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: không đổi — chờ Dương quyết BLOCKED.md (T-054/T-060/T-061) hoặc duyệt
+một PR mới; run sau kiểm tra lại từ đầu.
