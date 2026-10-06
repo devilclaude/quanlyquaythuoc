@@ -1281,3 +1281,17 @@ PR: (xem mô tả PR)
 Tầng: A
 Kế tiếp: không đổi — chờ Dương quyết BLOCKED.md (T-054/T-060/T-061) hoặc duyệt
 một PR mới; run sau kiểm tra lại từ đầu.
+
+## 2026-10-07 — dọn PR, không chọn task mới (không đổi gì so với run trước)
+Làm: không còn PR agent nào mở. #quaythuoc-admin không có chỉ đạo mới từ
+2026-10-01 (tin cuối là về PR#71, đã xử lý từ lâu). BACKLOG/BLOCKED giống
+hệt run trước — T-053c2 đã DONE từ #88; chỉ T-061/T-062 còn `TODO` nhưng vẫn
+`BLOCKED` (thiếu đích/xác thực đẩy backup); T-054 (khuôn tham chiếu chứng từ
+thẻ kho) và T-060 (mẫu xuất KiotViet thật) vẫn `BLOCKED`. Không có task TODO
+nào đủ điều kiện để chọn. Không báo thêm Slack #quaythuoc-build — nội dung
+giống hệt hai lần báo gần nhất (#88/#89), tránh lặp thông báo khi không có gì
+đổi.
+PR: (xem mô tả PR)
+Tầng: A
+Kế tiếp: không đổi — chờ Dương quyết BLOCKED.md (T-054/T-060/T-061) hoặc duyệt
+một PR mới; run sau kiểm tra lại từ đầu.
