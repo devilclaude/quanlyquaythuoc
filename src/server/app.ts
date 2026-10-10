@@ -6,6 +6,7 @@ import { dangKyCaiDatRoutes } from './api/cai-dat';
 import { dangKyDongBoRoutes } from './api/dong-bo';
 import { dangKyHangHoaRoutes } from './api/hang-hoa';
 import { dangKyHoaDonRoutes } from './api/hoa-don';
+import { dangKyNguoiDungRoutes } from './api/nguoi-dung';
 import { dangKyPhieuNhapRoutes } from './api/phieu-nhap';
 import { dangKyTongQuanRoutes } from './api/tong-quan';
 import { dangKyTraHangRoutes } from './api/tra-hang';
@@ -44,6 +45,21 @@ export function taoApp(db: Db, tuyChon: TuyChonApp = {}) {
 
   app.get('/api/suc-khoe', (c) => c.json({ trangThai: 'ok' }));
 
+  // Nhân viên chỉ được tìm hàng/giá bán để bán — không xem giá vốn (spec đăng nhập).
+  // Chạy sau `batXacThuc` nên đã biết người dùng; chỉ đúng GET danh sách, admin nhận nguyên.
+  app.use('/api/hang-hoa', async (c, next) => {
+    await next();
+    if (c.req.method !== 'GET' || c.res.status !== 200 || c.get('nguoiDung')?.vaiTro !== 'NHAN_VIEN') return;
+    const goc = (await c.res.clone().json()) as { duLieu?: Record<string, unknown>[] };
+    const duLieu = (goc.duLieu ?? []).map((hang) =>
+      Object.fromEntries(Object.entries(hang).filter(([khoa]) => khoa !== 'giaVon')),
+    );
+    c.res = new Response(JSON.stringify({ ...goc, duLieu }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  });
+
   const hangHoaRouter = new Hono();
   dangKyHangHoaRoutes(hangHoaRouter, db);
   app.route('/api/hang-hoa', hangHoaRouter);
@@ -67,6 +83,10 @@ export function taoApp(db: Db, tuyChon: TuyChonApp = {}) {
   const tongQuanRouter = new Hono();
   dangKyTongQuanRoutes(tongQuanRouter, db);
   app.route('/api/tong-quan', tongQuanRouter);
+
+  const nguoiDungRouter = new Hono<BienHono>();
+  dangKyNguoiDungRoutes(nguoiDungRouter, db);
+  app.route('/api/nguoi-dung', nguoiDungRouter);
 
   const traHangRouter = new Hono();
   dangKyTraHangRoutes(traHangRouter, db);
