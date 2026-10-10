@@ -34,6 +34,10 @@ export function ThongTinHangHoa({ chiTiet }: { chiTiet: HangHoaChiTietRes }) {
           <dd>{chiTiet.maHang}</dd>
         </div>
         <div>
+          <dt>Mã vạch</dt>
+          <dd>{chiTiet.maVach ? chiTiet.maVach : '—'}</dd>
+        </div>
+        <div>
           <dt>Tồn kho</dt>
           <dd>
             {chiTiet.tonKho} {donViCoSo?.ten ?? ''}

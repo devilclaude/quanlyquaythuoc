@@ -26,6 +26,8 @@ export interface DongDonViKhac {
 
 export interface TrangThaiFormTaoHangHoa {
   maHang: string;
+  /** Mã vạch nhà sản xuất — tuỳ chọn; quét bằng máy quét (gõ nhanh rồi Enter) hoặc nhập tay. */
+  maVach: string;
   ten: string;
   donViCoSoTen: string;
   giaBan: string;
@@ -33,7 +35,7 @@ export interface TrangThaiFormTaoHangHoa {
 }
 
 export function taoTrangThaiRong(): TrangThaiFormTaoHangHoa {
-  return { maHang: '', ten: '', donViCoSoTen: '', giaBan: '', donViKhac: [] };
+  return { maHang: '', maVach: '', ten: '', donViCoSoTen: '', giaBan: '', donViKhac: [] };
 }
 
 /**
@@ -58,6 +60,8 @@ function laSoNguyenKhongAm(n: number): boolean {
 }
 
 interface TruongChungHangHoa {
+  /** Đã cắt khoảng trắng; chuỗi rỗng = không có mã vạch. */
+  maVach: string;
   ten: string;
   donViCoSoTen: string;
   giaBan: number;
@@ -67,6 +71,10 @@ interface TruongChungHangHoa {
 /** Validate các trường chung cho cả tạo mới (T-009b) và sửa (T-009c) — mã hàng
  * là phần khác nhau duy nhất giữa hai yêu cầu, xử lý riêng ở từng hàm gọi. */
 function validateCacTruongChung(tt: TrangThaiFormTaoHangHoa): TruongChungHangHoa | { loi: string } {
+  const maVach = tt.maVach.trim();
+  if (/\s/.test(maVach)) return { loi: 'Mã vạch không được chứa khoảng trắng' };
+  if (maVach.length > 64) return { loi: 'Mã vạch tối đa 64 ký tự' };
+
   const ten = tt.ten.trim();
   if (!ten) return { loi: 'Tên hàng là bắt buộc' };
 
@@ -94,7 +102,7 @@ function validateCacTruongChung(tt: TrangThaiFormTaoHangHoa): TruongChungHangHoa
     donViKhac.push({ ten: tenDong, heSo, giaBan: giaBanDong });
   }
 
-  return { ten, donViCoSoTen, giaBan, donViKhac };
+  return { maVach, ten, donViCoSoTen, giaBan, donViKhac };
 }
 
 /** Chuyển trạng thái form (chuỗi nhập tay) sang yêu cầu tạo mới, hoặc thông báo
@@ -105,8 +113,13 @@ export function xayDungYeuCauTaoHangHoa(
   const cot = validateCacTruongChung(tt);
   if ('loi' in cot) return cot;
 
+  const { maVach, ...conLai } = cot;
   const maHang = tt.maHang.trim();
-  return maHang ? { maHang, ...cot } : { ...cot };
+  return {
+    ...(maHang ? { maHang } : {}),
+    ...(maVach ? { maVach } : {}),
+    ...conLai,
+  };
 }
 
 /** Chuyển trạng thái form sang yêu cầu sửa (T-009c) — không có mã hàng, mã hàng
@@ -114,7 +127,12 @@ export function xayDungYeuCauTaoHangHoa(
 export function xayDungYeuCauSuaHangHoa(
   tt: TrangThaiFormTaoHangHoa,
 ): SuaHangHoaReq | { loi: string } {
-  return validateCacTruongChung(tt);
+  const cot = validateCacTruongChung(tt);
+  if ('loi' in cot) return cot;
+  // Form sửa gửi lại toàn bộ: ô mã vạch trống nghĩa là XOÁ mã vạch (null), khác với client
+  // không gửi trường này (giữ nguyên).
+  const { maVach, ...conLai } = cot;
+  return { ...conLai, maVach: maVach || null };
 }
 
 /** Điền form sửa từ chi tiết hàng hoá đã tải (T-009c) — đơn vị cơ sở tách
@@ -123,6 +141,7 @@ export function taoTrangThaiTuChiTiet(chiTiet: HangHoaChiTietRes): TrangThaiForm
   const donViCoSo = chiTiet.donViTinh.find((d) => d.laCoSo);
   return {
     maHang: chiTiet.maHang,
+    maVach: chiTiet.maVach ?? '',
     ten: chiTiet.ten,
     donViCoSoTen: donViCoSo?.ten ?? '',
     giaBan: String(donViCoSo?.giaBan ?? chiTiet.giaBan),
@@ -201,6 +220,13 @@ export function FormTaoHangHoa({
             value={trangThai.maHang}
             onChange={(su) => onDoi({ ...trangThai, maHang: su.target.value })}
             disabled={maHangChiDoc}
+          />
+          <TruongNhap
+            nhan="Mã vạch"
+            placeholder="Quét hoặc nhập (tuỳ chọn)"
+            autoComplete="off"
+            value={trangThai.maVach}
+            onChange={(su) => onDoi({ ...trangThai, maVach: su.target.value })}
           />
           <TruongNhap
             nhan="Tên hàng"
