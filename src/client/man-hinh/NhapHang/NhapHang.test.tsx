@@ -208,6 +208,17 @@ describe('BangDongPhieuNhap — hiển thị thuần', () => {
     expect(html).not.toContain('<table');
   });
 
+  it('tiêu đề cột số (STT, Số lượng, Đơn giá, Thành tiền) căn phải như ô số; cột chữ giữ căn trái', () => {
+    const html = renderToStaticMarkup(<BangDongPhieuNhap dsDong={[dongMau()]} {...props} />);
+
+    for (const cot of ['STT', 'Số lượng', 'Đơn giá', 'Thành tiền']) {
+      expect(html, cot).toContain(`<th class="so">${cot}</th>`);
+    }
+    for (const cot of ['Mã hàng', 'Tên hàng', 'ĐVT']) {
+      expect(html, cot).toContain(`<th>${cot}</th>`);
+    }
+  });
+
   it('cột Số lô/Hạn dùng chỉ HIỆN khi có ít nhất một dòng bật quản lý lô; dòng phẳng khác hiện "—"', () => {
     const anHet = renderToStaticMarkup(<BangDongPhieuNhap dsDong={[dongMau({ quanLyLoBat: false })]} {...props} />);
     expect(anHet).not.toContain('Số lô');

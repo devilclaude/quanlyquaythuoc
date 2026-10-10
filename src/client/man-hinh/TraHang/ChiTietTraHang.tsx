@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { TraHangChiTietResSchema, type TraHangChiTietRes } from '../../../shared/hop-dong/tra-hang';
 import { dong } from '../../../shared/kieu/dong';
 import { dinhDangTien } from '../../../shared/tien/dinh-dang';
-import { Bang, BadgeTrangThai, OSo } from '../../thanh-phan';
+import { Bang, BadgeTrangThai, OSo, TieuDeSo } from '../../thanh-phan';
 import { BangDongHoaDonDeTraHang, useHoaDonDeTraHang } from './TraCuuHoaDon';
 import './ChiTietTraHang.css';
 
@@ -46,8 +46,8 @@ export function ThongTinTraHang({ chiTiet }: { chiTiet: TraHangChiTietRes }) {
           <tr>
             <th>Mã hàng</th>
             <th>Tên hàng</th>
-            <th>Số lượng</th>
-            <th>Tiền hoàn</th>
+            <TieuDeSo>Số lượng</TieuDeSo>
+            <TieuDeSo>Tiền hoàn</TieuDeSo>
           </tr>
         </thead>
         <tbody>

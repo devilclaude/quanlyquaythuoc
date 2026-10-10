@@ -2,7 +2,7 @@ import JsBarcode from 'jsbarcode';
 import { useEffect, useRef, useState } from 'react';
 import { dong } from '../../../shared/kieu/dong';
 import { dinhDangTien } from '../../../shared/tien/dinh-dang';
-import { Bang, Nut, OSo } from '../../thanh-phan';
+import { Bang, Nut, OSo, TieuDeSo } from '../../thanh-phan';
 import './InTemMa.css';
 
 // T-042 — In tem mã, mở ngay sau khi Hoàn thành một phiếu nhập (SPEC.md §6.2
@@ -213,7 +213,7 @@ export function InTemMa({ dsTemBanDau, onDong }: InTemMaProps) {
                 <th></th>
                 <th>Mã hàng</th>
                 <th>Tên hàng</th>
-                <th>Số lượng</th>
+                <TieuDeSo>Số lượng</TieuDeSo>
               </tr>
             </thead>
             <tbody>

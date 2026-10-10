@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { HoaDonDeTraHangResSchema, type HoaDonDeTraHangRes } from '../../../shared/hop-dong/tra-hang';
-import { Bang, OSo } from '../../thanh-phan';
+import { Bang, OSo, TieuDeSo } from '../../thanh-phan';
 import './TraCuuHoaDon.css';
 
 // T-052c — tra một hoá đơn theo mã để XEM LẠI từ chi tiết một phiếu trả đã
@@ -65,9 +65,9 @@ export function BangDongHoaDonDeTraHang({ dong, soLuongTra, onSuaSoLuongTra }: B
         <tr>
           <th>Mã hàng</th>
           <th>Tên hàng</th>
-          <th>Đã bán</th>
-          <th>Còn trả được</th>
-          {choSua ? <th>Số lượng trả</th> : null}
+          <TieuDeSo>Đã bán</TieuDeSo>
+          <TieuDeSo>Còn trả được</TieuDeSo>
+          {choSua ? <TieuDeSo>Số lượng trả</TieuDeSo> : null}
         </tr>
       </thead>
       <tbody>

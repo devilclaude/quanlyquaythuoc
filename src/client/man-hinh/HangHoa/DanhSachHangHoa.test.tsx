@@ -58,6 +58,17 @@ describe('BangDanhSachHangHoa', () => {
     expect(viTri).toEqual([...viTri].sort((a, b) => a - b));
   });
 
+  it('tiêu đề các cột số (Giá bán, Giá vốn, Tồn kho) căn phải như ô số; cột chữ giữ căn trái', () => {
+    const html = ve();
+
+    for (const cot of ['Giá bán', 'Giá vốn', 'Tồn kho']) {
+      expect(html, cot).toContain(`<th class="so">${cot}</th>`);
+    }
+    for (const cot of ['Mã hàng', 'Tên hàng', 'Thời gian tạo']) {
+      expect(html, cot).toContain(`<th>${cot}</th>`);
+    }
+  });
+
   it('hiện đúng dữ liệu một dòng: tiền có dấu phẩy, ngày giờ theo giờ Việt Nam', () => {
     const html = ve({ duLieu: [mucMau] });
 

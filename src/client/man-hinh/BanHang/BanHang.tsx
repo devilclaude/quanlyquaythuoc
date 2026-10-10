@@ -7,7 +7,7 @@ import {
 import { HoaDonResSchema } from '../../../shared/hop-dong/hoa-don';
 import { dong } from '../../../shared/kieu/dong';
 import { dinhDangTien } from '../../../shared/tien/dinh-dang';
-import { Bang, OSo, TruongNhap } from '../../thanh-phan';
+import { Bang, OSo, TruongNhap, TieuDeSo } from '../../thanh-phan';
 import { ChiBaoTrangThai } from '../../offline/ChiBaoTrangThai';
 import { InHoaDon, docKhoGiayDaLuu, luuKhoGiayDaChon, xayDungHoaDonDeIn, type HoaDonDeIn, type KhoGiayIn } from './InHoaDon';
 import {
@@ -319,14 +319,14 @@ export function BangGioHang({ gioHang, chiSoDongChon, onChonDong, onDoiDonVi, on
     <Bang>
       <thead>
         <tr>
-          <th>STT</th>
+          <TieuDeSo>STT</TieuDeSo>
           <th></th>
           <th>Mã hàng</th>
           <th>Tên hàng</th>
           <th>Đơn vị</th>
-          <th>Số lượng</th>
-          <th>Đơn giá</th>
-          <th>Thành tiền</th>
+          <TieuDeSo>Số lượng</TieuDeSo>
+          <TieuDeSo>Đơn giá</TieuDeSo>
+          <TieuDeSo>Thành tiền</TieuDeSo>
         </tr>
       </thead>
       <tbody>

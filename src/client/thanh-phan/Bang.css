@@ -18,6 +18,10 @@
   white-space: nowrap;
 }
 
+.bang thead th.so {
+  text-align: right;
+}
+
 .bang tbody td {
   padding: var(--kc-2) var(--kc-3);
   border-bottom: var(--vien);
