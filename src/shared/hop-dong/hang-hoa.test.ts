@@ -26,6 +26,18 @@ describe('DanhSachHangHoaResSchema', () => {
     ).not.toThrow();
   });
 
+  it('chấp nhận mục KHÔNG có giaVon — máy chủ bỏ trường này khi trả cho nhân viên', () => {
+    const khongGiaVon: Partial<typeof mucDanhSach> = { ...mucDanhSach };
+    delete khongGiaVon.giaVon;
+
+    expect(() => DanhSachHangHoaResSchema.parse({ duLieu: [khongGiaVon] })).not.toThrow();
+  });
+
+  it('nếu có giaVon thì vẫn phải là số nguyên không âm', () => {
+    expect(() => DanhSachHangHoaResSchema.parse({ duLieu: [{ ...mucDanhSach, giaVon: -1 }] })).toThrow();
+    expect(() => DanhSachHangHoaResSchema.parse({ duLieu: [{ ...mucDanhSach, giaVon: 1.5 }] })).toThrow();
+  });
+
   it('từ chối giá bán là số thực — tiền phải là số nguyên (SPEC.md §3.4)', () => {
     expect(() =>
       DanhSachHangHoaResSchema.parse({ duLieu: [{ ...mucDanhSach, giaBan: 500.5 }] }),

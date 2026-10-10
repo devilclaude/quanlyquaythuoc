@@ -89,6 +89,33 @@ test('nhân viên chỉ thấy Bán hàng và Trả hàng, không có mục qu�
   await expect(page.getByText('Chị Lan · Nhân viên')).toBeVisible();
 });
 
+test('nhân viên tìm hàng khi máy chủ không trả giaVon: vẫn thấy gợi ý hàng (không vỡ vì thiếu trường)', async ({ page, context }) => {
+  const mayChu = await dungMayChuGia(context);
+  mayChu.nguoi = NHAN_VIEN;
+  await context.route('**/api/hang-hoa*', (route) =>
+    route.fulfill({
+      json: {
+        duLieu: [
+          {
+            id: 'sp-1',
+            maHang: 'SP002',
+            ten: 'Nước muối sinh lý 500ml',
+            giaBan: 15000,
+            tonKho: 60,
+            ngayTao: '2026-10-10T00:00:00.000Z',
+            donViTinh: [{ id: 'dvt-chai', ten: 'chai', heSo: 1, laCoSo: true, giaBan: 15000 }],
+          },
+        ],
+      },
+    }),
+  );
+  await page.goto('/');
+
+  await page.getByPlaceholder('Tìm hàng hóa (F3)').pressSequentially('nuoc');
+
+  await expect(page.getByRole('listbox', { name: 'Gợi ý hàng hoá' }).getByRole('option')).toHaveCount(1);
+});
+
 test('hết phiên giữa chừng (API trả 401): tự về màn đăng nhập kèm câu báo', async ({ page, context }) => {
   const mayChu = await dungMayChuGia(context);
   mayChu.nguoi = ADMIN;

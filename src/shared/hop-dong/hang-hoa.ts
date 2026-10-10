@@ -19,8 +19,11 @@ export const HangHoaDanhSachItemSchema = z.object({
   ten: z.string(),
   /** Giá bán đơn vị cơ sở. */
   giaBan: z.number().int().nonnegative(),
-  /** Tạm luôn 0 cho tới khi T-007 (giá vốn bình quân gia quyền) merge. */
-  giaVon: z.number().int().nonnegative(),
+  /**
+   * Tạm luôn 0 cho tới khi T-007 (giá vốn bình quân gia quyền) merge. Máy chủ BỎ trường
+   * này khi trả cho nhân viên (nhân viên không xem giá vốn) — nên là tuỳ chọn.
+   */
+  giaVon: z.number().int().nonnegative().optional(),
   /** Tổng tồn ở đơn vị cơ sở, cộng dồn mọi lô của sản phẩm. */
   tonKho: z.number().int(),
   ngayTao: z.string(),

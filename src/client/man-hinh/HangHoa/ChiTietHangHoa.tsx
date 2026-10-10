@@ -47,7 +47,7 @@ export function ThongTinHangHoa({ chiTiet }: { chiTiet: HangHoaChiTietRes }) {
         </div>
         <div>
           <dt>Giá vốn</dt>
-          <dd>{dinhDangTien(dong(chiTiet.giaVon))}</dd>
+          <dd>{chiTiet.giaVon === undefined ? '—' : dinhDangTien(dong(chiTiet.giaVon))}</dd>
         </div>
         <div>
           <dt>Giá bán</dt>

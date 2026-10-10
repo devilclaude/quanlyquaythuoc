@@ -4,6 +4,7 @@ import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { taoApp } from '../app';
 import { taoNguoiDung } from '../auth/nguoi-dung';
+import { DanhSachHangHoaResSchema } from '../../shared/hop-dong/hang-hoa';
 import { donViTinh, sanPham } from '../db/schema';
 
 type DbTest = ReturnType<typeof drizzle>;
@@ -211,6 +212,16 @@ describe('lọc giá vốn khỏi danh sách hàng với nhân viên', () => {
     expect(lan.duLieu[0]).not.toHaveProperty('giaVon');
     expect(lan.duLieu[0]).toMatchObject({ maHang: 'SP001', giaBan: 500, tonKho: 0 });
     expect(JSON.stringify(lan)).not.toContain('giaVon');
+  });
+
+  it('phản hồi đã lọc của nhân viên vẫn thoả hợp đồng DanhSachHangHoaResSchema mà màn bán hàng dùng để đọc', async () => {
+    taoAdminVaNhanVien();
+    taoHang();
+    const cookieLan = await dangNhap('lan');
+
+    const res = await goi(cookieLan, '/api/hang-hoa?tim=para');
+
+    expect(DanhSachHangHoaResSchema.parse(await res.json()).duLieu).toHaveLength(1);
   });
 
   it('tìm theo từ khoá cũng được lọc', async () => {
