@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { boocFetch, caiDatFetchToanCuc } from './fetch-xac-thuc';
 
 function fetchTraVe(status: number): typeof fetch {
-  return vi.fn(() => Promise.resolve(new Response(null, { status }))) as unknown as typeof fetch;
+  return vi.fn(() => Promise.resolve(new Response(null, { status })));
 }
 
 describe('boocFetch', () => {
@@ -71,7 +71,7 @@ describe('boocFetch', () => {
   it('lỗi mạng được ném lại nguyên, không gọi callback', async () => {
     const khiHetPhien = vi.fn();
     const loi = new TypeError('Failed to fetch');
-    const f = boocFetch(vi.fn(() => Promise.reject(loi)) as unknown as typeof fetch, khiHetPhien);
+    const f = boocFetch(vi.fn(() => Promise.reject(loi)), khiHetPhien);
 
     await expect(f('/api/hang-hoa')).rejects.toBe(loi);
     expect(khiHetPhien).not.toHaveBeenCalled();

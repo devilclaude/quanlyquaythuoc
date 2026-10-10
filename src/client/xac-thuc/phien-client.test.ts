@@ -35,7 +35,7 @@ describe('dangNhap', () => {
   it('gửi POST JSON đúng đường dẫn và nội dung', async () => {
     const f = vi.fn(() => Promise.resolve(phanHoiJson(200, NGUOI)));
 
-    await dangNhap('lan', 'mat-khau-dai-du', f as unknown as typeof fetch);
+    await dangNhap('lan', 'mat-khau-dai-du', f);
 
     const [url, init] = f.mock.calls[0] as unknown as [string, RequestInit];
     expect(url).toBe('/api/auth/dang-nhap');
