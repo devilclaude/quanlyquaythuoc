@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './co-so';
 
 // T-020 — luồng bán hàng bằng bàn phím CHỈ được kiểm ở tầng e2e
 // (ARCHITECTURE.md §7: "luồng bán hàng bằng bàn phím là ràng buộc không

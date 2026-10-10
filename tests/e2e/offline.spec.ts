@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './co-so';
 
 // T-030 — Vỏ PWA và chỉ báo trạng thái. Chuyển đổi online/offline thật (sự
 // kiện trình duyệt qua `navigator.onLine`) và service worker chỉ kiểm được ở
