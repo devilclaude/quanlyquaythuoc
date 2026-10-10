@@ -123,6 +123,37 @@ test('đăng xuất: gọi API, về màn đăng nhập, xoá người đã lưu
   expect(await page.evaluate(() => caches.has('danh-muc-tra-cuu'))).toBe(false);
 });
 
+test('trang khôi phục từ bộ nhớ đệm (nút Back sau khi đăng xuất): hỏi lại máy chủ, phiên đã mất thì về màn đăng nhập', async ({
+  page,
+  context,
+}) => {
+  const mayChu = await dungMayChuGia(context);
+  mayChu.nguoi = ADMIN;
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: 'Nhập hàng', exact: true })).toBeVisible();
+
+  // Phiên bị mất ở máy chủ (đăng xuất ở tab khác), rồi trình duyệt khôi phục trang cũ từ bfcache.
+  // Playwright tắt bfcache nên phát sự kiện `pageshow` đúng như Chrome làm.
+  mayChu.nguoi = null;
+  await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
+
+  await expect(page.getByRole('heading', { name: 'Đăng nhập' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Nhập hàng', exact: true })).toHaveCount(0);
+});
+
+test('pageshow không phải khôi phục từ bộ nhớ đệm (persisted=false) thì không làm gì', async ({ page, context }) => {
+  const mayChu = await dungMayChuGia(context);
+  mayChu.nguoi = ADMIN;
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: 'Nhập hàng', exact: true })).toBeVisible();
+
+  mayChu.nguoi = null;
+  await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: false })));
+  await page.waitForTimeout(300);
+
+  await expect(page.getByRole('button', { name: 'Nhập hàng', exact: true })).toBeVisible();
+});
+
 test('đăng nhập sai quá nhiều lần (429): báo số phút phải chờ', async ({ page, context }) => {
   await dungMayChuGia(context);
   await context.route('**/api/auth/dang-nhap', (route) =>

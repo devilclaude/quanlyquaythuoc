@@ -43,6 +43,17 @@ export function useXacThuc(): {
     return () => window.removeEventListener(SU_KIEN_HET_PHIEN, khiHetPhien);
   }, []);
 
+  // Nút Back/Forward có thể khôi phục nguyên trang cũ từ bộ nhớ đệm (bfcache) — kể cả
+  // sau khi đã đăng xuất, khi đó trên máy dùng chung sẽ lộ màn hình của người trước.
+  // Trang được khôi phục không chạy lại effect nào, nên phải hỏi lại máy chủ ở đây.
+  useEffect(() => {
+    const khiHienLai = (e: PageTransitionEvent) => {
+      if (e.persisted) void hoiMayChu(() => false);
+    };
+    window.addEventListener('pageshow', khiHienLai);
+    return () => window.removeEventListener('pageshow', khiHienLai);
+  }, [hoiMayChu]);
+
   // Đang vào app tạm thời lúc offline: có mạng lại thì hỏi máy chủ xác nhận phiên.
   useEffect(() => {
     if (trangThai.loai !== 'DA_DANG_NHAP' || !trangThai.tamThoiOffline) return undefined;
