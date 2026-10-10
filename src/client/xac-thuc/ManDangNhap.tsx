@@ -2,18 +2,9 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import type { NguoiDungHienTai } from '../../shared/hop-dong/auth';
 import { Nut, TruongNhap } from '../thanh-phan';
-import { type KetQuaDangNhap, dangNhap } from './phien-client';
+import { dangNhap } from './phien-client';
+import { thongBaoDangNhap } from './thong-bao-dang-nhap';
 import './ManDangNhap.css';
-
-type KetQuaLoi = Exclude<KetQuaDangNhap, { loai: 'OK' }>;
-
-export function thongBaoDangNhap(ketQua: KetQuaLoi): string {
-  if (ketQua.loai === 'SAI') return 'Sai tên đăng nhập hoặc mật khẩu';
-  if (ketQua.loai === 'BI_CHAN') {
-    return `Đăng nhập sai quá nhiều lần. Thử lại sau ${Math.max(1, Math.ceil(ketQua.thuLaiSauGiay / 60))} phút`;
-  }
-  return 'Không kết nối được máy chủ';
-}
 
 interface Props {
   onDangNhapThanhCong: (nguoi: NguoiDungHienTai) => void;

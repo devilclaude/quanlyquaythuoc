@@ -24,3 +24,7 @@ const MAN_NHAN_VIEN: readonly Man[] = ['ban-hang', 'tra-hang'];
 export function cacManChoPhep(vaiTro: VaiTro): readonly Man[] {
   return vaiTro === 'ADMIN' ? MOI_MAN : MAN_NHAN_VIEN;
 }
+
+export function nhanVaiTro(vaiTro: VaiTro): string {
+  return vaiTro === 'ADMIN' ? 'Quản trị' : 'Nhân viên';
+}

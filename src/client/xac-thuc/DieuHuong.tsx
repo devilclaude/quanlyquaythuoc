@@ -1,6 +1,6 @@
-import type { NguoiDungHienTai, VaiTro } from '../../shared/hop-dong/auth';
+import type { NguoiDungHienTai } from '../../shared/hop-dong/auth';
 import { Nut } from '../thanh-phan';
-import { type Man, cacManChoPhep } from './vai-tro';
+import { type Man, cacManChoPhep, nhanVaiTro } from './vai-tro';
 
 const NHAN_MAN: Record<Man, string> = {
   'ban-hang': 'Bán hàng',
@@ -11,10 +11,6 @@ const NHAN_MAN: Record<Man, string> = {
   'tong-quan': 'Tổng quan',
   'cai-dat': 'Cài đặt',
 };
-
-export function nhanVaiTro(vaiTro: VaiTro): string {
-  return vaiTro === 'ADMIN' ? 'Quản trị' : 'Nhân viên';
-}
 
 interface Props {
   nguoi: NguoiDungHienTai;

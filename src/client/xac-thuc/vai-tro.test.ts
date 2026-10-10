@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cacManChoPhep, manMacDinh } from './vai-tro';
+import { cacManChoPhep, manMacDinh, nhanVaiTro } from './vai-tro';
 
 describe('cacManChoPhep', () => {
   it('ADMIN thấy đủ 7 màn theo đúng thứ tự menu', () => {
@@ -21,5 +21,12 @@ describe('cacManChoPhep', () => {
   it('màn mặc định luôn nằm trong danh sách của mọi vai trò', () => {
     expect(cacManChoPhep('ADMIN')).toContain(manMacDinh);
     expect(cacManChoPhep('NHAN_VIEN')).toContain(manMacDinh);
+  });
+});
+
+describe('nhanVaiTro', () => {
+  it('hiển thị vai trò bằng tiếng Việt', () => {
+    expect(nhanVaiTro('ADMIN')).toBe('Quản trị');
+    expect(nhanVaiTro('NHAN_VIEN')).toBe('Nhân viên');
   });
 });
