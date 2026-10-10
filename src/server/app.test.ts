@@ -3,7 +3,10 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { taoApp } from './app';
+import { eq } from 'drizzle-orm';
 import { taoNguoiDung } from './auth/nguoi-dung';
+import { chiNhanh, hoaDon, loHang, sanPham } from './db/schema';
+import { ghiTheKho } from './kho/so-cai';
 
 type DbTest = ReturnType<typeof drizzle>;
 
@@ -170,5 +173,38 @@ describe('xác thực bật sẵn trong taoApp', () => {
     });
 
     expect(res.headers.get('Access-Control-Allow-Credentials')).toBe('true');
+  });
+});
+
+describe('người bán trên hoá đơn qua taoApp', () => {
+  it('nhân viên đăng nhập bán hàng: hoá đơn lưu đúng người bán từ phiên', async () => {
+    db.insert(chiNhanh).values({ id: 'chi-nhanh-mac-dinh', ten: 'Quầy chính' }).run();
+    db.insert(sanPham).values({ id: 'sp-1', maHang: 'SP001', ten: 'Paracetamol 500mg' }).run();
+    const [lo] = db.select().from(loHang).where(eq(loHang.sanPhamId, 'sp-1')).all();
+    ghiTheKho(db, [
+      {
+        id: 'nhap-1',
+        chiNhanhId: 'chi-nhanh-mac-dinh',
+        loId: lo?.id ?? '',
+        loai: 'NHAP',
+        soLuong: 100,
+        thoiGian: '2026-09-20T07:00:00.000Z',
+      },
+    ]);
+    const app = taoApp(db);
+    const cookie = await dangNhapLayCookie(app, 'NHAN_VIEN');
+
+    const res = await app.request('/api/hoa-don', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: cookie },
+      body: JSON.stringify({
+        phuongThucThanhToan: 'TIEN_MAT',
+        dong: [{ sanPhamId: 'sp-1', donViTen: 'viên', heSo: 1, donGia: 500, soLuong: 2 }],
+      }),
+    });
+
+    expect(res.status).toBe(201);
+    const nguoiBan = sqlite.prepare("SELECT id FROM nguoi_dung WHERE ten_dang_nhap = 'nguoi-test'").get() as { id: string };
+    expect(db.select().from(hoaDon).all()[0]?.nguoiBanId).toBe(nguoiBan.id);
   });
 });

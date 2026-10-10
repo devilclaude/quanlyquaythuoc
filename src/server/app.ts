@@ -52,7 +52,7 @@ export function taoApp(db: Db, tuyChon: TuyChonApp = {}) {
   dangKyCaiDatRoutes(caiDatRouter, db);
   app.route('/api/cai-dat', caiDatRouter);
 
-  const hoaDonRouter = new Hono();
+  const hoaDonRouter = new Hono<BienHono>();
   dangKyHoaDonRoutes(hoaDonRouter, db);
   app.route('/api/hoa-don', hoaDonRouter);
 

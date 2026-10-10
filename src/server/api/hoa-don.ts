@@ -1,5 +1,6 @@
 import type { drizzle } from 'drizzle-orm/better-sqlite3';
 import type { Hono } from 'hono';
+import type { BienHono } from '../auth/phan-quyen';
 import { HoaDonResSchema, TaoHoaDonReqSchema } from '../../shared/hop-dong/hoa-don';
 import { taoUlid } from '../../shared/kieu/ulid';
 import {
@@ -14,7 +15,7 @@ import { KhongDuTonKhoError } from '../kho/fefo';
 type Db = ReturnType<typeof drizzle>;
 
 /** Nối màn thanh toán (T-022c) gọi route dưới đây. */
-export function dangKyHoaDonRoutes(app: Hono, db: Db): void {
+export function dangKyHoaDonRoutes(app: Hono<BienHono>, db: Db): void {
   app.post('/', async (c) => {
     const than = TaoHoaDonReqSchema.safeParse(await c.req.json());
     if (!than.success) {
@@ -26,6 +27,8 @@ export function dangKyHoaDonRoutes(app: Hono, db: Db): void {
         id: taoUlid(),
         chiNhanhId: layChiNhanhMacDinh(db),
         thoiGian: new Date().toISOString(),
+        // Người bán chỉ lấy từ phiên đăng nhập (do middleware gắn), không từ body.
+        ...(c.get('nguoiDung') ? { nguoiBanId: c.get('nguoiDung').id } : {}),
         phuongThucThanhToan: than.data.phuongThucThanhToan,
         ...(than.data.giamGia !== undefined ? { giamGia: than.data.giamGia } : {}),
         ...(than.data.thuKhac !== undefined ? { thuKhac: than.data.thuKhac } : {}),

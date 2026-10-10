@@ -272,6 +272,8 @@ export const hoaDon = sqliteTable(
     thoiGianMayChu: text('thoi_gian_may_chu')
       .notNull()
       .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+    // Người bán (đăng nhập/phân quyền). NULL cho hoá đơn tạo trước khi có đăng nhập.
+    nguoiBanId: text('nguoi_ban_id').references(() => nguoiDung.id),
   },
   (t) => [
     check(
