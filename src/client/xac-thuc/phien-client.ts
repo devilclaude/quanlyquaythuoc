@@ -4,6 +4,7 @@ export type KetQuaDangNhap =
   | { loai: 'OK'; nguoi: NguoiDungHienTai }
   | { loai: 'SAI' }
   | { loai: 'BI_CHAN'; thuLaiSauGiay: number }
+  | { loai: 'LOI_MAY_CHU'; ma: number }
   | { loai: 'LOI_MANG' };
 
 export type KetQuaToi = { loai: 'OK'; nguoi: NguoiDungHienTai } | { loai: 'CHUA_DANG_NHAP' } | { loai: 'LOI_MANG' };
@@ -72,7 +73,7 @@ export async function dangNhap(
       const giay = Number(res.headers.get('Retry-After'));
       return { loai: 'BI_CHAN', thuLaiSauGiay: Number.isFinite(giay) && giay > 0 ? giay : 60 };
     }
-    if (!res.ok) return { loai: 'LOI_MANG' };
+    if (!res.ok) return { loai: 'LOI_MAY_CHU', ma: res.status };
     const nguoi = NguoiDungSchema.safeParse(await res.json());
     return nguoi.success ? { loai: 'OK', nguoi: nguoi.data } : { loai: 'LOI_MANG' };
   } catch {

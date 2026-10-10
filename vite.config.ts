@@ -2,6 +2,12 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// `changeOrigin: false` là CỐ Ý: máy chủ API chống CSRF bằng cách so `Origin` với `Host`
+// (src/server/auth/chong-csrf.ts). Dạng chuỗi `'/api': 'http://...'` ngầm bật
+// `changeOrigin: true` → `Host` bị viết lại thành `localhost:3000` → mọi request ghi từ
+// trình duyệt bị 403. Xem src/client/cau-hinh-proxy.test.ts.
+const PROXY_API = { target: 'http://localhost:3000', changeOrigin: false } as const;
+
 export default defineConfig({
   root: 'src/client',
   plugins: [
@@ -45,7 +51,7 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/api': 'http://localhost:3000',
+      '/api': PROXY_API,
     },
   },
   preview: {
@@ -55,7 +61,7 @@ export default defineConfig({
     host: true,
     allowedHosts: ['.dev2sec.io.vn'],
     proxy: {
-      '/api': 'http://localhost:3000',
+      '/api': PROXY_API,
     },
   },
   test: {

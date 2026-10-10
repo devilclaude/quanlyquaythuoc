@@ -16,7 +16,9 @@ export function chongCsrf(originChoPhep: readonly string[]): MiddlewareHandler {
     if (origin === undefined) return next();
     if (originChoPhep.includes(origin)) return next();
 
-    const hostApp = c.req.header('X-Forwarded-Host') ?? c.req.header('Host');
+    // Qua nhiều proxy thì X-Forwarded-Host là danh sách "gốc, proxy1, ..." — host của
+    // trình duyệt luôn là phần tử đầu.
+    const hostApp = c.req.header('X-Forwarded-Host')?.split(',')[0]?.trim() || c.req.header('Host');
     let hostOrigin: string | undefined;
     try {
       hostOrigin = new URL(origin).host;

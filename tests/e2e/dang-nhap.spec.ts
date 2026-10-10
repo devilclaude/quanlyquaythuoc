@@ -137,6 +137,20 @@ test('đăng nhập sai quá nhiều lần (429): báo số phút phải chờ',
   await expect(page.getByRole('alert')).toHaveText('Đăng nhập sai quá nhiều lần. Thử lại sau 10 phút');
 });
 
+test('máy chủ từ chối yêu cầu đăng nhập (403): báo mã lỗi, không gọi nhầm là mất mạng', async ({ page, context }) => {
+  await dungMayChuGia(context);
+  await context.route('**/api/auth/dang-nhap', (route) => route.fulfill({ status: 403, json: { loi: 'Nguồn gốc request không hợp lệ' } }));
+  await page.goto('/');
+
+  await page.getByLabel('Tên đăng nhập').fill('admin');
+  await page.getByLabel('Mật khẩu').fill('bat-ky-gi');
+  await page.getByRole('button', { name: 'Đăng nhập' }).click();
+
+  await expect(page.getByRole('alert')).toHaveText(
+    'Máy chủ từ chối yêu cầu (mã 403). Vui lòng thử lại hoặc báo người quản trị',
+  );
+});
+
 test('mở app khi máy chủ không với tới và chưa từng đăng nhập: báo không kết nối được', async ({ page, context }) => {
   await context.route('**/api/auth/toi', (route) => route.abort());
   await page.goto('/');

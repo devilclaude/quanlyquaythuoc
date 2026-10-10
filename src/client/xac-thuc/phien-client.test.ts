@@ -56,6 +56,14 @@ describe('dangNhap', () => {
     expect(await dangNhap('lan', 'sai', f)).toEqual({ loai: 'BI_CHAN', thuLaiSauGiay: 600 });
   });
 
+  it('máy chủ trả lỗi khác (vd. 403, 500): LOI_MAY_CHU kèm mã, không gọi nhầm là mất mạng', async () => {
+    const f403 = (() => Promise.resolve(phanHoiJson(403, { loi: 'x' }))) as unknown as typeof fetch;
+    const f500 = (() => Promise.resolve(phanHoiJson(500, {}))) as unknown as typeof fetch;
+
+    expect(await dangNhap('lan', 'x', f403)).toEqual({ loai: 'LOI_MAY_CHU', ma: 403 });
+    expect(await dangNhap('lan', 'x', f500)).toEqual({ loai: 'LOI_MAY_CHU', ma: 500 });
+  });
+
   it('fetch ném lỗi: LOI_MANG', async () => {
     const f = (() => Promise.reject(new TypeError('Failed to fetch'))) as unknown as typeof fetch;
 

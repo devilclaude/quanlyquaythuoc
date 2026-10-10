@@ -1,4 +1,5 @@
 .man-dang-nhap {
+  box-sizing: border-box;
   min-height: 100vh;
   display: flex;
   align-items: center;

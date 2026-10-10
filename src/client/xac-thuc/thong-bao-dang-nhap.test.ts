@@ -18,6 +18,12 @@ describe('thongBaoDangNhap', () => {
     );
   });
 
+  it('LOI_MAY_CHU → báo mã lỗi để người quản trị tra được', () => {
+    expect(thongBaoDangNhap({ loai: 'LOI_MAY_CHU', ma: 403 })).toBe(
+      'Máy chủ từ chối yêu cầu (mã 403). Vui lòng thử lại hoặc báo người quản trị',
+    );
+  });
+
   it('LOI_MANG → báo không kết nối được máy chủ', () => {
     expect(thongBaoDangNhap({ loai: 'LOI_MANG' })).toBe('Không kết nối được máy chủ');
   });

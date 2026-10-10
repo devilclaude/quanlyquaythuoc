@@ -42,6 +42,19 @@ describe('chongCsrf', () => {
     expect(res.status).toBe(200);
   });
 
+  it('X-Forwarded-Host là danh sách qua nhiều proxy: lấy host đầu tiên (host gốc của trình duyệt)', async () => {
+    const res = await taoApp().request('/x', {
+      method: 'POST',
+      headers: {
+        Origin: DOMAIN,
+        Host: 'localhost:3000',
+        'X-Forwarded-Host': 'quaythuoc.dev2sec.io.vn, localhost:3000',
+      },
+    });
+
+    expect(res.status).toBe(200);
+  });
+
   it('POST có Origin lạ thì 403', async () => {
     const res = await taoApp().request('/x', {
       method: 'POST',
