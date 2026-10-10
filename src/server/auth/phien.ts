@@ -5,6 +5,8 @@ import type { NguoiDungHienTai } from '../../shared/hop-dong/auth';
 import { nguoiDung, phien } from '../db/schema';
 
 type Db = ReturnType<typeof drizzle>;
+/** Dùng được cả ngoài lẫn trong một transaction đã mở của module khác. */
+export type DbHoacTx = Db | Parameters<Parameters<Db['transaction']>[0]>[0];
 
 export const THOI_HAN_PHIEN_MS = 30 * 24 * 60 * 60 * 1000;
 // Chỉ ghi lại hạn mới khi đã tiêu hơn 1 ngày, để không ghi DB ở mọi request.
@@ -58,6 +60,6 @@ export function xoaPhien(db: Db, maPhien: string): void {
   db.delete(phien).where(eq(phien.idBam, bamMaPhien(maPhien))).run();
 }
 
-export function xoaMoiPhienCua(db: Db, nguoiDungId: string): void {
+export function xoaMoiPhienCua(db: DbHoacTx, nguoiDungId: string): void {
   db.delete(phien).where(eq(phien.nguoiDungId, nguoiDungId)).run();
 }
