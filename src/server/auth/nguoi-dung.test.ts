@@ -32,7 +32,9 @@ describe('taoNguoiDung', () => {
   it('tạo người dùng, trả về thông tin công khai không có mật khẩu', () => {
     const nd = taoNguoiDung(db, dauVao);
 
-    expect(nd).toEqual({ id: expect.any(String), tenDangNhap: 'lan', tenHienThi: 'Chị Lan', vaiTro: 'NHAN_VIEN' });
+    const { id, ...phanCon } = nd;
+    expect(id).toMatch(/^[0-9A-Z]{26}$/);
+    expect(phanCon).toEqual({ tenDangNhap: 'lan', tenHienThi: 'Chị Lan', vaiTro: 'NHAN_VIEN' });
     expect(JSON.stringify(nd)).not.toContain('mat-khau-dai-du');
   });
 

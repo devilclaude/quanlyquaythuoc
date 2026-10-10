@@ -52,12 +52,9 @@ describe('POST /api/auth/dang-nhap', () => {
     const res = await dangNhap(taoApp(), 'lan', 'mat-khau-dai-du');
 
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({
-      id: expect.any(String),
-      tenDangNhap: 'lan',
-      tenHienThi: 'Chị Lan',
-      vaiTro: 'NHAN_VIEN',
-    });
+    const { id, ...phanCon } = (await res.json()) as { id: string };
+    expect(id).toMatch(/^[0-9A-Z]{26}$/);
+    expect(phanCon).toEqual({ tenDangNhap: 'lan', tenHienThi: 'Chị Lan', vaiTro: 'NHAN_VIEN' });
     const setCookie = res.headers.get('Set-Cookie') ?? '';
     expect(setCookie).toMatch(/^phien=[^;]+/);
     expect(setCookie).toMatch(/HttpOnly/i);
