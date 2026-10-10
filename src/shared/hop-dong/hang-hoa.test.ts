@@ -168,3 +168,36 @@ describe('SuaHangHoaReqSchema (T-009c)', () => {
     ).toThrow();
   });
 });
+
+describe('mã vạch trong hợp đồng tạo/sửa hàng hoá', () => {
+  const taoCoBan = { ten: 'Paracetamol 500mg', donViCoSoTen: 'viên', giaBan: 500, donViKhac: [] };
+
+  it('tạo: mã vạch là tuỳ chọn và được cắt khoảng trắng hai đầu', () => {
+    expect(TaoHangHoaReqSchema.parse(taoCoBan).maVach).toBeUndefined();
+    expect(TaoHangHoaReqSchema.parse({ ...taoCoBan, maVach: '  8934563138165 ' }).maVach).toBe('8934563138165');
+  });
+
+  it('tạo: chuỗi rỗng coi như không có mã vạch', () => {
+    expect(TaoHangHoaReqSchema.parse({ ...taoCoBan, maVach: '   ' }).maVach).toBeUndefined();
+  });
+
+  it('tạo: từ chối mã vạch có khoảng trắng ở giữa hoặc dài quá 64 ký tự', () => {
+    expect(() => TaoHangHoaReqSchema.parse({ ...taoCoBan, maVach: '8934 563' })).toThrow();
+    expect(() => TaoHangHoaReqSchema.parse({ ...taoCoBan, maVach: '1'.repeat(65) })).toThrow();
+  });
+
+  it('sửa: không gửi maVach nghĩa là giữ nguyên (undefined), null hoặc rỗng nghĩa là xoá mã vạch', () => {
+    const sua = { ten: 'Paracetamol 500mg', donViCoSoTen: 'viên', giaBan: 500, donViKhac: [] };
+    expect(SuaHangHoaReqSchema.parse(sua).maVach).toBeUndefined();
+    expect(SuaHangHoaReqSchema.parse({ ...sua, maVach: null }).maVach).toBeNull();
+    expect(SuaHangHoaReqSchema.parse({ ...sua, maVach: '  ' }).maVach).toBeNull();
+    expect(SuaHangHoaReqSchema.parse({ ...sua, maVach: ' 123 ' }).maVach).toBe('123');
+  });
+
+  it('chi tiết hàng hoá: maVach là chuỗi hoặc null, và không bắt buộc có mặt', () => {
+    const chiTiet = { ...mucDanhSach, trangThai: 'HOAT_DONG', coTheXoaCung: true, quanLyLoGhiDe: 'KE_THUA' };
+    expect(() => HangHoaChiTietResSchema.parse({ ...chiTiet, maVach: '8934563138165' })).not.toThrow();
+    expect(() => HangHoaChiTietResSchema.parse({ ...chiTiet, maVach: null })).not.toThrow();
+    expect(() => HangHoaChiTietResSchema.parse(chiTiet)).not.toThrow();
+  });
+});

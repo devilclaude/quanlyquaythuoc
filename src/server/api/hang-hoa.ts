@@ -14,8 +14,12 @@ import {
 } from '../../shared/hop-dong/hang-hoa';
 import type { GhiDeQuanLyLo } from '../../shared/cai-dat/giai-nghia';
 import { taoUlid } from '../../shared/kieu/ulid';
-import { khopTuKhoa } from '../../shared/van-ban/bo-dau';
-import { DoiCheDoBiChanError, SanPhamKhongTonTaiError, doiGhiDeSanPham } from '../cai-dat/doi-che-do';
+import { boDauTiengViet, khopTuKhoa } from '../../shared/van-ban/bo-dau';
+import {
+  DoiCheDoBiChanError,
+  SanPhamKhongTonTaiError,
+  doiGhiDeSanPham,
+} from '../cai-dat/doi-che-do';
 import { layChiNhanhMacDinh } from '../db/chi-nhanh';
 import { donViTinh, loHang, sanPham, theKho, tonKhoLo } from '../db/schema';
 
@@ -87,6 +91,7 @@ export function layDanhSachHangHoa(db: Db, tim?: string): HangHoaDanhSachItem[] 
       id: sanPham.id,
       maHang: sanPham.maHang,
       ten: sanPham.ten,
+      maVach: sanPham.maVach,
       ngayTao: sanPham.ngayTao,
       giaBan: donViTinh.giaBan,
     })
@@ -94,9 +99,24 @@ export function layDanhSachHangHoa(db: Db, tim?: string): HangHoaDanhSachItem[] 
     .leftJoin(donViTinh, and(eq(donViTinh.sanPhamId, sanPham.id), eq(donViTinh.laCoSo, true)))
     .orderBy(desc(sanPham.ngayTao))
     .all();
-  const hang = tuKhoa
-    ? hangTatCa.filter((h) => khopTuKhoa(h.maHang, tuKhoa) || khopTuKhoa(h.ten, tuKhoa))
-    : hangTatCa;
+
+  let hang = hangTatCa;
+  if (tuKhoa) {
+    // Máy quét gõ nguyên mã vạch rồi Enter: khớp ĐÚNG cả mã thì chỉ trả sản phẩm đó, không
+    // lẫn các hàng khác chỉ tình cờ chứa dãy số trong tên/mã (DOMAIN-NOTES B7, T-024).
+    const khopDungMaVach = hangTatCa.filter(
+      (h) => h.maVach !== null && boDauTiengViet(h.maVach) === boDauTiengViet(tuKhoa),
+    );
+    hang =
+      khopDungMaVach.length > 0
+        ? khopDungMaVach
+        : hangTatCa.filter(
+            (h) =>
+              khopTuKhoa(h.maHang, tuKhoa) ||
+              khopTuKhoa(h.ten, tuKhoa) ||
+              (h.maVach !== null && khopTuKhoa(h.maVach, tuKhoa)),
+          );
+  }
 
   const tonTheoSanPham = tinhTonKhoTheoSanPham(db);
   const donViTheoSanPham = donViTinhTheoSanPham(
@@ -123,6 +143,8 @@ export interface HangHoaChiTiet extends HangHoaDanhSachItem {
   donViTinh: { id: string; ten: string; heSo: number; laCoSo: boolean; giaBan: number }[];
   /** Ghi đè cài đặt "quản lý theo lô" riêng cho sản phẩm này (T-010b). */
   quanLyLoGhiDe: GhiDeQuanLyLo;
+  /** Mã vạch nhà sản xuất; null khi chưa có. */
+  maVach: string | null;
 }
 
 /**
@@ -170,6 +192,7 @@ export function layChiTietHangHoa(db: Db, id: string): HangHoaChiTiet | undefine
     trangThai: sp.trangThai,
     coTheXoaCung: !daPhatSinhTheKho(db, id),
     quanLyLoGhiDe: sp.quanLyLoGhiDe ?? 'KE_THUA',
+    maVach: sp.maVach ?? null,
     donViTinh: cacDonVi.map((d) => ({
       id: d.id,
       ten: d.ten,
@@ -183,6 +206,12 @@ export function layChiTietHangHoa(db: Db, id: string): HangHoaChiTiet | undefine
 export class MaHangDaTonTaiError extends Error {
   constructor(public readonly maHang: string) {
     super(`Mã hàng đã tồn tại: ${maHang}`);
+  }
+}
+
+export class MaVachDaTonTaiError extends Error {
+  constructor(public readonly maVach: string) {
+    super(`Mã vạch đã được dùng cho hàng hoá khác: ${maVach}`);
   }
 }
 
@@ -208,9 +237,16 @@ function laLoiTrungMaHang(loi: unknown): boolean {
   return loi instanceof Error && /UNIQUE constraint failed: san_pham\.ma_hang/.test(loi.message);
 }
 
+function laLoiTrungMaVach(loi: unknown): boolean {
+  return loi instanceof Error && /UNIQUE constraint failed: san_pham\.ma_vach/.test(loi.message);
+}
+
 /** "HH" + số thứ tự 6 chữ số, tính trên tổng số hàng hoá hiện có + số lần đã thử lại. */
 function sinhMaHangTuDong(db: Db, soLanDaThu: number): string {
-  const [hang] = db.select({ dem: sql<number>`count(*)` }).from(sanPham).all();
+  const [hang] = db
+    .select({ dem: sql<number>`count(*)` })
+    .from(sanPham)
+    .all();
   return `HH${String(Number(hang?.dem ?? 0) + 1 + soLanDaThu).padStart(6, '0')}`;
 }
 
@@ -230,7 +266,9 @@ export function taoHangHoa(db: Db, req: TaoHangHoaReq): HangHoaChiTiet {
 
     try {
       db.transaction((tx) => {
-        tx.insert(sanPham).values({ id: sanPhamId, maHang, ten: req.ten }).run();
+        tx.insert(sanPham)
+          .values({ id: sanPhamId, maHang, ten: req.ten, maVach: req.maVach ?? null })
+          .run();
         tx.insert(donViTinh)
           .values([
             {
@@ -257,6 +295,9 @@ export function taoHangHoa(db: Db, req: TaoHangHoaReq): HangHoaChiTiet {
       if (!chiTiet) throw new Error('không đọc lại được hàng hoá vừa tạo');
       return chiTiet;
     } catch (loi) {
+      // Trùng mã vạch là lỗi của người nhập (không thử lại): báo rõ, không tạo gì cả
+      // (transaction đã huỷ nên không để lại sản phẩm dở dang).
+      if (laLoiTrungMaVach(loi) && req.maVach) throw new MaVachDaTonTaiError(req.maVach);
       if (!laLoiTrungMaHang(loi)) throw loi;
       if (req.maHang) throw new MaHangDaTonTaiError(maHang);
       // Mã tự sinh đụng UNIQUE do đua giữa hai lần tạo gần nhau — thử mã kế tiếp.
@@ -287,28 +328,38 @@ export function suaHangHoa(db: Db, id: string, req: SuaHangHoaReq): HangHoaChiTi
     throw new DoiDonViCoSoBiCamError();
   }
 
-  db.transaction((tx) => {
-    tx.update(sanPham).set({ ten: req.ten }).where(eq(sanPham.id, id)).run();
-    tx.update(donViTinh)
-      .set({ ten: req.donViCoSoTen, giaBan: req.giaBan })
-      .where(eq(donViTinh.id, donViCoSoHienTai.id))
-      .run();
-    tx.delete(donViTinh).where(and(eq(donViTinh.sanPhamId, id), eq(donViTinh.laCoSo, false))).run();
-    if (req.donViKhac.length > 0) {
-      tx.insert(donViTinh)
-        .values(
-          req.donViKhac.map((d) => ({
-            id: taoUlid(),
-            sanPhamId: id,
-            ten: d.ten,
-            heSo: d.heSo,
-            laCoSo: false,
-            giaBan: d.giaBan,
-          })),
-        )
+  try {
+    db.transaction((tx) => {
+      tx.update(sanPham)
+        .set({ ten: req.ten, ...(req.maVach !== undefined ? { maVach: req.maVach } : {}) })
+        .where(eq(sanPham.id, id))
         .run();
-    }
-  });
+      tx.update(donViTinh)
+        .set({ ten: req.donViCoSoTen, giaBan: req.giaBan })
+        .where(eq(donViTinh.id, donViCoSoHienTai.id))
+        .run();
+      tx.delete(donViTinh)
+        .where(and(eq(donViTinh.sanPhamId, id), eq(donViTinh.laCoSo, false)))
+        .run();
+      if (req.donViKhac.length > 0) {
+        tx.insert(donViTinh)
+          .values(
+            req.donViKhac.map((d) => ({
+              id: taoUlid(),
+              sanPhamId: id,
+              ten: d.ten,
+              heSo: d.heSo,
+              laCoSo: false,
+              giaBan: d.giaBan,
+            })),
+          )
+          .run();
+      }
+    });
+  } catch (loi) {
+    if (laLoiTrungMaVach(loi) && req.maVach) throw new MaVachDaTonTaiError(req.maVach);
+    throw loi;
+  }
 
   const chiTiet = layChiTietHangHoa(db, id);
   if (!chiTiet) throw new Error('không đọc lại được hàng hoá vừa sửa');
@@ -368,7 +419,7 @@ export function dangKyHangHoaRoutes(app: Hono, db: Db): void {
       const chiTiet = taoHangHoa(db, than.data);
       return c.json(HangHoaChiTietResSchema.parse(chiTiet), 201);
     } catch (loi) {
-      if (loi instanceof MaHangDaTonTaiError) {
+      if (loi instanceof MaHangDaTonTaiError || loi instanceof MaVachDaTonTaiError) {
         return c.json({ loi: loi.message }, 409);
       }
       throw loi;
@@ -387,6 +438,7 @@ export function dangKyHangHoaRoutes(app: Hono, db: Db): void {
     } catch (loi) {
       if (loi instanceof HangHoaKhongTonTaiError) return c.json({ loi: loi.message }, 404);
       if (loi instanceof DoiDonViCoSoBiCamError) return c.json({ loi: loi.message }, 409);
+      if (loi instanceof MaVachDaTonTaiError) return c.json({ loi: loi.message }, 409);
       throw loi;
     }
   });

@@ -32,9 +32,18 @@ export const sanPham = sqliteTable(
     // ba trạng thái, không phải hai, nên không dùng boolean. Ưu tiên giải nghĩa
     // (`src/shared/cai-dat/`): ghi đè sản phẩm > cài đặt toàn cục.
     quanLyLoGhiDe: text('quan_ly_lo_ghi_de').$type<'BAT' | 'TAT' | null>(),
+    // Mã vạch nhà sản xuất — tuỳ chọn (NULL), UNIQUE khi có giá trị (SPEC.md §5.4: hai máy
+    // tạo trùng mã vạch thì UNIQUE chặn). Khác `ma_hang` (mã tem tự in, định danh nội bộ):
+    // mã vạch có thể trống và sửa được. Luôn đã trim và không rỗng — chuỗi rỗng phải là NULL
+    // để không hai sản phẩm nào cùng "mã vạch rỗng" đụng UNIQUE.
+    maVach: text('ma_vach').unique(),
   },
   (t) => [
     check('san_pham_trang_thai_hop_le', sql`${t.trangThai} IN ('HOAT_DONG', 'NGUNG_HOAT_DONG')`),
+    check(
+      'san_pham_ma_vach_khong_rong_da_trim',
+      sql`${t.maVach} IS NULL OR (length(${t.maVach}) > 0 AND ${t.maVach} = trim(${t.maVach}))`,
+    ),
     check(
       'san_pham_quan_ly_lo_ghi_de_hop_le',
       sql`${t.quanLyLoGhiDe} IS NULL OR ${t.quanLyLoGhiDe} IN ('BAT', 'TAT')`,

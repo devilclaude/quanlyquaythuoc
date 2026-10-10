@@ -47,6 +47,8 @@ export const HangHoaChiTietResSchema = HangHoaDanhSachItemSchema.extend({
   coTheXoaCung: z.boolean(),
   /** Ghi đè cài đặt "quản lý theo lô" riêng cho sản phẩm này (T-010b, SPEC.md §3.2). */
   quanLyLoGhiDe: GhiDeQuanLyLoSchema,
+  /** Mã vạch nhà sản xuất; null khi chưa có. Tuỳ chọn trong hợp đồng để client cũ/giả lập không vỡ. */
+  maVach: z.string().nullable().optional(),
 });
 
 export type DonViTinhRes = z.infer<typeof DonViTinhResSchema>;
@@ -65,9 +67,21 @@ export const TaoDonViKhacReqSchema = z.object({
   giaBan: z.number().int().nonnegative(),
 });
 
+/**
+ * Mã vạch nhà sản xuất: không khoảng trắng, tối đa 64 ký tự (máy quét "gõ" xong rồi Enter nên
+ * không có khoảng trắng). Chuỗi rỗng = không có mã vạch.
+ */
+const MaVachSchema = z
+  .string()
+  .trim()
+  .max(64, 'Mã vạch tối đa 64 ký tự')
+  .refine((v) => !/\s/.test(v), 'Mã vạch không được chứa khoảng trắng');
+
 export const TaoHangHoaReqSchema = z.object({
   /** Bỏ trống thì server tự sinh (form ghi "Tự động"). */
   maHang: z.string().trim().min(1).optional(),
+  /** Tuỳ chọn; để trống thì sản phẩm không có mã vạch (vẫn tra được bằng mã hàng/tem tự in). */
+  maVach: MaVachSchema.optional().transform((v) => (v === '' ? undefined : v)),
   ten: z.string().trim().min(1),
   donViCoSoTen: z.string().trim().min(1),
   giaBan: z.number().int().nonnegative(),
@@ -84,6 +98,12 @@ export type TaoHangHoaReq = z.infer<typeof TaoHangHoaReqSchema>;
 // lưu; an toàn vì `don_vi_tinh` không phải sổ cái, không bên nào tham chiếu id
 // của nó (thẻ kho ghi theo lô, không theo đơn vị tính).
 export const SuaHangHoaReqSchema = z.object({
+  /**
+   * Không gửi = giữ nguyên mã vạch hiện có. `null` hoặc chuỗi rỗng = xoá mã vạch. (Khác các
+   * trường khác của form sửa vốn là "thay toàn bộ": mã vạch tuỳ chọn nên client cũ không
+   * gửi trường này không được vô tình xoá mã vạch đã nhập.)
+   */
+  maVach: MaVachSchema.nullable().optional().transform((v) => (v === '' ? null : v)),
   ten: z.string().trim().min(1),
   donViCoSoTen: z.string().trim().min(1),
   giaBan: z.number().int().nonnegative(),
