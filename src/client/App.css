@@ -11,3 +11,14 @@
   font-size: var(--chu-base);
   margin: 0 var(--kc-3) 0 0;
 }
+
+.app__nguoi-dung {
+  margin-left: auto;
+  color: var(--xam-200);
+  font-size: var(--chu-sm);
+}
+
+.app__dang-tai {
+  padding: var(--kc-5);
+  color: var(--mau-chu-phu);
+}

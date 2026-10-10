@@ -6,10 +6,12 @@ import { DanhSachPhieuNhap } from './man-hinh/NhapHang/DanhSachPhieuNhap';
 import { DanhSachTraHang } from './man-hinh/TraHang/DanhSachTraHang';
 import { DanhSachTraHangNhap } from './man-hinh/TraHangNhap/DanhSachTraHangNhap';
 import { TongQuan } from './man-hinh/TongQuan/TongQuan';
-import { Nut } from './thanh-phan';
+import type { NguoiDungHienTai } from '../shared/hop-dong/auth';
+import { DieuHuong } from './xac-thuc/DieuHuong';
+import { ManDangNhap } from './xac-thuc/ManDangNhap';
+import { useXacThuc } from './xac-thuc/use-xac-thuc';
+import { type Man, cacManChoPhep, manMacDinh } from './xac-thuc/vai-tro';
 import './App.css';
-
-type Man = 'ban-hang' | 'hang-hoa' | 'nhap-hang' | 'tra-hang' | 'tra-hang-nhap' | 'tong-quan' | 'cai-dat';
 
 // Bộ chuyển màn tối thiểu — KHÔNG bám sidebar đầy đủ của KiotViet (chưa có task
 // dựng nav thật trong BACKLOG.md). Chỉ để "Hàng hoá" (T-009) không biến mất khỏi
@@ -22,8 +24,29 @@ type Man = 'ban-hang' | 'hang-hoa' | 'nhap-hang' | 'tra-hang' | 'tra-hang-nhap' 
 // là state tối thiểu duy nhất cần NÂNG LÊN App (không dùng router) để hai màn
 // độc lập này nói chuyện được với nhau.
 export function App() {
-  const [man, setMan] = useState<Man>('ban-hang');
+  const { trangThai, dangNhapXong, dangXuat } = useXacThuc();
+
+  if (trangThai.loai === 'DANG_TAI') {
+    return (
+      <main className="app__dang-tai" role="status">
+        Đang tải…
+      </main>
+    );
+  }
+  if (trangThai.loai === 'CHUA_DANG_NHAP') {
+    return <ManDangNhap onDangNhapThanhCong={dangNhapXong} {...(trangThai.ghiChu ? { ghiChu: trangThai.ghiChu } : {})} />;
+  }
+  // `key` theo người dùng: đổi người (đăng xuất rồi đăng nhập người khác) dựng lại
+  // toàn bộ state màn hình, không để sót giỏ hàng/màn đang mở của người trước.
+  return <UngDung key={trangThai.nguoi.id} nguoi={trangThai.nguoi} onDangXuat={() => void dangXuat()} />;
+}
+
+function UngDung({ nguoi, onDangXuat }: { nguoi: NguoiDungHienTai; onDangXuat: () => void }) {
+  const [manChon, setMan] = useState<Man>(manMacDinh);
   const [maPhieuNhapTraHangNhap, setMaPhieuNhapTraHangNhap] = useState<string | undefined>(undefined);
+  // Menu đã lọc theo vai trò, nhưng state vẫn có thể giữ màn không được phép (vd. giao
+  // diện cũ còn trong bộ nhớ) — luôn rơi về màn mặc định thay vì vẽ màn không có quyền.
+  const man: Man = cacManChoPhep(nguoi.vaiTro).includes(manChon) ? manChon : manMacDinh;
 
   function traHangNhapTuPhieuNhap(ma: string) {
     setMaPhieuNhapTraHangNhap(ma);
@@ -32,30 +55,7 @@ export function App() {
 
   return (
     <main>
-      <nav className="app__dieu-huong" aria-label="Chuyển màn hình">
-        <h1 className="app__tieu-de">Quầy thuốc</h1>
-        <Nut bienThe={man === 'ban-hang' ? 'chinh' : 'phu'} onClick={() => setMan('ban-hang')}>
-          Bán hàng
-        </Nut>
-        <Nut bienThe={man === 'hang-hoa' ? 'chinh' : 'phu'} onClick={() => setMan('hang-hoa')}>
-          Hàng hoá
-        </Nut>
-        <Nut bienThe={man === 'nhap-hang' ? 'chinh' : 'phu'} onClick={() => setMan('nhap-hang')}>
-          Nhập hàng
-        </Nut>
-        <Nut bienThe={man === 'tra-hang' ? 'chinh' : 'phu'} onClick={() => setMan('tra-hang')}>
-          Trả hàng
-        </Nut>
-        <Nut bienThe={man === 'tra-hang-nhap' ? 'chinh' : 'phu'} onClick={() => setMan('tra-hang-nhap')}>
-          Trả hàng nhập
-        </Nut>
-        <Nut bienThe={man === 'tong-quan' ? 'chinh' : 'phu'} onClick={() => setMan('tong-quan')}>
-          Tổng quan
-        </Nut>
-        <Nut bienThe={man === 'cai-dat' ? 'chinh' : 'phu'} onClick={() => setMan('cai-dat')}>
-          Cài đặt
-        </Nut>
-      </nav>
+      <DieuHuong nguoi={nguoi} man={man} onChonMan={setMan} onDangXuat={onDangXuat} />
       {man === 'ban-hang' ? (
         <BanHang />
       ) : man === 'hang-hoa' ? (

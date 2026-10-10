@@ -1,5 +1,9 @@
-/** Đường không tính là "hết phiên" dù trả 401: sai mật khẩu cũng là 401. */
-const DUONG_BO_QUA = new Set(['/api/auth/dang-nhap']);
+/**
+ * Đường không tính là "hết phiên" dù trả 401: sai mật khẩu cũng là 401, và
+ * `/api/auth/toi` là câu hỏi lúc mở app — 401 ở đó nghĩa là "chưa đăng nhập", do
+ * `useXacThuc` tự xử lý, không phải phiên vừa hết hạn.
+ */
+const DUONG_BO_QUA = new Set(['/api/auth/dang-nhap', '/api/auth/toi']);
 
 function layDuongApi(input: RequestInfo | URL): string | undefined {
   const goc = typeof location !== 'undefined' ? location.origin : 'http://localhost';

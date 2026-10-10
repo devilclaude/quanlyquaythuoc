@@ -32,6 +32,14 @@ describe('boocFetch', () => {
     expect(khiHetPhien).not.toHaveBeenCalled();
   });
 
+  it('401 ở /api/auth/toi (hỏi trạng thái lúc mở app) không phải hết phiên — khởi động tự xử lý', async () => {
+    const khiHetPhien = vi.fn();
+
+    await boocFetch(fetchTraVe(401), khiHetPhien)('/api/auth/toi');
+
+    expect(khiHetPhien).not.toHaveBeenCalled();
+  });
+
   it('403 không phải hết phiên', async () => {
     const khiHetPhien = vi.fn();
 
