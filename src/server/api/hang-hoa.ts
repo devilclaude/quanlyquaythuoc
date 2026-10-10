@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, like, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
 import type { drizzle } from 'drizzle-orm/better-sqlite3';
 import type { Hono } from 'hono';
 import { DoiGhiDeSanPhamReqSchema } from '../../shared/hop-dong/cai-dat';
@@ -14,6 +14,7 @@ import {
 } from '../../shared/hop-dong/hang-hoa';
 import type { GhiDeQuanLyLo } from '../../shared/cai-dat/giai-nghia';
 import { taoUlid } from '../../shared/kieu/ulid';
+import { khopTuKhoa } from '../../shared/van-ban/bo-dau';
 import { DoiCheDoBiChanError, SanPhamKhongTonTaiError, doiGhiDeSanPham } from '../cai-dat/doi-che-do';
 import { layChiNhanhMacDinh } from '../db/chi-nhanh';
 import { donViTinh, loHang, sanPham, theKho, tonKhoLo } from '../db/schema';
@@ -77,11 +78,11 @@ function donViTinhTheoSanPham(db: Db, sanPhamIds: string[]): Map<string, DonViTi
  */
 export function layDanhSachHangHoa(db: Db, tim?: string): HangHoaDanhSachItem[] {
   const tuKhoa = tim?.trim();
-  const dieuKienTim = tuKhoa
-    ? or(like(sanPham.maHang, `%${tuKhoa}%`), like(sanPham.ten, `%${tuKhoa}%`))
-    : undefined;
 
-  const hang = db
+  // Lọc ở đây chứ không bằng SQL `LIKE`: SQLite không bỏ dấu tiếng Việt được, mà
+  // dược sĩ hay gõ không dấu lúc bán ("nuoc" → "Nước muối"). Danh mục quầy thuốc
+  // đủ nhỏ để đọc hết rồi lọc.
+  const hangTatCa = db
     .select({
       id: sanPham.id,
       maHang: sanPham.maHang,
@@ -91,9 +92,11 @@ export function layDanhSachHangHoa(db: Db, tim?: string): HangHoaDanhSachItem[] 
     })
     .from(sanPham)
     .leftJoin(donViTinh, and(eq(donViTinh.sanPhamId, sanPham.id), eq(donViTinh.laCoSo, true)))
-    .where(dieuKienTim)
     .orderBy(desc(sanPham.ngayTao))
     .all();
+  const hang = tuKhoa
+    ? hangTatCa.filter((h) => khopTuKhoa(h.maHang, tuKhoa) || khopTuKhoa(h.ten, tuKhoa))
+    : hangTatCa;
 
   const tonTheoSanPham = tinhTonKhoTheoSanPham(db);
   const donViTheoSanPham = donViTinhTheoSanPham(

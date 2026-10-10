@@ -119,6 +119,31 @@ describe('layDanhSachHangHoa', () => {
     expect(layDanhSachHangHoa(db, 'vitamin').map((r) => r.maHang)).toEqual(['SP002']);
   });
 
+  it('tìm không dấu vẫn ra tên có dấu — dược sĩ gõ "nuoc" thay vì "nước" lúc bán', () => {
+    taoSanPham('sp-1', 'SP001', 'Nước muối sinh lý 500ml', '2026-09-01T00:00:00.000Z');
+    taoSanPham('sp-2', 'SP002', 'Vitamin C', '2026-09-02T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 15000);
+    taoDonViCoSo('sp-2', 1000);
+
+    expect(layDanhSachHangHoa(db, 'nuoc muoi').map((r) => r.maHang)).toEqual(['SP001']);
+  });
+
+  it('tìm có dấu vẫn ra đúng như trước, không lẫn hàng khác', () => {
+    taoSanPham('sp-1', 'SP001', 'Nước muối sinh lý 500ml', '2026-09-01T00:00:00.000Z');
+    taoSanPham('sp-2', 'SP002', 'Vitamin C', '2026-09-02T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 15000);
+    taoDonViCoSo('sp-2', 1000);
+
+    expect(layDanhSachHangHoa(db, 'Nước').map((r) => r.maHang)).toEqual(['SP001']);
+  });
+
+  it('tìm "dau" ra cả "Đau đầu" — chữ đ không tách được bằng chuẩn hoá Unicode', () => {
+    taoSanPham('sp-1', 'SP001', 'Thuốc đau đầu', '2026-09-01T00:00:00.000Z');
+    taoDonViCoSo('sp-1', 2000);
+
+    expect(layDanhSachHangHoa(db, 'dau dau').map((r) => r.maHang)).toEqual(['SP001']);
+  });
+
   it('sắp xếp mới tạo trước, khớp screenshot "Danh sách hàng hóa"', () => {
     taoSanPham('sp-1', 'SP001', 'Hàng cũ', '2026-09-01T00:00:00.000Z');
     taoSanPham('sp-2', 'SP002', 'Hàng mới', '2026-09-05T00:00:00.000Z');
