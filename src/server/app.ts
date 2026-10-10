@@ -56,7 +56,7 @@ export function taoApp(db: Db, tuyChon: TuyChonApp = {}) {
   dangKyHoaDonRoutes(hoaDonRouter, db);
   app.route('/api/hoa-don', hoaDonRouter);
 
-  const dongBoRouter = new Hono();
+  const dongBoRouter = new Hono<BienHono>();
   dangKyDongBoRoutes(dongBoRouter, db);
   app.route('/api/dong-bo', dongBoRouter);
 

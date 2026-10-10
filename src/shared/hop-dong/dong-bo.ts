@@ -23,6 +23,11 @@ export const ThaoTacBanHangOfflineSchema = z.object({
   giamGia: z.number().int().nonnegative().optional(),
   thuKhac: z.number().int().nonnegative().optional(),
   dong: z.array(HoaDonDongReqSchema).min(1),
+  /**
+   * Người bán lúc tạo đơn offline (`nguoi_dung.id`) — ghi nhận, không phải cấp quyền: máy
+   * chủ chỉ kiểm đó là người dùng có thật, không có thì dùng người đang gọi API.
+   */
+  nguoiBanId: z.string().min(1).optional(),
 });
 
 export const ThaoTacDongBoSchema = ThaoTacBanHangOfflineSchema;

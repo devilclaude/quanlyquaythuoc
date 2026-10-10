@@ -4,6 +4,8 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { Hono } from 'hono';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { type BienHono } from '../auth/phan-quyen';
+import { taoNguoiDung } from '../auth/nguoi-dung';
 import { layChiNhanhMacDinh } from '../db/chi-nhanh';
 import { hoaDon, loHang, sanPham, tonKhoLo } from '../db/schema';
 import { ghiTheKho } from '../kho/so-cai';
@@ -25,8 +27,14 @@ afterEach(() => {
   sqlite.close();
 });
 
-function taoRouter() {
-  const app = new Hono();
+function taoRouter(nguoiDangNhap?: { id: string; tenDangNhap: string; tenHienThi: string; vaiTro: 'ADMIN' | 'NHAN_VIEN' }) {
+  const app = new Hono<BienHono>();
+  if (nguoiDangNhap) {
+    app.use('*', async (c, next) => {
+      c.set('nguoiDung', nguoiDangNhap);
+      await next();
+    });
+  }
   dangKyDongBoRoutes(app, db);
   return app;
 }
@@ -134,5 +142,31 @@ describe('dangKyDongBoRoutes', () => {
       ],
     });
     expect(tonDem(loId)).toBe(94);
+  });
+
+  it('đơn đồng bộ không mang nguoiBanId được ghi cho người đang gọi API', async () => {
+    const nguoi = taoNguoiDung(db, { tenDangNhap: 'lan', tenHienThi: 'Lan', matKhau: 'mat-khau-dai-du', vaiTro: 'NHAN_VIEN' });
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+    nhapKho(loId, layChiNhanhMacDinh(db), 100, '2026-09-24T07:00:00.000Z');
+
+    const res = await taoRouter(nguoi).request('/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        thaoTac: [
+          {
+            loai: 'BAN_HANG',
+            id: 'tt-nguoi',
+            maHoaDon: 'HDABC123-000009',
+            thoiGian: '2026-09-25T08:00:00.000Z',
+            phuongThucThanhToan: 'TIEN_MAT',
+            dong: [{ sanPhamId: 'sp-1', donViTen: 'Viên', heSo: 1, donGia: 1000, soLuong: 1 }],
+          },
+        ],
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    expect(db.select().from(hoaDon).where(eq(hoaDon.id, 'tt-nguoi')).all()[0]?.nguoiBanId).toBe(nguoi.id);
   });
 });
