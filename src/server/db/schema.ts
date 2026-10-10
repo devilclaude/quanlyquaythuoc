@@ -522,3 +522,41 @@ export const traHangNhapDong = sqliteTable(
     check('tra_hang_nhap_dong_tien_hoan_khong_am', sql`${t.tienHoan} >= 0`),
   ],
 );
+
+// Người dùng đăng nhập (đăng nhập/phân quyền, Phần 1). Không xoá cứng — khoá
+// bằng `hoat_dong = false` để mọi chứng từ cũ vẫn truy được người làm.
+// `ten_dang_nhap` luôn chữ thường đã trim: so khớp không phân biệt hoa/thường mà
+// không cần hàm trong truy vấn.
+export const nguoiDung = sqliteTable(
+  'nguoi_dung',
+  {
+    id: text('id').primaryKey(),
+    tenDangNhap: text('ten_dang_nhap').notNull().unique(),
+    tenHienThi: text('ten_hien_thi').notNull(),
+    matKhauBam: text('mat_khau_bam').notNull(),
+    vaiTro: text('vai_tro').notNull().$type<'ADMIN' | 'NHAN_VIEN'>(),
+    hoatDong: integer('hoat_dong', { mode: 'boolean' }).notNull().default(true),
+    ngayTao: text('ngay_tao')
+      .notNull()
+      .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+  },
+  (t) => [
+    check('nguoi_dung_vai_tro_hop_le', sql`${t.vaiTro} IN ('ADMIN', 'NHAN_VIEN')`),
+    check(
+      'nguoi_dung_ten_dang_nhap_chu_thuong_da_trim',
+      sql`length(${t.tenDangNhap}) > 0 AND ${t.tenDangNhap} = lower(trim(${t.tenDangNhap}))`,
+    ),
+  ],
+);
+
+// Phiên đăng nhập. Chỉ lưu SHA-256 của mã phiên: lộ DB không lộ được cookie đang dùng.
+export const phien = sqliteTable('phien', {
+  idBam: text('id_bam').primaryKey(),
+  nguoiDungId: text('nguoi_dung_id')
+    .notNull()
+    .references(() => nguoiDung.id),
+  hetHan: text('het_han').notNull(),
+  ngayTao: text('ngay_tao')
+    .notNull()
+    .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))`),
+});
