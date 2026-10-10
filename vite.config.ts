@@ -50,6 +50,13 @@ export default defineConfig({
   },
   preview: {
     port: 4173,
+    // Chạy sau domain/tunnel: lắng nghe mọi interface, nhận Host của domain app,
+    // và proxy `/api` về server để app gọi cùng origin (không cần CORS).
+    host: true,
+    allowedHosts: ['.dev2sec.io.vn'],
+    proxy: {
+      '/api': 'http://localhost:3000',
+    },
   },
   test: {
     root: '.',

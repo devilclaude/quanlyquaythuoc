@@ -1,5 +1,6 @@
 import type { drizzle } from 'drizzle-orm/better-sqlite3';
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import { dangKyCaiDatRoutes } from './api/cai-dat';
 import { dangKyDongBoRoutes } from './api/dong-bo';
 import { dangKyHangHoaRoutes } from './api/hang-hoa';
@@ -11,8 +12,20 @@ import { dangKyTraHangNhapRoutes } from './api/tra-hang-nhap';
 
 type Db = ReturnType<typeof drizzle>;
 
-export function taoApp(db: Db) {
+export interface TuyChonApp {
+  /**
+   * Origin của app được phép gọi API từ trình duyệt khi API chạy ở domain riêng.
+   * Rỗng/không truyền = không bật CORS: app và API cùng origin (proxy `/api`).
+   */
+  corsOrigins?: readonly string[];
+}
+
+export function taoApp(db: Db, tuyChon: TuyChonApp = {}) {
   const app = new Hono();
+
+  if (tuyChon.corsOrigins && tuyChon.corsOrigins.length > 0) {
+    app.use('/api/*', cors({ origin: [...tuyChon.corsOrigins] }));
+  }
 
   app.get('/api/suc-khoe', (c) => c.json({ trangThai: 'ok' }));
 
