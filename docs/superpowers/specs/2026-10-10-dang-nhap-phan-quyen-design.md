@@ -56,9 +56,12 @@ phải biết ai bán; nhập hàng, danh sách hàng… chỉ admin dùng. Spec
   hiện tại hoặc `401`.
 - Cookie: `httpOnly`, `SameSite=Lax`, `Path=/`, `Secure` khi request là https
   (đọc `X-Forwarded-Proto`/`CF-Visitor`), hạn 30 ngày, gia hạn khi dùng (trượt).
-- CSRF: request ghi (không phải GET/HEAD/OPTIONS) bắt buộc `Content-Type:
-  application/json` hoặc không có body, và nếu có header `Origin` thì phải khớp host
-  của request hoặc nằm trong `CORS_ORIGINS`.
+- CSRF: request ghi (không phải GET/HEAD/OPTIONS) có header `Origin` thì `Origin`
+  phải cùng host với request (kể cả `X-Forwarded-Host`) hoặc nằm trong
+  `CORS_ORIGINS`, ngược lại `403`. Request không có `Origin` (không phải trình
+  duyệt) được qua. Không ép `Content-Type: application/json` vì
+  `POST /api/phieu-nhap/tu-excel` tải file `multipart/form-data`; phòng thủ chính là
+  `SameSite=Lax` + kiểm `Origin`.
 - Chống dò mật khẩu: 5 lần sai trong 15 phút theo cặp (tên đăng nhập, IP) → `429`
   với `Retry-After`. IP lấy từ `CF-Connecting-IP`, không có thì từ socket. Lưu trong
   bộ nhớ (mất khi khởi động lại là chấp nhận được).
