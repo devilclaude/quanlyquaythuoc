@@ -1,0 +1,54 @@
+.quan-ly-nguoi-dung {
+  max-width: 960px;
+  padding: var(--kc-5);
+  background: var(--mau-nen-the);
+  border: var(--vien);
+  border-radius: var(--bo-goc);
+}
+
+.quan-ly-nguoi-dung__tieu-de {
+  margin: 0 0 var(--kc-4);
+  font-size: var(--chu-lg);
+}
+
+.quan-ly-nguoi-dung__tieu-de-phu {
+  margin: 0 0 var(--kc-3);
+  font-size: var(--chu-base);
+}
+
+.quan-ly-nguoi-dung__loi {
+  margin: 0 0 var(--kc-3);
+  padding: var(--kc-2) var(--kc-3);
+  color: var(--mau-nguy);
+  background: var(--mau-nguy-nen);
+  border-radius: var(--bo-goc);
+  font-size: var(--chu-sm);
+}
+
+.quan-ly-nguoi-dung__thao-tac {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kc-2);
+}
+
+.quan-ly-nguoi-dung__dat-lai {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--kc-2);
+  margin-top: var(--kc-2);
+}
+
+.quan-ly-nguoi-dung__them {
+  max-width: 960px;
+  padding: var(--kc-5);
+  background: var(--mau-nen-the);
+  border: var(--vien);
+  border-radius: var(--bo-goc);
+}
+
+.quan-ly-nguoi-dung__luoi {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--kc-3);
+  margin-bottom: var(--kc-4);
+}

@@ -72,7 +72,7 @@ function UngDung({ nguoi, onDangXuat }: { nguoi: NguoiDungHienTai; onDangXuat: (
       ) : man === 'tong-quan' ? (
         <TongQuan />
       ) : (
-        <CaiDat />
+        <CaiDat nguoiHienTaiId={nguoi.id} />
       )}
     </main>
   );
