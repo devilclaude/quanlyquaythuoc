@@ -521,3 +521,25 @@ test('thanh toán: tiền mặt đưa chưa đủ thì báo lỗi ngay, không g
   await expect(page.locator('tbody tr')).toHaveCount(1);
   expect(goiApi).toBe(false);
 });
+
+test('bán hàng: hai hoá đơn chưa thanh toán vẫn còn nguyên sau khi tải lại trang (F5)', async ({ page, context }) => {
+  await context.route('**/api/hang-hoa*', (route) => route.fulfill({ json: DU_LIEU_TIM }));
+  await page.goto('/');
+  const oTim = page.getByPlaceholder('Tìm hàng hóa (F3)');
+  const goiY = page.getByRole('listbox', { name: 'Gợi ý hàng hoá' }).getByRole('option');
+
+  // Hoá đơn 1: một dòng hàng. Hoá đơn 2: mở bằng F7, để trống.
+  await oTim.pressSequentially('pana');
+  await expect(goiY).toHaveCount(2);
+  await page.keyboard.press('Enter');
+  await expect(page.locator('tbody tr')).toHaveCount(1);
+  await page.keyboard.press('F7');
+  await expect(page.getByRole('tab')).toHaveCount(2);
+
+  await page.reload();
+
+  await expect(page.getByRole('tab')).toHaveCount(2);
+  await page.getByRole('tab').first().click();
+  await expect(page.locator('tbody tr')).toHaveCount(1);
+  await expect(page.locator('tbody tr')).toContainText('SP000240');
+});

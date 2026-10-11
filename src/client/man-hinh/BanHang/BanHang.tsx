@@ -20,6 +20,7 @@ import {
   xayDungYeuCauTaoHoaDon,
   type TrangThaiPanelThanhToan,
 } from './ThanhToan';
+import { docHoaDonDangMo, luuHoaDonDangMo } from './hoa-don-dang-mo';
 import './BanHang.css';
 
 // T-020 — Màn bán hàng: tìm và thêm hàng. T-021 — chọn đơn vị và số lượng
@@ -552,7 +553,7 @@ export function ThanhTabHoaDon({ tabs, tabDangChonId, onChonTab, onDongTab, onMo
 }
 
 /** Container: ô tìm (F3) → gợi ý theo đơn vị → thêm vào giỏ, toàn bộ bằng bàn phím. */
-export function BanHang() {
+export function BanHang({ nguoiId }: { nguoiId?: string } = {}) {
   const [tim, setTim] = useState('');
   const [goiYThoBanDau, setGoiYThoBanDau] = useState<GoiYBanHang[]>([]);
   const [dangTai, setDangTai] = useState(false);
@@ -560,8 +561,13 @@ export function BanHang() {
   const [chiSoChon, setChiSoChon] = useState(0);
   /** T-025 — mỗi tab giữ trọn giỏ hàng + trạng thái thanh toán riêng, xem
    * `HoaDonTab`. Bắt đầu với đúng một tab, như vào màn KiotViet lần đầu. */
-  const [tabs, setTabs] = useState<HoaDonTab[]>(() => [taoTabRong(crypto.randomUUID(), 1)]);
-  const [tabDangChonId, setTabDangChonId] = useState<string>(() => tabs[0]!.id);
+  // Hoá đơn chưa thanh toán được giữ theo tài khoản (`nguoiId`), mở lại sau F5/hết phiên.
+  const [daLuu] = useState(() => (nguoiId ? docHoaDonDangMo(nguoiId) : undefined));
+  const [tabs, setTabs] = useState<HoaDonTab[]>(() => daLuu?.tabs ?? [taoTabRong(crypto.randomUUID(), 1)]);
+  const [tabDangChonId, setTabDangChonId] = useState<string>(() => daLuu?.tabDangChonId ?? tabs[0]!.id);
+  useEffect(() => {
+    if (nguoiId) luuHoaDonDangMo(nguoiId, { tabs, tabDangChonId });
+  }, [nguoiId, tabs, tabDangChonId]);
   /** Hoá đơn vừa tạo cần in (T-023) — `undefined` = không hiện preview. Chung
    * cho mọi tab: chỉ một preview mở tại một thời điểm, gắn với hoá đơn VỪA
    * thanh toán xong, không phải tab đang xem. */
