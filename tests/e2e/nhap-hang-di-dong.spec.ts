@@ -29,6 +29,7 @@ test('nhập hàng trên điện thoại: giỏ nhập đủ rộng, panel xếp
   await context.route('**/api/cai-dat/quan-ly-lo', (route) => route.fulfill({ json: { bat: true } }));
   await context.route('**/api/phieu-nhap**', (route) => route.fulfill({ json: { duLieu: [] } }));
   await page.goto('/');
+  await page.getByRole('button', { name: 'Menu' }).click();
   await page.getByRole('button', { name: 'Nhập hàng' }).click();
   await page.getByRole('button', { name: '+ Nhập hàng' }).click();
   await page.getByPlaceholder('Tìm hàng hóa').pressSequentially('pana');
@@ -66,6 +67,7 @@ test('danh sách phiếu nhập trên điện thoại: bộ lọc xếp trên da
 }) => {
   await context.route('**/api/phieu-nhap**', (route) => route.fulfill({ json: { duLieu: [] } }));
   await page.goto('/');
+  await page.getByRole('button', { name: 'Menu' }).click();
   await page.getByRole('button', { name: 'Nhập hàng' }).click();
   await expect(page.getByRole('heading', { name: 'Nhập hàng', level: 1 })).toBeVisible();
 

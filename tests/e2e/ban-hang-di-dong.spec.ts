@@ -52,6 +52,7 @@ test('hàng hoá trên điện thoại: chi tiết hàng nằm gọn trong màn 
   );
   await context.route('**/api/cai-dat/quan-ly-lo', (route) => route.fulfill({ json: { bat: false } }));
   await page.goto('/');
+  await page.getByRole('button', { name: 'Menu' }).click();
   await page.getByRole('button', { name: 'Hàng hoá', exact: true }).click();
   await page.getByText('SP000240').click();
   const tieuDe = page.getByRole('heading', { name: HANG.ten });
@@ -60,4 +61,26 @@ test('hàng hoá trên điện thoại: chi tiết hàng nằm gọn trong màn 
   expect(hop!.x + hop!.width).toBeLessThanOrEqual(390);
   const bangDonVi = await page.locator('.thong-tin-hang-hoa table').first().boundingBox();
   expect(bangDonVi!.x + bangDonVi!.width).toBeLessThanOrEqual(390);
+});
+
+test('menu trên điện thoại: thu gọn sau nút Menu, chọn màn xong tự đóng', async ({ page, context }) => {
+  await context.route('**/api/hang-hoa**', (route) => route.fulfill({ json: { duLieu: [] } }));
+  await page.goto('/');
+  const menu = page.getByRole('navigation', { name: 'Chuyển màn hình' });
+  const nutMenu = menu.getByRole('button', { name: 'Menu' });
+  const muc = menu.getByRole('button', { name: 'Hàng hoá', exact: true });
+
+  await expect(muc).toBeHidden();
+  await expect(nutMenu).toHaveAttribute('aria-expanded', 'false');
+  expect((await menu.boundingBox())!.height).toBeLessThan(80);
+
+  await nutMenu.click();
+  await expect(nutMenu).toHaveAttribute('aria-expanded', 'true');
+  await expect(muc).toBeVisible();
+  await expect(menu.getByRole('button', { name: 'Đăng xuất' })).toBeVisible();
+
+  await muc.click();
+  await expect(muc).toBeHidden();
+  await expect(page.getByRole('heading', { name: 'Hàng hóa', level: 1 })).toBeVisible();
+  await expect(menu.locator('.app__man-hien-tai')).toHaveText('Hàng hoá');
 });
