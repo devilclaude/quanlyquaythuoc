@@ -169,6 +169,7 @@ export function TongQuan() {
 
   return (
     <div className="tong-quan__trang">
+      <h1 className="tong-quan__tieu-de-trang">Tổng quan</h1>
       {trangThaiLechKho ? <KhoiCanhBaoLechKho trangThai={trangThaiLechKho} /> : <p>Đang tải…</p>}
       {trangThaiCanDate ? <KhoiCanhBaoCanDate trangThai={trangThaiCanDate} /> : <p>Đang tải…</p>}
     </div>

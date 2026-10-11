@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CaiDatToanCucResSchema } from '../../../shared/hop-dong/cai-dat';
 import { CongTac } from '../../thanh-phan';
+import { QuanLyNguoiDung } from './QuanLyNguoiDung';
 import './CaiDat.css';
 
 interface TrangThaiCaiDat {
@@ -61,7 +62,7 @@ export function KhoiCaiDatToanCuc({ trangThai, onDoi }: KhoiCaiDatToanCucProps) 
  * toàn cục (T-010a/T-010b). Ghi đè riêng theo sản phẩm nằm ở chi tiết hàng hoá
  * (`ChiTietHangHoa`), không lặp lại ở đây.
  */
-export function CaiDat() {
+export function CaiDat({ nguoiHienTaiId }: { nguoiHienTaiId: string }) {
   const [trangThai, setTrangThai] = useState<TrangThaiCaiDat | undefined>(undefined);
   const [loiTai, setLoiTai] = useState<string | undefined>(undefined);
 
@@ -105,5 +106,10 @@ export function CaiDat() {
   if (loiTai) return <p className="cai-dat__loi">{loiTai}</p>;
   if (!trangThai) return <p>Đang tải…</p>;
 
-  return <KhoiCaiDatToanCuc trangThai={trangThai} onDoi={doiToanCuc} />;
+  return (
+    <div className="cai-dat__trang">
+      <KhoiCaiDatToanCuc trangThai={trangThai} onDoi={doiToanCuc} />
+      <QuanLyNguoiDung nguoiHienTaiId={nguoiHienTaiId} />
+    </div>
+  );
 }

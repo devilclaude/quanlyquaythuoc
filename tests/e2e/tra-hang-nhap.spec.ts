@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './co-so';
 
 // T-053c1 — Danh sách + chi tiết (CHỈ ĐỌC) trả hàng nhập, cùng khuôn
 // `tra-hang.spec.ts` (T-052c). `context.route` (không phải `page.route`) vì SW

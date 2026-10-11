@@ -4,6 +4,8 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { Hono } from 'hono';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { type BienHono } from '../auth/phan-quyen';
+import { taoNguoiDung } from '../auth/nguoi-dung';
 import { chiNhanh, hoaDon, loHang, sanPham, tonKhoLo } from '../db/schema';
 import { ghiTheKho } from '../kho/so-cai';
 import { dangKyHoaDonRoutes } from './hoa-don';
@@ -27,8 +29,15 @@ afterEach(() => {
   sqlite.close();
 });
 
-function taoRouter() {
-  const app = new Hono();
+function taoRouter(nguoiDangNhap?: { id: string; tenDangNhap: string; tenHienThi: string; vaiTro: 'ADMIN' | 'NHAN_VIEN' }) {
+  const app = new Hono<BienHono>();
+  // Giả lập middleware xác thực (batXacThuc) đã gắn người dùng vào context.
+  if (nguoiDangNhap) {
+    app.use('*', async (c, next) => {
+      c.set('nguoiDung', nguoiDangNhap);
+      await next();
+    });
+  }
   dangKyHoaDonRoutes(app, db);
   return app;
 }
@@ -161,5 +170,55 @@ describe('dangKyHoaDonRoutes', () => {
     const json2 = (await res2.json()) as { ma: string };
     expect(json1.ma).toBe('HD000001');
     expect(json2.ma).toBe('HD000002');
+  });
+
+  describe('người bán', () => {
+    function guiBanHang(router: ReturnType<typeof taoRouter>) {
+      return router.request('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phuongThucThanhToan: 'TIEN_MAT', dong: [dongMau] }),
+      });
+    }
+
+    it('ghi người đang đăng nhập làm người bán của hoá đơn', async () => {
+      const nhanVien = taoNguoiDung(db, {
+        tenDangNhap: 'lan',
+        tenHienThi: 'Chị Lan',
+        matKhau: 'mat-khau-dai-du',
+        vaiTro: 'NHAN_VIEN',
+      });
+      nhapKho(taoSanPhamCoLo('sp-1', 'SP001'), 100);
+
+      const res = await guiBanHang(taoRouter(nhanVien));
+
+      expect(res.status).toBe(201);
+      const [hang] = db.select().from(hoaDon).all();
+      expect(hang?.nguoiBanId).toBe(nhanVien.id);
+    });
+
+    it('không có người đăng nhập trong context thì người bán là null (hoá đơn cũ/đường không xác thực)', async () => {
+      nhapKho(taoSanPhamCoLo('sp-1', 'SP001'), 100);
+
+      const res = await guiBanHang(taoRouter());
+
+      expect(res.status).toBe(201);
+      expect(db.select().from(hoaDon).all()[0]?.nguoiBanId).toBeNull();
+    });
+
+    it('bỏ qua nguoiBanId do client gửi trong body — người bán chỉ lấy từ phiên', async () => {
+      const lan = taoNguoiDung(db, { tenDangNhap: 'lan', tenHienThi: 'Lan', matKhau: 'mat-khau-dai-du', vaiTro: 'NHAN_VIEN' });
+      const minh = taoNguoiDung(db, { tenDangNhap: 'minh', tenHienThi: 'Minh', matKhau: 'mat-khau-dai-du', vaiTro: 'NHAN_VIEN' });
+      nhapKho(taoSanPhamCoLo('sp-1', 'SP001'), 100);
+
+      const res = await taoRouter(lan).request('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phuongThucThanhToan: 'TIEN_MAT', dong: [dongMau], nguoiBanId: minh.id }),
+      });
+
+      expect(res.status).toBe(201);
+      expect(db.select().from(hoaDon).all()[0]?.nguoiBanId).toBe(lan.id);
+    });
   });
 });

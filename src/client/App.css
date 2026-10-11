@@ -1,5 +1,6 @@
 .app__dieu-huong {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--kc-3);
   padding: var(--kc-2) var(--kc-4);
@@ -10,4 +11,20 @@
   color: var(--xam-0);
   font-size: var(--chu-base);
   margin: 0 var(--kc-3) 0 0;
+}
+
+.app__nguoi-dung {
+  margin-left: auto;
+  color: var(--xam-200);
+  font-size: var(--chu-sm);
+}
+
+.app__dang-tai {
+  padding: var(--kc-5);
+  color: var(--mau-chu-phu);
+}
+
+/* Chữ trên nút menu không được tự xuống dòng; thanh menu xuống hàng khi hết chỗ. */
+.app__dieu-huong .nut {
+  white-space: nowrap;
 }

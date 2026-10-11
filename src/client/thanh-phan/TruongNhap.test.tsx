@@ -14,6 +14,16 @@ describe('TruongNhap', () => {
     expect(html).not.toContain('inputMode');
   });
 
+  it('kieu="mat-khau" dùng type="password" để che ký tự đang gõ', () => {
+    const html = renderToStaticMarkup(<TruongNhap kieu="mat-khau" />);
+    expect(html).toContain('type="password"');
+    expect(html).not.toContain('inputMode');
+  });
+
+  it('mặc định là ô chữ thường (type="text")', () => {
+    expect(renderToStaticMarkup(<TruongNhap />)).toContain('type="text"');
+  });
+
   it('nhãn được nối với ô nhập qua id/htmlFor', () => {
     const html = renderToStaticMarkup(<TruongNhap nhan="Số lượng" id="so-luong" />);
     expect(html).toContain('for="so-luong"');

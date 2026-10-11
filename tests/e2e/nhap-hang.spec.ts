@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './co-so';
 
 // T-040c1 — Phiếu nhập: giao diện (tìm hàng đã có). `context.route` (không
 // phải `page.route` — SW T-030 tự fetch) với glob `**` để khớp cả

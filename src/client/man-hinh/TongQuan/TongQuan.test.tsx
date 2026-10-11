@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { KhoiCanhBaoCanDate, KhoiCanhBaoLechKho } from './TongQuan';
+import { KhoiCanhBaoCanDate, KhoiCanhBaoLechKho, TongQuan } from './TongQuan';
 
 describe('KhoiCanhBaoLechKho', () => {
   it('không có cảnh báo: hiện thông báo rỗng, không hiện bảng', () => {
@@ -172,5 +172,13 @@ describe('KhoiCanhBaoCanDate', () => {
 
     expect(html).toContain('Không tải được cảnh báo cận date');
     expect(html).not.toContain('Không có lô nào sắp hết hạn trong 90 ngày tới.');
+  });
+});
+
+describe('TongQuan', () => {
+  it('có tiêu đề trang "Tổng quan" (h1) như các màn khác', () => {
+    const html = renderToStaticMarkup(<TongQuan />);
+
+    expect(html).toMatch(/<h1[^>]*>Tổng quan<\/h1>/);
   });
 });

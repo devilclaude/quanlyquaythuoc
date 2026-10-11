@@ -2,7 +2,7 @@ import { forwardRef, useId } from 'react';
 import type { InputHTMLAttributes } from 'react';
 import './TruongNhap.css';
 
-type KieuTruongNhap = 'chu' | 'so';
+type KieuTruongNhap = 'chu' | 'so' | 'mat-khau';
 
 interface TruongNhapProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   nhan?: string;
@@ -37,7 +37,7 @@ export const TruongNhap = forwardRef<HTMLInputElement, TruongNhapProps>(function
       <input
         ref={ref}
         id={idThat}
-        type="text"
+        type={kieu === 'mat-khau' ? 'password' : 'text'}
         inputMode={kieu === 'so' ? 'numeric' : undefined}
         pattern={kieu === 'so' ? '[0-9]*' : undefined}
         aria-invalid={loi ? true : undefined}

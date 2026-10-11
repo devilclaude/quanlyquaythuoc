@@ -4,7 +4,7 @@ import type { ThaoTacBanHangOffline, ThaoTacDongBo } from '../../shared/hop-dong
 import { taoUlid } from '../../shared/kieu/ulid';
 import { taoHoaDonTuGioHang } from '../ban-hang/tao-hoa-don';
 import { layChiNhanhMacDinh } from '../db/chi-nhanh';
-import { hoaDon } from '../db/schema';
+import { hoaDon, nguoiDung } from '../db/schema';
 
 type Db = ReturnType<typeof drizzle>;
 
@@ -26,13 +26,27 @@ export interface KetQuaApDungThaoTac {
  * hàng — dữ liệu client hỏng) trả về `LOI` kèm thông điệp thay vì ném ra
  * ngoài, để một thao tác lỗi không chặn các thao tác khác trong cùng lô.
  */
-export function apDungThaoTacBanHang(db: Db, thaoTac: ThaoTacBanHangOffline): KetQuaApDungThaoTac {
+function chonNguoiBan(db: Db, nguoiBanId: string | undefined, nguoiPhienId: string | undefined): string | undefined {
+  if (nguoiBanId) {
+    const [co] = db.select({ id: nguoiDung.id }).from(nguoiDung).where(eq(nguoiDung.id, nguoiBanId)).all();
+    if (co) return co.id;
+  }
+  return nguoiPhienId;
+}
+
+export function apDungThaoTacBanHang(
+  db: Db,
+  thaoTac: ThaoTacBanHangOffline,
+  nguoiPhienId?: string,
+): KetQuaApDungThaoTac {
   const [daTonTai] = db.select({ id: hoaDon.id }).from(hoaDon).where(eq(hoaDon.id, thaoTac.id)).all();
   if (daTonTai) return { id: thaoTac.id, ketQua: 'DA_TON_TAI' };
 
+  const nguoiBanId = chonNguoiBan(db, thaoTac.nguoiBanId, nguoiPhienId);
   try {
     taoHoaDonTuGioHang(db, {
       id: thaoTac.id,
+      ...(nguoiBanId !== undefined ? { nguoiBanId } : {}),
       chiNhanhId: layChiNhanhMacDinh(db),
       thoiGian: thaoTac.thoiGian,
       phuongThucThanhToan: thaoTac.phuongThucThanhToan,
@@ -60,6 +74,10 @@ export function apDungThaoTacBanHang(db: Db, thaoTac: ThaoTacBanHangOffline): Ke
  * SPEC.md §3.4 "giá vốn gấp theo thứ tự đến máy chủ, không hồi tố"). Một thao
  * tác lỗi không chặn các thao tác sau nó trong cùng lô.
  */
-export function apDungLoThaoTac(db: Db, danhSach: readonly ThaoTacDongBo[]): KetQuaApDungThaoTac[] {
-  return danhSach.map((thaoTac) => apDungThaoTacBanHang(db, thaoTac));
+export function apDungLoThaoTac(
+  db: Db,
+  danhSach: readonly ThaoTacDongBo[],
+  nguoiPhienId?: string,
+): KetQuaApDungThaoTac[] {
+  return danhSach.map((thaoTac) => apDungThaoTacBanHang(db, thaoTac, nguoiPhienId));
 }

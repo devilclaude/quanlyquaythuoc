@@ -82,7 +82,7 @@ export function BangDanhSachHangHoa({
                 <td>{hang.maHang}</td>
                 <td>{hang.ten}</td>
                 <OSo>{dinhDangTien(dong(hang.giaBan))}</OSo>
-                <OSo>{dinhDangTien(dong(hang.giaVon))}</OSo>
+                <OSo>{hang.giaVon === undefined ? '—' : dinhDangTien(dong(hang.giaVon))}</OSo>
                 <OSo>{dinhDangSo(hang.tonKho)}</OSo>
                 <td>{dinhDangThoiGianVN(hang.ngayTao)}</td>
               </tr>

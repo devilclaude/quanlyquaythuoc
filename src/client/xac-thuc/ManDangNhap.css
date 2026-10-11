@@ -1,0 +1,43 @@
+.man-dang-nhap {
+  box-sizing: border-box;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--kc-5);
+  background: var(--mau-nen);
+}
+
+.man-dang-nhap__the {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--kc-4);
+  padding: var(--kc-6);
+  background: var(--mau-nen-the);
+  border: var(--vien);
+  border-radius: var(--bo-goc);
+}
+
+.man-dang-nhap__ten-app {
+  margin: 0;
+  font-size: var(--chu-lg);
+  color: var(--mau-chu);
+}
+
+.man-dang-nhap__tieu-de {
+  margin: 0;
+  font-size: var(--chu-base);
+  color: var(--mau-chu-phu);
+  font-weight: 500;
+}
+
+.man-dang-nhap__loi {
+  margin: 0;
+  padding: var(--kc-2) var(--kc-3);
+  font-size: var(--chu-sm);
+  color: var(--mau-nguy);
+  background: var(--mau-nguy-nen);
+  border-radius: var(--bo-goc);
+}

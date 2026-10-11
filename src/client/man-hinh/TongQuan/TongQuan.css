@@ -2,6 +2,12 @@
   display: flex;
   flex-direction: column;
   gap: var(--kc-5);
+  padding: var(--kc-5);
+}
+
+.tong-quan__tieu-de-trang {
+  margin: 0;
+  font-size: var(--chu-lg);
 }
 
 .tong-quan__khoi {

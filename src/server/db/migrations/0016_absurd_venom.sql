@@ -1,0 +1,1 @@
+ALTER TABLE `hoa_don` ADD `nguoi_ban_id` text REFERENCES nguoi_dung(id);

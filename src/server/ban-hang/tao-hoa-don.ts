@@ -75,6 +75,8 @@ export interface TaoHoaDonInput {
    * bán vượt tồn như cũ.
    */
   choPhepTonAm?: boolean;
+  /** Người bán (`nguoi_dung.id`) — lấy từ phiên đăng nhập, không bao giờ từ body client. */
+  nguoiBanId?: string;
 }
 
 export interface HoaDonDaTao {
@@ -159,6 +161,7 @@ export function taoHoaDonTuGioHang(db: Db, input: TaoHoaDonInput): HoaDonDaTao {
             lamTron,
             khachCanTra,
             thoiGian: input.thoiGian,
+            nguoiBanId: input.nguoiBanId ?? null,
           })
           .run();
 

@@ -17,6 +17,6 @@ const db = drizzle(sqlite);
 // drizzle tự theo dõi migration nào đã áp dụng.
 migrate(db, { migrationsFolder: './src/server/db/migrations' });
 
-serve({ fetch: taoApp(db).fetch, port: cauHinh.PORT }, (info) => {
+serve({ fetch: taoApp(db, { corsOrigins: cauHinh.CORS_ORIGINS }).fetch, port: cauHinh.PORT }, (info) => {
   console.log(`Server chạy ở cổng ${info.port}`);
 });

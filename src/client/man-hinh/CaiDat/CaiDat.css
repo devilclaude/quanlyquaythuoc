@@ -1,3 +1,10 @@
+.cai-dat__trang {
+  display: flex;
+  flex-direction: column;
+  gap: var(--kc-5);
+  padding: var(--kc-5);
+}
+
 .cai-dat {
   max-width: 640px;
   padding: var(--kc-5);

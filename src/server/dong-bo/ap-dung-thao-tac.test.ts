@@ -4,6 +4,7 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { ThaoTacBanHangOffline } from '../../shared/hop-dong/dong-bo';
+import { taoNguoiDung } from '../auth/nguoi-dung';
 import { layChiNhanhMacDinh } from '../db/chi-nhanh';
 import { hoaDon, loHang, sanPham, theKho, tonKhoLo } from '../db/schema';
 import { ghiTheKho } from '../kho/so-cai';
@@ -51,7 +52,12 @@ function thaoTacMau(overrides: Partial<ThaoTacBanHangOffline> = {}): ThaoTacBanH
     dong: overrides.dong ?? [{ sanPhamId: 'sp-1', donViTen: 'Viên', heSo: 1, donGia: 1_000, soLuong: 3 }],
     ...(overrides.giamGia !== undefined ? { giamGia: overrides.giamGia } : {}),
     ...(overrides.thuKhac !== undefined ? { thuKhac: overrides.thuKhac } : {}),
+    ...(overrides.nguoiBanId !== undefined ? { nguoiBanId: overrides.nguoiBanId } : {}),
   };
+}
+
+function taoNguoi(ten: string) {
+  return taoNguoiDung(db, { tenDangNhap: ten, tenHienThi: ten, matKhau: 'mat-khau-dai-du', vaiTro: 'NHAN_VIEN' });
 }
 
 describe('apDungThaoTacBanHang', () => {
@@ -161,5 +167,75 @@ describe('apDungLoThaoTac', () => {
       { id: 'tt-2', ketQua: 'DA_TON_TAI' },
     ]);
     expect(tonDem(loId)).toBe(tonSauLanDau);
+  });
+});
+
+describe('người bán của thao tác offline', () => {
+  function chuanBiKho(): void {
+    const loId = taoSanPhamCoLo('sp-1', 'SP001');
+    nhapKho(loId, layChiNhanhMacDinh(db), 100, '2026-09-24T07:00:00.000Z');
+  }
+
+  function nguoiBanCuaHoaDon(id: string): string | null | undefined {
+    return db.select().from(hoaDon).where(eq(hoaDon.id, id)).all()[0]?.nguoiBanId;
+  }
+
+  it('payload mang nguoiBanId hợp lệ: ghi đúng người đó, kể cả khi người gọi API là người khác', () => {
+    chuanBiKho();
+    const nguoiBan = taoNguoi('lan');
+    const nguoiGoi = taoNguoi('minh');
+
+    apDungThaoTacBanHang(db, thaoTacMau({ nguoiBanId: nguoiBan.id }), nguoiGoi.id);
+
+    expect(nguoiBanCuaHoaDon('tt-1')).toBe(nguoiBan.id);
+  });
+
+  it('payload mang nguoiBanId không tồn tại: rơi về người đang gọi API', () => {
+    chuanBiKho();
+    const nguoiGoi = taoNguoi('minh');
+
+    apDungThaoTacBanHang(db, thaoTacMau({ nguoiBanId: 'khong-co-nguoi-nay' }), nguoiGoi.id);
+
+    expect(nguoiBanCuaHoaDon('tt-1')).toBe(nguoiGoi.id);
+  });
+
+  it('payload không có nguoiBanId: dùng người đang gọi API', () => {
+    chuanBiKho();
+    const nguoiGoi = taoNguoi('minh');
+
+    apDungThaoTacBanHang(db, thaoTacMau(), nguoiGoi.id);
+
+    expect(nguoiBanCuaHoaDon('tt-1')).toBe(nguoiGoi.id);
+  });
+
+  it('không có cả hai: người bán là null và đơn vẫn được nhận (không bao giờ từ chối đơn đã bán)', () => {
+    chuanBiKho();
+
+    const ketQua = apDungThaoTacBanHang(db, thaoTacMau());
+
+    expect(ketQua.ketQua).toBe('DA_AP_DUNG');
+    expect(nguoiBanCuaHoaDon('tt-1')).toBeNull();
+  });
+
+  it('idempotent: gửi lại với người khác không đổi người bán đã ghi', () => {
+    chuanBiKho();
+    const lan = taoNguoi('lan');
+    const minh = taoNguoi('minh');
+    apDungThaoTacBanHang(db, thaoTacMau({ nguoiBanId: lan.id }), lan.id);
+
+    const lanHai = apDungThaoTacBanHang(db, thaoTacMau({ nguoiBanId: minh.id }), minh.id);
+
+    expect(lanHai.ketQua).toBe('DA_TON_TAI');
+    expect(nguoiBanCuaHoaDon('tt-1')).toBe(lan.id);
+  });
+
+  it('apDungLoThaoTac truyền người đang gọi xuống từng thao tác trong lô', () => {
+    chuanBiKho();
+    const nguoiGoi = taoNguoi('minh');
+
+    apDungLoThaoTac(db, [thaoTacMau({ id: 'a', maHoaDon: 'HDX-1' }), thaoTacMau({ id: 'b', maHoaDon: 'HDX-2' })], nguoiGoi.id);
+
+    expect(nguoiBanCuaHoaDon('a')).toBe(nguoiGoi.id);
+    expect(nguoiBanCuaHoaDon('b')).toBe(nguoiGoi.id);
   });
 });
