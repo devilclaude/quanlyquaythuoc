@@ -91,3 +91,27 @@
   border: 1px solid currentColor;
   opacity: 0.7;
 }
+
+/* Điện thoại: panel tổng tiền cố định 320px sẽ ép bảng hàng còn ~0px, nên xếp dọc —
+ * bảng ở trên (cuộn ngang trong khung của nó), panel tổng tiền + nút ở dưới. */
+@media (max-width: 767px) {
+  .nhap-hang__than {
+    flex-direction: column;
+  }
+
+  .nhap-hang__than .ban-hang__gio {
+    flex: none;
+    overflow-x: auto;
+  }
+
+  .nhap-hang__than .ban-hang__panel {
+    width: auto;
+    border-left: 0;
+    border-top: var(--vien);
+  }
+
+  .nhap-hang__o-tim {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+}

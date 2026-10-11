@@ -60,3 +60,23 @@
   cursor: pointer;
   padding: var(--kc-2) 0;
 }
+
+/* Điện thoại: bộ lọc 220px đứng cạnh danh sách làm trang tràn ngang — xếp bộ lọc lên trên. */
+@media (max-width: 767px) {
+  .danh-sach-phieu-nhap {
+    padding: var(--kc-3);
+  }
+
+  .danh-sach-phieu-nhap__hang {
+    flex-direction: column;
+    gap: var(--kc-3);
+  }
+
+  .danh-sach-phieu-nhap__bo-loc {
+    flex: none;
+  }
+
+  .danh-sach-phieu-nhap__thanh-cong-cu {
+    flex-wrap: wrap;
+  }
+}
