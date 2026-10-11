@@ -30,3 +30,13 @@
 .bang tbody tr:hover {
   background: var(--xam-50);
 }
+
+/* Điện thoại: dòng chi tiết (td colSpan chứa một khối) nằm trong bảng rộng hơn màn hình
+ * nên bị cắt phải. Ghim khối vào mép trái khung cuộn và giới hạn bằng bề rộng màn hình. */
+@media (max-width: 767px) {
+  .bang__boc td[colspan] > * {
+    position: sticky;
+    left: 0;
+    max-width: calc(100vw - 2 * var(--kc-5) - 2 * var(--kc-4));
+  }
+}
