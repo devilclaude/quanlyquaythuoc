@@ -123,3 +123,14 @@ describe('BangDanhSachPhieuNhap', () => {
     expect(html).not.toContain('chi-tiet-cua-pn-2');
   });
 });
+
+describe('BangDanhSachPhieuNhap — căn cột', () => {
+  it('tiêu đề cột Tổng tiền căn phải như ô số; cột chữ giữ căn trái', () => {
+    const html = ve();
+
+    expect(html).toContain('<th class="so">Tổng tiền</th>');
+    for (const cot of ['Mã nhập hàng', 'Thời gian', 'Trạng thái']) {
+      expect(html, cot).toContain(`<th>${cot}</th>`);
+    }
+  });
+});

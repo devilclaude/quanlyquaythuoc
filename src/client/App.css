@@ -28,3 +28,64 @@
 .app__dieu-huong .nut {
   white-space: nowrap;
 }
+
+/* Nút Menu và tên màn hiện tại chỉ dùng trên điện thoại; desktop giữ nguyên thanh ngang
+ * (`display: contents` để các mục vẫn là con trực tiếp của thanh như trước). */
+.app__nut-menu,
+.app__man-hien-tai {
+  display: none;
+}
+
+.app__muc {
+  display: contents;
+}
+
+@media (max-width: 767px) {
+  .app__dieu-huong {
+    flex-wrap: wrap;
+    gap: var(--kc-2);
+  }
+
+  .app__dieu-huong > .app__muc {
+    display: none;
+  }
+
+  .app__dieu-huong > .app__muc--mo {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--kc-2);
+    flex: 1 0 100%;
+    order: 10;
+  }
+
+  .app__tieu-de {
+    margin: 0;
+  }
+
+  .app__man-hien-tai {
+    display: inline;
+    color: var(--xam-200);
+    font-size: var(--chu-sm);
+    margin-left: auto;
+  }
+
+  .app__nut-menu {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    font-size: var(--chu-lg);
+    background: var(--xam-0);
+    color: var(--mau-chu);
+    border: 0;
+    border-radius: var(--bo-goc);
+    cursor: pointer;
+  }
+
+  .app__muc .app__nguoi-dung {
+    margin-left: 0;
+    padding: var(--kc-1) 0;
+  }
+}

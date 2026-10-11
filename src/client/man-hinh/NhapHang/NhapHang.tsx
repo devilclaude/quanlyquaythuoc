@@ -9,7 +9,7 @@ import {
 import { PhieuNhapResSchema, type TaoPhieuNhapReq } from '../../../shared/hop-dong/phieu-nhap';
 import { dong } from '../../../shared/kieu/dong';
 import { dinhDangTien } from '../../../shared/tien/dinh-dang';
-import { Bang, Nut, OSo, TruongNhap } from '../../thanh-phan';
+import { Bang, Nut, OSo, TruongNhap, TieuDeSo } from '../../thanh-phan';
 import { TaoMoiHangHoa } from '../HangHoa/TaoMoiHangHoa';
 import {
   DanhSachGoiY,
@@ -226,19 +226,19 @@ export function BangDongPhieuNhap({
       <thead>
         <tr>
           <th></th>
-          <th>STT</th>
+          <TieuDeSo>STT</TieuDeSo>
           <th>Mã hàng</th>
           <th>Tên hàng</th>
           <th>ĐVT</th>
-          <th>Số lượng</th>
-          <th>Đơn giá</th>
+          <TieuDeSo>Số lượng</TieuDeSo>
+          <TieuDeSo>Đơn giá</TieuDeSo>
           {hienCotLo ? (
             <>
               <th>Số lô</th>
               <th>Hạn dùng</th>
             </>
           ) : null}
-          <th>Thành tiền</th>
+          <TieuDeSo>Thành tiền</TieuDeSo>
         </tr>
       </thead>
       <tbody>

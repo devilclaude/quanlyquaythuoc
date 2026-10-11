@@ -120,6 +120,13 @@
       "when": 1791620179751,
       "tag": "0016_absurd_venom",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "6",
+      "when": 1791627494775,
+      "tag": "0017_condemned_harpoon",
+      "breakpoints": true
     }
   ]
 }

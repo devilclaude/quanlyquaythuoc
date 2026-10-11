@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { Bang, OSo } from './Bang';
+import { Bang, OSo, TieuDeSo } from './Bang';
 
 describe('Bang', () => {
   it('bọc table trong khung cuộn ngang để không vỡ layout ở màn hẹp', () => {
@@ -39,5 +39,20 @@ describe('OSo', () => {
       </table>,
     );
     expect(html).toContain('<td class="so">864</td>');
+  });
+});
+
+describe('TieuDeSo', () => {
+  it('tiêu đề cột số gắn lớp "so" để căn phải thẳng với ô số (OSo) bên dưới', () => {
+    const html = renderToStaticMarkup(
+      <table>
+        <thead>
+          <tr>
+            <TieuDeSo>Giá bán</TieuDeSo>
+          </tr>
+        </thead>
+      </table>,
+    );
+    expect(html).toContain('<th class="so">Giá bán</th>');
   });
 });

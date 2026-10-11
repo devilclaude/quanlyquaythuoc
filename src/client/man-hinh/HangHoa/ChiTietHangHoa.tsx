@@ -9,7 +9,7 @@ import { dong } from '../../../shared/kieu/dong';
 import { soLuongCoSo } from '../../../shared/kieu/so-luong';
 import { hienThiGanDung } from '../../../shared/don-vi/quy-doi';
 import { dinhDangTien } from '../../../shared/tien/dinh-dang';
-import { Bang, BadgeTrangThai, Nut } from '../../thanh-phan';
+import { Bang, BadgeTrangThai, Nut, TieuDeSo, OSo } from '../../thanh-phan';
 import { SuaHangHoa } from './SuaHangHoa';
 import './ChiTietHangHoa.css';
 
@@ -32,6 +32,10 @@ export function ThongTinHangHoa({ chiTiet }: { chiTiet: HangHoaChiTietRes }) {
         <div>
           <dt>Mã hàng</dt>
           <dd>{chiTiet.maHang}</dd>
+        </div>
+        <div>
+          <dt>Mã vạch</dt>
+          <dd>{chiTiet.maVach ? chiTiet.maVach : '—'}</dd>
         </div>
         <div>
           <dt>Tồn kho</dt>
@@ -59,8 +63,8 @@ export function ThongTinHangHoa({ chiTiet }: { chiTiet: HangHoaChiTietRes }) {
         <thead>
           <tr>
             <th>Đơn vị</th>
-            <th>Hệ số</th>
-            <th>Giá bán</th>
+            <TieuDeSo>Hệ số</TieuDeSo>
+            <TieuDeSo>Giá bán</TieuDeSo>
           </tr>
         </thead>
         <tbody>
@@ -70,8 +74,8 @@ export function ThongTinHangHoa({ chiTiet }: { chiTiet: HangHoaChiTietRes }) {
                 {dv.ten}
                 {dv.laCoSo ? ' (cơ sở)' : ''}
               </td>
-              <td>{dv.heSo}</td>
-              <td>{dinhDangTien(dong(dv.giaBan))}</td>
+              <OSo>{dv.heSo}</OSo>
+              <OSo>{dinhDangTien(dong(dv.giaBan))}</OSo>
             </tr>
           ))}
         </tbody>

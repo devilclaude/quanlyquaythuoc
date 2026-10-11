@@ -7,7 +7,7 @@ import {
 import { HoaDonResSchema } from '../../../shared/hop-dong/hoa-don';
 import { dong } from '../../../shared/kieu/dong';
 import { dinhDangTien } from '../../../shared/tien/dinh-dang';
-import { Bang, OSo, TruongNhap } from '../../thanh-phan';
+import { Bang, OSo, TruongNhap, TieuDeSo } from '../../thanh-phan';
 import { ChiBaoTrangThai } from '../../offline/ChiBaoTrangThai';
 import { InHoaDon, docKhoGiayDaLuu, luuKhoGiayDaChon, xayDungHoaDonDeIn, type HoaDonDeIn, type KhoGiayIn } from './InHoaDon';
 import {
@@ -20,6 +20,7 @@ import {
   xayDungYeuCauTaoHoaDon,
   type TrangThaiPanelThanhToan,
 } from './ThanhToan';
+import { docHoaDonDangMo, luuHoaDonDangMo } from './hoa-don-dang-mo';
 import './BanHang.css';
 
 // T-020 — Màn bán hàng: tìm và thêm hàng. T-021 — chọn đơn vị và số lượng
@@ -319,14 +320,14 @@ export function BangGioHang({ gioHang, chiSoDongChon, onChonDong, onDoiDonVi, on
     <Bang>
       <thead>
         <tr>
-          <th>STT</th>
+          <TieuDeSo>STT</TieuDeSo>
           <th></th>
           <th>Mã hàng</th>
           <th>Tên hàng</th>
           <th>Đơn vị</th>
-          <th>Số lượng</th>
-          <th>Đơn giá</th>
-          <th>Thành tiền</th>
+          <TieuDeSo>Số lượng</TieuDeSo>
+          <TieuDeSo>Đơn giá</TieuDeSo>
+          <TieuDeSo>Thành tiền</TieuDeSo>
         </tr>
       </thead>
       <tbody>
@@ -552,7 +553,7 @@ export function ThanhTabHoaDon({ tabs, tabDangChonId, onChonTab, onDongTab, onMo
 }
 
 /** Container: ô tìm (F3) → gợi ý theo đơn vị → thêm vào giỏ, toàn bộ bằng bàn phím. */
-export function BanHang() {
+export function BanHang({ nguoiId }: { nguoiId?: string } = {}) {
   const [tim, setTim] = useState('');
   const [goiYThoBanDau, setGoiYThoBanDau] = useState<GoiYBanHang[]>([]);
   const [dangTai, setDangTai] = useState(false);
@@ -560,8 +561,13 @@ export function BanHang() {
   const [chiSoChon, setChiSoChon] = useState(0);
   /** T-025 — mỗi tab giữ trọn giỏ hàng + trạng thái thanh toán riêng, xem
    * `HoaDonTab`. Bắt đầu với đúng một tab, như vào màn KiotViet lần đầu. */
-  const [tabs, setTabs] = useState<HoaDonTab[]>(() => [taoTabRong(crypto.randomUUID(), 1)]);
-  const [tabDangChonId, setTabDangChonId] = useState<string>(() => tabs[0]!.id);
+  // Hoá đơn chưa thanh toán được giữ theo tài khoản (`nguoiId`), mở lại sau F5/hết phiên.
+  const [daLuu] = useState(() => (nguoiId ? docHoaDonDangMo(nguoiId) : undefined));
+  const [tabs, setTabs] = useState<HoaDonTab[]>(() => daLuu?.tabs ?? [taoTabRong(crypto.randomUUID(), 1)]);
+  const [tabDangChonId, setTabDangChonId] = useState<string>(() => daLuu?.tabDangChonId ?? tabs[0]!.id);
+  useEffect(() => {
+    if (nguoiId) luuHoaDonDangMo(nguoiId, { tabs, tabDangChonId });
+  }, [nguoiId, tabs, tabDangChonId]);
   /** Hoá đơn vừa tạo cần in (T-023) — `undefined` = không hiện preview. Chung
    * cho mọi tab: chỉ một preview mở tại một thời điểm, gắn với hoá đơn VỪA
    * thanh toán xong, không phải tab đang xem. */

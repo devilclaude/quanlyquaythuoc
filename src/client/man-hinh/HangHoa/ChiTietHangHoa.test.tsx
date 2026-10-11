@@ -35,6 +35,26 @@ const chiTietTonPhang: HangHoaChiTietRes = {
   donViTinh: [{ id: 'dvt-chai', ten: 'chai', heSo: 1, laCoSo: true, giaBan: 15000 }],
 };
 
+describe('ThongTinHangHoa — mã vạch', () => {
+  it('hiện mã vạch khi có', () => {
+    const html = renderToStaticMarkup(<ThongTinHangHoa chiTiet={{ ...chiTietNhieuDonVi, maVach: '8934563138165' }} />);
+
+    expect(html).toContain('<dt>Mã vạch</dt>');
+    expect(html).toContain('8934563138165');
+  });
+
+  it('chưa có mã vạch (null hoặc thiếu) thì hiện dấu gạch ngang, không chữ "null"/"undefined"', () => {
+    const khiNull = renderToStaticMarkup(<ThongTinHangHoa chiTiet={{ ...chiTietNhieuDonVi, maVach: null }} />);
+    const khiThieu = renderToStaticMarkup(<ThongTinHangHoa chiTiet={chiTietNhieuDonVi} />);
+
+    for (const html of [khiNull, khiThieu]) {
+      expect(html).toMatch(/<dt>Mã vạch<\/dt><dd>—<\/dd>/);
+      expect(html).not.toContain('null');
+      expect(html).not.toContain('undefined');
+    }
+  });
+});
+
 describe('ThongTinHangHoa', () => {
   it('hiện tên, mã hàng, bảng đơn vị tính, giá vốn (tạm 0), và tồn kho chính+phụ (SPEC.md §3.3: 864 viên ≈ 4,8 hộp)', () => {
     const html = renderToStaticMarkup(<ThongTinHangHoa chiTiet={chiTietNhieuDonVi} />);

@@ -83,7 +83,7 @@ describe('xayDungYeuCauSuaHangHoa (T-009c)', () => {
 
   it('dựng đúng yêu cầu, không có mã hàng dù trạng thái form có mã hàng (mã hàng không sửa được)', () => {
     const ketQua = xayDungYeuCauSuaHangHoa({ ...goc, maHang: 'SP001' });
-    expect(ketQua).toEqual({ ten: 'Paracetamol 500mg', donViCoSoTen: 'viên', giaBan: 500, donViKhac: [] });
+    expect(ketQua).toEqual({ ten: 'Paracetamol 500mg', donViCoSoTen: 'viên', giaBan: 500, donViKhac: [], maVach: null });
   });
 
   it('từ chối tên hàng bỏ trống, cùng luật với tạo mới', () => {
@@ -118,8 +118,9 @@ describe('taoTrangThaiTuChiTiet (T-009c)', () => {
       ],
     };
 
-    expect(taoTrangThaiTuChiTiet(chiTiet)).toEqual({
+    expect(taoTrangThaiTuChiTiet({ ...chiTiet, maVach: '8934563138165' })).toEqual({
       maHang: 'SP001',
+      maVach: '8934563138165',
       ten: 'Paracetamol 500mg',
       donViCoSoTen: 'viên',
       giaBan: '500',
@@ -178,5 +179,68 @@ describe('FormTaoHangHoa (bố cục)', () => {
     expect(html).toContain('Sửa hàng hóa');
     expect(html).toContain('value="SP001"');
     expect(html).toContain('disabled=""');
+  });
+});
+
+describe('mã vạch trong form', () => {
+  const goc = { ...taoTrangThaiRong(), ten: 'Paracetamol 500mg', donViCoSoTen: 'viên', giaBan: '500' };
+
+  it('trạng thái rỗng có mã vạch rỗng', () => {
+    expect(taoTrangThaiRong().maVach).toBe('');
+  });
+
+  it('tạo: có nhập thì gửi đã cắt khoảng trắng; để trống thì không gửi trường maVach', () => {
+    const co = xayDungYeuCauTaoHangHoa({ ...goc, maVach: '  8934563138165 ' });
+    expect('maVach' in co && co.maVach).toBe('8934563138165');
+
+    const khong = xayDungYeuCauTaoHangHoa(goc);
+    expect('maVach' in khong).toBe(false);
+  });
+
+  it('tạo: từ chối mã vạch có khoảng trắng ở giữa hoặc dài quá 64 ký tự', () => {
+    expect(xayDungYeuCauTaoHangHoa({ ...goc, maVach: '8934 563' })).toEqual({
+      loi: 'Mã vạch không được chứa khoảng trắng',
+    });
+    expect(xayDungYeuCauTaoHangHoa({ ...goc, maVach: '1'.repeat(65) })).toEqual({
+      loi: 'Mã vạch tối đa 64 ký tự',
+    });
+  });
+
+  it('sửa: gửi mã vạch đã cắt khoảng trắng; xoá trắng ô thì gửi null để xoá mã vạch', () => {
+    const doi = xayDungYeuCauSuaHangHoa({ ...goc, maVach: ' 123 ' });
+    expect('maVach' in doi && doi.maVach).toBe('123');
+
+    const xoa = xayDungYeuCauSuaHangHoa({ ...goc, maVach: '   ' });
+    expect('maVach' in xoa && xoa.maVach).toBeNull();
+  });
+
+  it('taoTrangThaiTuChiTiet: hàng chưa có mã vạch (null hoặc thiếu) thì ô rỗng', () => {
+    const chiTiet: HangHoaChiTietRes = {
+      id: 'sp-1',
+      maHang: 'SP001',
+      ten: 'A',
+      giaBan: 500,
+      giaVon: 0,
+      tonKho: 0,
+      ngayTao: '2026-09-01T00:00:00.000Z',
+      trangThai: 'HOAT_DONG',
+      coTheXoaCung: true,
+      quanLyLoGhiDe: 'KE_THUA',
+      donViTinh: [{ id: 'dvt-1', ten: 'viên', heSo: 1, laCoSo: true, giaBan: 500 }],
+    };
+
+    expect(taoTrangThaiTuChiTiet({ ...chiTiet, maVach: null }).maVach).toBe('');
+    expect(taoTrangThaiTuChiTiet(chiTiet).maVach).toBe('');
+  });
+
+  it('form có ô "Mã vạch" tuỳ chọn, nhắc có thể quét; chế độ sửa vẫn cho sửa mã vạch (không khoá như mã hàng)', () => {
+    const props = { dangLuu: false, loi: undefined, onDoi: () => undefined, onHuy: () => undefined, onLuu: () => undefined };
+    const tao = renderToStaticMarkup(<FormTaoHangHoa trangThai={taoTrangThaiRong()} {...props} />);
+    expect(tao).toContain('Mã vạch');
+    expect(tao).toMatch(/placeholder="Quét hoặc nhập \(tuỳ chọn\)"/);
+
+    const sua = renderToStaticMarkup(<FormTaoHangHoa trangThai={taoTrangThaiRong()} {...props} tieuDe="Sửa hàng hóa" maHangChiDoc />);
+    const oMaVach = sua.match(/<input[^>]*placeholder="Quét hoặc nhập \(tuỳ chọn\)"[^>]*>/)?.[0] ?? '';
+    expect(oMaVach).not.toContain('disabled');
   });
 });

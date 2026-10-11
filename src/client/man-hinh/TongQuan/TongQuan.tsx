@@ -5,7 +5,7 @@ import {
   type CanhBaoCanDate,
   type CanhBaoLechKho,
 } from '../../../shared/hop-dong/tong-quan';
-import { BadgeTrangThai, Bang, OSo, type MauBadge } from '../../thanh-phan';
+import { BadgeTrangThai, Bang, OSo, type MauBadge, TieuDeSo } from '../../thanh-phan';
 import './TongQuan.css';
 
 interface TrangThaiTongQuan {
@@ -42,7 +42,7 @@ export function KhoiCanhBaoLechKho({ trangThai }: KhoiCanhBaoLechKhoProps) {
                 <th>Tên hàng</th>
                 <th>Số lô</th>
                 <th>Hạn dùng</th>
-                <th>Tồn</th>
+                <TieuDeSo>Tồn</TieuDeSo>
               </tr>
             </thead>
             <tbody>
@@ -103,7 +103,7 @@ export function KhoiCanhBaoCanDate({ trangThai }: KhoiCanhBaoCanDateProps) {
                 <th>Số lô</th>
                 <th>Hạn dùng</th>
                 <th>Còn lại</th>
-                <th>Tồn</th>
+                <TieuDeSo>Tồn</TieuDeSo>
               </tr>
             </thead>
             <tbody>

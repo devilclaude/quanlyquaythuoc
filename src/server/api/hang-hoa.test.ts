@@ -9,6 +9,7 @@ import {
   DoiDonViCoSoBiCamError,
   HangHoaKhongTonTaiError,
   MaHangDaTonTaiError,
+  MaVachDaTonTaiError,
   XoaCungBiChanError,
   dangKyHangHoaRoutes,
   layChiTietHangHoa,
@@ -184,6 +185,7 @@ describe('layChiTietHangHoa', () => {
       trangThai: 'HOAT_DONG',
       coTheXoaCung: false,
       quanLyLoGhiDe: 'KE_THUA',
+      maVach: null,
       donViTinh: [
         { id: 'dvt-vien', ten: 'viên', heSo: 1, laCoSo: true, giaBan: 500 },
         { id: 'dvt-vi', ten: 'vỉ', heSo: 12, laCoSo: false, giaBan: 6000 },
@@ -558,5 +560,134 @@ describe('dangKyHangHoaRoutes', () => {
 
     expect(res1.status).toBe(200);
     expect(res2.status).toBe(200);
+  });
+});
+
+describe('mã vạch', () => {
+  const cb = { donViCoSoTen: 'viên', giaBan: 500, donViKhac: [] };
+
+  it('tạo kèm mã vạch: lưu và trả lại trong chi tiết; không có thì là null', () => {
+    const co = taoHangHoa(db, { ten: 'Paracetamol 500mg', maVach: '8934563138165', ...cb });
+    const khong = taoHangHoa(db, { ten: 'Vitamin C', ...cb });
+
+    expect(co.maVach).toBe('8934563138165');
+    expect(khong.maVach).toBeNull();
+    expect(layChiTietHangHoa(db, co.id)?.maVach).toBe('8934563138165');
+  });
+
+  it('nhiều sản phẩm cùng không có mã vạch thì không đụng UNIQUE', () => {
+    taoHangHoa(db, { ten: 'A', ...cb });
+
+    expect(() => taoHangHoa(db, { ten: 'B', ...cb })).not.toThrow();
+  });
+
+  it('tạo trùng mã vạch của sản phẩm khác: MaVachDaTonTaiError và không tạo thêm sản phẩm nào', () => {
+    taoHangHoa(db, { ten: 'A', maVach: '8934563138165', ...cb });
+
+    expect(() => taoHangHoa(db, { ten: 'B', maVach: '8934563138165', ...cb })).toThrow(MaVachDaTonTaiError);
+    expect(db.select().from(sanPham).all()).toHaveLength(1);
+  });
+
+  it('sửa: đặt, đổi và xoá mã vạch; không gửi maVach thì giữ nguyên', () => {
+    const sp = taoHangHoa(db, { ten: 'A', ...cb });
+    const sua = { ten: 'A', ...cb };
+
+    expect(suaHangHoa(db, sp.id, { ...sua, maVach: '111' }).maVach).toBe('111');
+    expect(suaHangHoa(db, sp.id, { ...sua, maVach: '222' }).maVach).toBe('222');
+    expect(suaHangHoa(db, sp.id, { ...sua }).maVach).toBe('222');
+    expect(suaHangHoa(db, sp.id, { ...sua, maVach: null }).maVach).toBeNull();
+  });
+
+  it('sửa: lưu lại đúng mã vạch của chính mình không bị coi là trùng', () => {
+    const sp = taoHangHoa(db, { ten: 'A', maVach: '111', ...cb });
+
+    expect(() => suaHangHoa(db, sp.id, { ten: 'A mới', ...cb, maVach: '111' })).not.toThrow();
+  });
+
+  it('sửa: đổi sang mã vạch của sản phẩm khác thì MaVachDaTonTaiError và dữ liệu cũ nguyên vẹn', () => {
+    taoHangHoa(db, { ten: 'A', maVach: '111', ...cb });
+    const b = taoHangHoa(db, { ten: 'B', maVach: '222', ...cb });
+
+    expect(() => suaHangHoa(db, b.id, { ten: 'B đổi tên', ...cb, maVach: '111' })).toThrow(MaVachDaTonTaiError);
+
+    const sauDo = layChiTietHangHoa(db, b.id);
+    expect(sauDo?.maVach).toBe('222');
+    expect(sauDo?.ten).toBe('B');
+  });
+
+  describe('tìm kiếm theo mã vạch', () => {
+    function chuanBi() {
+      taoSanPham('sp-1', 'SP001', 'Paracetamol 500mg', '2026-09-01T00:00:00.000Z');
+      taoSanPham('sp-2', 'SP002', 'Vitamin C 1000mg', '2026-09-02T00:00:00.000Z');
+      taoSanPham('sp-3', 'SP003', 'Thuốc có số 8934563138165 trong tên', '2026-09-03T00:00:00.000Z');
+      for (const id of ['sp-1', 'sp-2', 'sp-3']) taoDonViCoSo(id, 1000);
+      db.update(sanPham).set({ maVach: '8934563138165' }).where(eq(sanPham.id, 'sp-1')).run();
+      db.update(sanPham).set({ maVach: '8934563138172' }).where(eq(sanPham.id, 'sp-2')).run();
+    }
+
+    it('quét đúng cả mã vạch: ra đúng sản phẩm đó, không lẫn hàng khác dù tên chứa dãy số', () => {
+      chuanBi();
+
+      expect(layDanhSachHangHoa(db, '8934563138165').map((r) => r.maHang)).toEqual(['SP001']);
+    });
+
+    it('gõ một phần mã vạch (không khớp đúng cả mã): ra mọi sản phẩm có mã vạch, mã hàng hoặc tên chứa dãy đó', () => {
+      chuanBi();
+
+      // SP001, SP002 khớp qua mã vạch; SP003 khớp qua tên.
+      expect(layDanhSachHangHoa(db, '89345631').map((r) => r.maHang).sort()).toEqual(['SP001', 'SP002', 'SP003']);
+    });
+
+    it('vẫn tìm được theo mã hàng (mã tem tự in) và theo tên như trước', () => {
+      chuanBi();
+
+      expect(layDanhSachHangHoa(db, 'SP002').map((r) => r.maHang)).toEqual(['SP002']);
+      expect(layDanhSachHangHoa(db, 'vitamin').map((r) => r.maHang)).toEqual(['SP002']);
+    });
+
+    it('sản phẩm không có mã vạch không bị khớp nhầm bởi từ khoá bất kỳ', () => {
+      taoSanPham('sp-1', 'SP001', 'Paracetamol', '2026-09-01T00:00:00.000Z');
+      taoDonViCoSo('sp-1', 500);
+
+      expect(layDanhSachHangHoa(db, 'null')).toEqual([]);
+    });
+  });
+});
+
+describe('route mã vạch', () => {
+  function taoRouter() {
+    const app = new Hono();
+    dangKyHangHoaRoutes(app, db);
+    return app;
+  }
+  const gui = (phuongThuc: string, duongDan: string, body: unknown) =>
+    taoRouter().request(duongDan, {
+      method: phuongThuc,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  const cb = { donViCoSoTen: 'viên', giaBan: 500, donViKhac: [] };
+
+  it('POST / tạo kèm mã vạch: 201 và trả maVach', async () => {
+    const res = await gui('POST', '/', { ten: 'A', maVach: '8934563138165', ...cb });
+
+    expect(res.status).toBe(201);
+    expect(((await res.json()) as { maVach: string }).maVach).toBe('8934563138165');
+  });
+
+  it('POST / trùng mã vạch: 409; mã vạch có khoảng trắng giữa: 400', async () => {
+    await gui('POST', '/', { ten: 'A', maVach: '8934563138165', ...cb });
+
+    expect((await gui('POST', '/', { ten: 'B', maVach: '8934563138165', ...cb })).status).toBe(409);
+    expect((await gui('POST', '/', { ten: 'C', maVach: '8934 563', ...cb })).status).toBe(400);
+  });
+
+  it('PUT /:id đổi sang mã vạch đã có ở sản phẩm khác: 409', async () => {
+    await gui('POST', '/', { ten: 'A', maVach: '111', ...cb });
+    const b = (await (await gui('POST', '/', { ten: 'B', maVach: '222', ...cb })).json()) as { id: string };
+
+    const res = await gui('PUT', `/${b.id}`, { ten: 'B', ...cb, maVach: '111' });
+
+    expect(res.status).toBe(409);
   });
 });

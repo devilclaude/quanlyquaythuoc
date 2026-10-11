@@ -48,4 +48,15 @@ describe('DieuHuong', () => {
     expect(html).toMatch(/nut--chinh[^>]*>Trả hàng<\/button>/);
     expect(html).toMatch(/nut--phu[^>]*>Bán hàng<\/button>/);
   });
+
+  it('có nút Menu (đang đóng) để thu gọn danh sách mục trên điện thoại', () => {
+    const html = ve(ADMIN);
+
+    expect(html).toMatch(/<button[^>]*aria-label="Menu"[^>]*aria-expanded="false"[^>]*>/);
+    expect(html).not.toContain('app__muc--mo');
+  });
+
+  it('hiện tên màn đang chọn cạnh nút Menu để người dùng biết mình đang ở đâu', () => {
+    expect(ve(ADMIN, 'tra-hang')).toMatch(/<span[^>]*app__man-hien-tai[^>]*>Trả hàng<\/span>/);
+  });
 });

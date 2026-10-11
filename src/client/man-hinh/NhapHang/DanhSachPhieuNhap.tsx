@@ -9,7 +9,7 @@ import { dong } from '../../../shared/kieu/dong';
 import { dinhDangThoiGianVN } from '../../../shared/thoi-gian/dinh-dang';
 import { cuoiNgayVN, dauNgayVN, khoangThangNayVN } from '../../../shared/thoi-gian/khoang-ngay-vn';
 import { dinhDangTien } from '../../../shared/tien/dinh-dang';
-import { Bang, BadgeTrangThai, Nut, OSo, TruongNhap } from '../../thanh-phan';
+import { Bang, BadgeTrangThai, Nut, OSo, TruongNhap, TieuDeSo } from '../../thanh-phan';
 import { ChiTietPhieuNhap } from './ChiTietPhieuNhap';
 import { NhapHang } from './NhapHang';
 import { MAU_BADGE_TRANG_THAI, nhanTrangThaiPhieuNhap } from './trang-thai-phieu-nhap';
@@ -71,7 +71,7 @@ export function BangDanhSachPhieuNhap({
         <tr>
           <th>Mã nhập hàng</th>
           <th>Thời gian</th>
-          <th>Tổng tiền</th>
+          <TieuDeSo>Tổng tiền</TieuDeSo>
           <th>Trạng thái</th>
         </tr>
       </thead>

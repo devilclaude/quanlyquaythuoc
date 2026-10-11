@@ -24,3 +24,7 @@
 
 .tao-tra-hang__thong-bao { color: var(--mau-chu-phu); }
 .tao-tra-hang__loi { color: var(--mau-nguy); }
+
+@media (max-width: 767px) {
+  .tao-tra-hang { padding: var(--kc-3); }
+}

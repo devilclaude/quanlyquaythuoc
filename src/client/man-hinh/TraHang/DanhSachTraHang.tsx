@@ -4,7 +4,7 @@ import { DanhSachTraHangResSchema, type TraHangDanhSachItem } from '../../../sha
 import { dong } from '../../../shared/kieu/dong';
 import { dinhDangThoiGianVN } from '../../../shared/thoi-gian/dinh-dang';
 import { dinhDangTien } from '../../../shared/tien/dinh-dang';
-import { Bang, Nut, OSo, TruongNhap } from '../../thanh-phan';
+import { Bang, Nut, OSo, TruongNhap, TieuDeSo } from '../../thanh-phan';
 import { ChiTietTraHang } from './ChiTietTraHang';
 import { TaoTraHang } from './TaoTraHang';
 import './DanhSachTraHang.css';
@@ -45,7 +45,7 @@ export function BangDanhSachTraHang({ duLieu, dangTai, loi, phieuChonId, onChonD
           <th>Mã trả hàng</th>
           <th>Mã hoá đơn</th>
           <th>Thời gian</th>
-          <th>Tổng tiền hoàn</th>
+          <TieuDeSo>Tổng tiền hoàn</TieuDeSo>
         </tr>
       </thead>
       <tbody>

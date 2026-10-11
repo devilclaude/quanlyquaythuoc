@@ -57,7 +57,7 @@ function UngDung({ nguoi, onDangXuat }: { nguoi: NguoiDungHienTai; onDangXuat: (
     <main>
       <DieuHuong nguoi={nguoi} man={man} onChonMan={setMan} onDangXuat={onDangXuat} />
       {man === 'ban-hang' ? (
-        <BanHang />
+        <BanHang nguoiId={nguoi.id} />
       ) : man === 'hang-hoa' ? (
         <DanhSachHangHoa />
       ) : man === 'nhap-hang' ? (

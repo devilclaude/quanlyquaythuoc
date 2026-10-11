@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { PhieuNhapDeTraHangNhapResSchema, type PhieuNhapDeTraHangNhapRes } from '../../../shared/hop-dong/tra-hang-nhap';
-import { Bang, OSo } from '../../thanh-phan';
+import { Bang, OSo, TieuDeSo } from '../../thanh-phan';
 import './TraCuuPhieuNhap.css';
 
 // T-053c2 — tra một phiếu nhập theo mã để bắt đầu luồng tạo trả hàng nhập,
@@ -63,9 +63,9 @@ export function BangDongPhieuNhapDeTraHangNhap({ dong, soLuongTra, onSuaSoLuongT
         <tr>
           <th>Mã hàng</th>
           <th>Tên hàng</th>
-          <th>Đã nhập</th>
-          <th>Còn trả được</th>
-          {choSua ? <th>Số lượng trả</th> : null}
+          <TieuDeSo>Đã nhập</TieuDeSo>
+          <TieuDeSo>Còn trả được</TieuDeSo>
+          {choSua ? <TieuDeSo>Số lượng trả</TieuDeSo> : null}
         </tr>
       </thead>
       <tbody>

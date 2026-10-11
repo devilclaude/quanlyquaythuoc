@@ -4,7 +4,7 @@ import { DanhSachHangHoaResSchema, type HangHoaDanhSachItem } from '../../../sha
 import { dong } from '../../../shared/kieu/dong';
 import { dinhDangThoiGianVN } from '../../../shared/thoi-gian/dinh-dang';
 import { dinhDangSo, dinhDangTien } from '../../../shared/tien/dinh-dang';
-import { Bang, Nut, OSo, TruongNhap } from '../../thanh-phan';
+import { Bang, Nut, OSo, TruongNhap, TieuDeSo } from '../../thanh-phan';
 import { ChiTietHangHoa } from './ChiTietHangHoa';
 import { TaoMoiHangHoa } from './TaoMoiHangHoa';
 import './DanhSachHangHoa.css';
@@ -41,9 +41,9 @@ export function BangDanhSachHangHoa({
         <tr>
           <th>Mã hàng</th>
           <th>Tên hàng</th>
-          <th>Giá bán</th>
-          <th>Giá vốn</th>
-          <th>Tồn kho</th>
+          <TieuDeSo>Giá bán</TieuDeSo>
+          <TieuDeSo>Giá vốn</TieuDeSo>
+          <TieuDeSo>Tồn kho</TieuDeSo>
           <th>Thời gian tạo</th>
         </tr>
       </thead>

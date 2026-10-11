@@ -420,3 +420,31 @@
   font-size: var(--chu-sm);
   margin: 0;
 }
+
+/* Điện thoại: panel Thanh toán cố định 320px ép giỏ còn ~37px và thanh trên (ô tìm
+ * + chip trạng thái) làm trang tràn ngang — xếp panel dưới giỏ, thanh trên cho xuống hàng. */
+@media (max-width: 767px) {
+  .ban-hang__thanh-tren {
+    flex-wrap: wrap;
+  }
+
+  .ban-hang__o-tim {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .ban-hang__than {
+    flex-direction: column;
+  }
+
+  .ban-hang__than .ban-hang__gio {
+    flex: none;
+    overflow-x: auto;
+  }
+
+  .ban-hang__than .ban-hang__panel {
+    width: auto;
+    border-left: 0;
+    border-top: var(--vien);
+  }
+}

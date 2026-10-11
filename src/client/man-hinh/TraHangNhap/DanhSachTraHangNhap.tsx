@@ -4,7 +4,7 @@ import { DanhSachTraHangNhapResSchema, type TraHangNhapDanhSachItem } from '../.
 import { dong } from '../../../shared/kieu/dong';
 import { dinhDangThoiGianVN } from '../../../shared/thoi-gian/dinh-dang';
 import { dinhDangTien } from '../../../shared/tien/dinh-dang';
-import { Bang, Nut, OSo, TruongNhap } from '../../thanh-phan';
+import { Bang, Nut, OSo, TruongNhap, TieuDeSo } from '../../thanh-phan';
 import { ChiTietPhieuNhap } from '../NhapHang/ChiTietPhieuNhap';
 import { ChiTietTraHangNhap } from './ChiTietTraHangNhap';
 import { TaoTraHangNhap } from './TaoTraHangNhap';
@@ -52,7 +52,7 @@ export function BangDanhSachTraHangNhap({ duLieu, dangTai, loi, phieuChonId, onC
           <th>Mã trả hàng nhập</th>
           <th>Mã nhập hàng</th>
           <th>Thời gian</th>
-          <th>Tổng tiền hoàn</th>
+          <TieuDeSo>Tổng tiền hoàn</TieuDeSo>
         </tr>
       </thead>
       <tbody>
